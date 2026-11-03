@@ -23,7 +23,10 @@
   },
   "dependencies": {
     "@augur/kit-common": "workspace:*",
+    "@tanstack/react-query": "5.104.4",
+    "@tanstack/react-router": "1.170.44",
     "markdown-it": "^14.3.3",
+    "openapi-fetch": "0.17.0",
     "react-aria-components": "1.22.1"
   },
   "peerDependencies": {
