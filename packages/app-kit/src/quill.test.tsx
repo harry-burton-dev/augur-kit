@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { About } from './about.js';
 import { AppFrame, RailLink } from './app-frame.js';
 import { FrontPage } from './front-page.js';
@@ -42,6 +42,73 @@ describe('AppFrame', () => {
     act(() => root!.unmount());
     root = undefined;
     expect(seen).toHaveBeenLastCalledWith(0);
+  });
+});
+
+describe('AppFrame at every width', () => {
+  let width = 1200;
+  let resize: (() => void) | undefined;
+  beforeEach(() => {
+    localStorage.clear();
+    width = 1200;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(private cb: ResizeObserverCallback) {
+          resize = () => this.cb([{ contentRect: { width } } as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => ({ width }) as DOMRect);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+  const at = (w: number) => {
+    width = w;
+    act(() => resize!());
+  };
+  const frame = () => document.querySelector('.quill-frame')!;
+  const app = (onPress = () => {}) => (
+    <AppFrame app={{ name: 'Plans', icon: 'library' }} railLabel="Sections" rail={<RailLink icon="home" label="Home" onPress={onPress} />} drawerLabel="Details" drawer={<p>About</p>}>
+      <p id="main">Main</p>
+    </AppFrame>
+  );
+
+  it('opens the drawer over the page below the overlay width, and closes it on Escape or a press outside', () => {
+    draw(app());
+    expect(frame().getAttribute('data-drawer')).toBe('open');
+    at(1000);
+    expect(frame().getAttribute('data-shape')).toBe('overlay');
+    expect(frame().getAttribute('data-drawer')).toBe('closed');
+    expect(frame().getAttribute('data-rail')).toBe('open');
+    act(() => button('Show Details').click());
+    expect(frame().getAttribute('data-drawer')).toBe('over');
+    act(() => document.querySelector('.quill-room')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(frame().getAttribute('data-drawer')).toBe('closed');
+    act(() => button('Show Details').click());
+    act(() => document.getElementById('main')!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
+    expect(frame().getAttribute('data-drawer')).toBe('closed');
+  });
+
+  it('folds the rail to icons below the icons width without forgetting the choice, and opens it over the page', () => {
+    const picked = vi.fn();
+    draw(app(picked));
+    at(700);
+    expect(frame().getAttribute('data-rail')).toBe('closed');
+    expect(document.querySelector('.quill-rail-label')).toBeNull();
+    act(() => button('Show Sections').click());
+    expect(frame().getAttribute('data-rail')).toBe('over');
+    expect(document.querySelector('.quill-rail-label')?.textContent).toBe('Home');
+    act(() => button('Home').click());
+    expect(picked).toHaveBeenCalled();
+    expect(frame().getAttribute('data-rail')).toBe('closed');
+    expect(localStorage.getItem('augur-app-frame:rail-closed')).toBeNull();
+    at(1200);
+    expect(frame().getAttribute('data-rail')).toBe('open');
   });
 });
 

@@ -7,11 +7,11 @@ import { FrontPage } from './front-page.js';
 import { More } from './more.js';
 import { SelectionBar } from './selection-bar.js';
 
-function Example() {
+function Example({ width }: { width?: number }) {
   const [screen, setScreen] = useState('front');
   const [picked, setPicked] = useState(2);
   return (
-    <div style={{ height: '100vh' }}>
+    <div style={{ height: '100vh', ...(width ? { width, borderRight: '1px dashed var(--hairline-strong)' } : {}) }}>
       <AppFrame
         app={{ name: 'Plans', icon: 'library' }}
         onFront={() => setScreen('front')}
@@ -76,3 +76,9 @@ type Story = StoryObj<typeof meta>;
 
 /** Press the app's name for its front page, Collections for a list. Fold the rail and the drawer. */
 export const Frame: Story = {};
+
+/** A tablet's width: the drawer keeps its strip and opens over the page. */
+export const Tablet: Story = { args: { width: 1000 } };
+
+/** Narrower still: the rail shows its icons and opens over the page too. */
+export const Narrow: Story = { args: { width: 720 } };
