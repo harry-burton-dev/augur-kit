@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Button, Letterbox, Person } from '@augur/kit-common';
+import { Button, Letterbox, Person, UrgentEdge } from '@augur/kit-common';
 import { AppUnavailable } from './app-unavailable.js';
 import { Connection } from './connection.js';
 import { Toasts, type ToastItem } from './toast.js';
@@ -20,10 +20,11 @@ function LetterboxDemo() {
   return (
     <>
       <p style={{ color: 'var(--ink-muted)' }}>Everything else on the screen steps back while it’s open.</p>
-      <Button onPress={() => setOpen(true)}>Show it</Button>
+      {open ? null : <UrgentEdge headline="AUGUR went back to 0.13.0" onReopen={() => setOpen(true)} />}
       <Letterbox
         open={open}
-        onClose={() => setOpen(false)}
+        onStepBack={() => setOpen(false)}
+        bars={{ top: <span>Upgrade · Org floor · Updater</span>, bottom: <span>Resolves when 0.14.0 passes its health watch</span> }}
         eyebrow="Upgrade"
         heading="AUGUR went back to 0.13.0"
         summary="The upgrade to 0.14.0 failed its health watch after 4 minutes, so it went back by itself."
@@ -31,9 +32,6 @@ function LetterboxDemo() {
           <>
             <Button kind="primary" onPress={() => setOpen(false)}>
               See what failed
-            </Button>
-            <Button kind="tertiary" onPress={() => setOpen(false)}>
-              Later
             </Button>
           </>
         }
