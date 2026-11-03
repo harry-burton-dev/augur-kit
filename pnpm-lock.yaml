@@ -106,6 +106,12 @@ importers:
 
   packages/kit-common:
     dependencies:
+      '@fontsource/jost':
+        specifier: 5.2.8
+        version: 5.2.8
+      '@fontsource/nunito':
+        specifier: 5.2.7
+        version: 5.2.7
       lucide-react:
         specifier: 1.62.0
         version: 1.62.0(@types/react@19.3.0)(react@19.3.1)

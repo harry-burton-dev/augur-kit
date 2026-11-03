@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Common: AUGUR's tokens, the Tailwind theme built from them, and the parts both kits (Aerie for the shell, Quill for apps) share.",
+  "description": "Common: AUGUR's tokens, its typefaces, the Tailwind theme built from them, and the parts both kits (Aerie for the shell, Quill for apps) share.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -14,6 +14,7 @@
       "default": "./dist/generated/tokens.js"
     },
     "./tokens.css": "./dist/tokens.css",
+    "./fonts.css": "./dist/fonts.css",
     "./theme.css": "./dist/theme.css",
     "./theme-shell.css": "./dist/theme-shell.css",
     "./theme-app.css": "./dist/theme-app.css",
@@ -24,9 +25,10 @@
   ],
   "scripts": {
     "tokens": "node scripts/build-tokens.mjs",
-    "build": "node scripts/build-tokens.mjs && tsc -p tsconfig.json && tailwindcss -i src/kit.css -o dist/kit.css --minify",
+    "build": "node scripts/build-tokens.mjs && node scripts/build-fonts.mjs && tsc -p tsconfig.json && tailwindcss -i src/kit.css -o dist/kit.css --minify",
     "typecheck": "node scripts/build-tokens.mjs && tsc -p tsconfig.json --noEmit",
-    "test": "node scripts/build-tokens.mjs && vitest run"
+    "test": "node scripts/build-tokens.mjs && node scripts/build-fonts.mjs && vitest run",
+    "fonts": "node scripts/build-fonts.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",
@@ -41,6 +43,8 @@
     "vitest": "^3.2.0"
   },
   "dependencies": {
+    "@fontsource/jost": "5.2.8",
+    "@fontsource/nunito": "5.2.7",
     "lucide-react": "1.62.0",
     "react-aria-components": "1.22.1"
   },

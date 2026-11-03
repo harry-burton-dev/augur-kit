@@ -6,7 +6,8 @@ The kit as a deployment serves it (ADR 0048 in the AUGUR repository). `pnpm buil
 | --- | --- |
 | `<module>.js`, `chunks/` | One ES module for each shared specifier: `react`, `react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom`, `react-dom/client`, `@augur/kit-common`, `@augur/app-kit` |
 | `dev/` | The same with React's development build, for a shell's dev server |
-| `tokens.css`, `kit-common.css`, `app-kit.css` | The CSS every page links, in that order |
+| `tokens.css`, `fonts.css`, `kit-common.css`, `app-kit.css` | The CSS every page links, in that order. `tokens.css` carries the reduced-motion values, `fonts.css` the typefaces |
+| `fonts/` | The font files `fonts.css` names (Jost and Nunito, from Fontsource) |
 | `kit.json` | The version, what is in it, the import map entries, the stylesheets and every file's hash |
 | `kit.json.sigstore.json` | In a released package only: the cosign keyless signature of `kit.json`, naming this repository's Release workflow on `main` |
 
@@ -24,7 +25,7 @@ entries are the hashes from `kit.json`, so a CDN in front of `KIT_URL` can't ser
   "version": "0.1.0",
   "packages": { "react": "19.3.1", "react-dom": "19.3.1", "@augur/kit-common": "0.2.0", "@augur/app-kit": "0.3.0" },
   "imports": { "react": "react.js", "@augur/app-kit": "app-kit.js", "...": "..." },
-  "styles": ["tokens.css", "kit-common.css", "app-kit.css"],
+  "styles": ["tokens.css", "fonts.css", "kit-common.css", "app-kit.css"],
   "dev": { "imports": { "react": "dev/react.js", "...": "..." }, "styles": ["..."] },
   "integrity": { "react.js": "sha384-...", "...": "..." }
 }

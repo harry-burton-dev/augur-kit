@@ -30,9 +30,10 @@ export const MODULES = [
   '@augur/app-kit',
 ];
 
-/** The CSS every page needs, in the order it is linked: the tokens, then Common's and Quill's parts. */
-const STYLES = [
+/** The CSS every page needs, in the order it is linked: the tokens, the typefaces, then Common's and Quill's parts. */
+export const STYLES = [
   ['tokens.css', '@augur/kit-common/tokens.css'],
+  ['fonts.css', '@augur/kit-common/fonts.css'],
   ['kit-common.css', '@augur/kit-common/kit.css'],
   ['app-kit.css', '@augur/app-kit/kit.css'],
 ];
@@ -99,6 +100,8 @@ async function main() {
   const imports = await bundle('production', out);
   const devImports = await bundle('development', join(out, 'dev'));
   for (const [name, specifier] of STYLES) cpSync(require.resolve(specifier), join(out, name));
+  // fonts.css names its files as fonts/<file>, next to it.
+  cpSync(join(dirname(require.resolve('@augur/kit-common/fonts.css')), 'fonts'), join(out, 'fonts'), { recursive: true });
   const styles = STYLES.map(([name]) => name);
 
   const version = (name) => {
