@@ -1,5 +1,7 @@
 # AUGUR kit
 
+Part of AUGUR, which is proprietary; see `LICENSE`.
+
 AUGUR's React UI kit, built and released apart from the platform (ADR 0046 in the AUGUR repository).
 
 | Package | What it is | Who uses it |

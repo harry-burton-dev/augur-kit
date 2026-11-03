@@ -2,6 +2,7 @@
   "name": "@augur/storybook",
   "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "The kit's Storybook (AUGUR's ADR 0016): Common, Quill and Aerie, published to Chromatic. The frozen Lit kit keeps its own Storybook in the AUGUR repository until SDK 2.",
   "scripts": {

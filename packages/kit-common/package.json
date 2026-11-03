@@ -2,6 +2,7 @@
   "name": "@augur/kit-common",
   "version": "0.3.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "Common: AUGUR's tokens, the Tailwind theme built from them, and the parts both kits (Aerie for the shell, Quill for apps) share.",
   "exports": {
