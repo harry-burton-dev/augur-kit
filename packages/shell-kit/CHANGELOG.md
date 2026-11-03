@@ -1,5 +1,11 @@
 # @augur/shell-kit
 
+## 0.3.1
+
+### Patch Changes
+
+- 464be02: The kit builds and releases from its own repository. New: the kit bundle, React, Common and Quill as ready-to-load files with a kit.json, released and signed as kit@<version>. Aerie is now published for the shell to build with.
+
 ## 0.3.0
 
 ### Minor Changes
