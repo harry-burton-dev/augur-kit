@@ -215,6 +215,50 @@
   .quill-ring-list .quill-ring-button { width: auto; height: auto; background: none; border: 0; box-shadow: none; backdrop-filter: none; transform: none; outline: none; }
   .quill-ring-list .quill-ring-item:hover .quill-ring-button, .quill-ring-list .quill-ring-item:focus-visible .quill-ring-button { transform: none; background: none; outline: none; }
   .quill-ring-list .quill-ring-name { position: static; transform: none; text-shadow: none; }
+  /* An action whose targets are open: lit as the path out to them. */
+  .quill-ring-item[data-path] .quill-ring-button { background: color-mix(in srgb, var(--focus) 24%, var(--slate)); border-color: var(--focus); }
+  .quill-ring-list .quill-ring-item[data-path] { background: color-mix(in srgb, var(--focus) 16%, transparent); }
+  /* Hold to confirm: the button fills from the middle for the length of the hold; letting go early empties it. */
+  .quill-ring-button, .quill-ring-target { position: relative; overflow: hidden; }
+  .quill-ring-item[data-holding] .quill-ring-button::before, .quill-ring-target[data-holding]::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--danger) 40%, transparent);
+    transform-origin: center; animation: quill-ring-hold var(--motion-run) linear both; pointer-events: none;
+  }
+  .quill-ring-item[data-armed] .quill-ring-button, .quill-ring-target[data-armed] { box-shadow: 0 0 0 var(--focus-gap) var(--danger); }
+  /* The places an action can go to, beside it. */
+  .quill-ring-targets {
+    position: fixed; display: flex; flex-direction: column; width: var(--measure-rail); padding: var(--space-1);
+    background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-overlay);
+    animation: quill-fade var(--motion-quick) var(--ease-out);
+  }
+  .quill-ring-target {
+    display: flex; flex-direction: column; align-items: flex-start; min-height: var(--target-sm); padding: var(--space-1) var(--space-3); border: 0; border-radius: var(--radius-key);
+    background: none; color: var(--ink); font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); text-align: left; cursor: pointer;
+  }
+  .quill-ring-target:hover, .quill-ring-target:focus-visible { background: color-mix(in srgb, var(--ink) 9%, transparent); }
+  .quill-ring-target:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-gap) * -1); }
+  .quill-ring-target[aria-disabled] { cursor: not-allowed; }
+  .quill-ring-target[aria-disabled] > .quill-ring-label { color: var(--ink-muted); }
+  .quill-ring-target[aria-current] > .quill-ring-label { color: var(--ink); font-weight: 600; }
+  .quill-ring-detail { color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); }
+  .quill-ring-why > span, .quill-ring-owner { display: block; }
+  /* The one readout: what the focused choice would change, and how to confirm it. Empty, it takes no room. */
+  .quill-ring-readout {
+    position: fixed; z-index: calc(var(--layer-chrome) + 2); display: flex; flex-direction: column; align-items: center; gap: var(--space-1); max-width: var(--measure-card);
+    font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); text-align: center; pointer-events: none; text-shadow: 0 1px var(--space-2) var(--slate-deep);
+  }
+  .quill-ring-readout:empty { display: none; }
+  .quill-ring-readout[data-leaving] { opacity: 0; transition: opacity var(--motion-quick) var(--ease-out); }
+  .quill-ring-hint { color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); }
+  /* The visible way into the menu: shown while its parent is hovered or holds focus, and always on a touch screen. */
+  .quill-ring-more {
+    display: inline-grid; place-items: center; width: var(--target-sm); height: var(--target-sm); padding: 0; border: 0; border-radius: var(--radius-key);
+    background: none; color: var(--ink-muted); cursor: pointer; opacity: 0; transition: opacity var(--motion-quick) var(--ease-standard);
+  }
+  :hover > .quill-ring-more, :focus-within > .quill-ring-more, .quill-ring-more:focus-visible { opacity: 1; }
+  .quill-ring-more:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 9%, transparent); }
+  .quill-ring-more:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  @media (hover: none) { .quill-ring-more { opacity: 1; } }
 
   /* The navigation path: the path you took is lit, its neighbours dimmed, a line joins it from the top down. */
   .quill-tree { display: flex; flex-direction: column; min-width: 0; }
@@ -351,8 +395,8 @@
     .quill-stage > .quill-plane { filter: none !important; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .quill-plane, .quill-rack, .quill-focus-item, .quill-tile, .quill-reel-card, .quill-tree-row, .quill-ring-button { transition: none; }
-    .quill-reel-landing, .quill-ring, .quill-ring-item, .quill-ring-orbit, .quill-reel-light[data-live] .quill-reel-slit { animation: none; }
+    .quill-plane, .quill-rack, .quill-focus-item, .quill-tile, .quill-reel-card, .quill-tree-row, .quill-ring-button, .quill-ring-more { transition: none; }
+    .quill-reel-landing, .quill-ring, .quill-ring-item, .quill-ring-orbit, .quill-ring-targets, .quill-reel-light[data-live] .quill-reel-slit { animation: none; }
     .quill-plane { transform: none !important; }
   }
 }
@@ -360,6 +404,7 @@
 @keyframes quill-rise { from { opacity: 0; transform: translateY(var(--space-4)); } to { opacity: 1; transform: none; } }
 @keyframes quill-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes quill-ring-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes quill-ring-hold { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes quill-ring-grow { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
 @keyframes quill-breathe { 0%, 100% { opacity: 0.6; transform: scaleY(0.94); } 50% { opacity: 1; transform: scaleY(1); } }
 @keyframes quill-summon {
