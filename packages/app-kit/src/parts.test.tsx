@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DateField, parseDay } from './date.js';
 import { List, Table } from './list.js';
 import { PageHead, Section } from './page.js';
@@ -74,6 +74,94 @@ describe('the parts apps took from the Lit kit', () => {
     act(() => head().click());
     expect(sorts).toHaveBeenLastCalledWith(null);
     expect(text()).toContain('2 files');
+  });
+
+  it('filters a table on what each column shows, and says how many match', () => {
+    const rows = [
+      { id: '1', name: 'Leave policy', size: 4 },
+      { id: '2', name: 'Travel', size: 12 },
+      { id: '3', name: 'Leave form', size: 1 },
+    ];
+    draw(<Table noun="files" filterable sort={{ key: 'size', dir: 'desc' }} columns={[{ key: 'name', label: 'Name' }, { key: 'size', label: 'Size', kind: 'number' }]} rows={rows} />);
+    const names = () => [...document.querySelectorAll('.quill-table-cell[data-primary]')].map((c) => c.textContent);
+    expect(names()).toEqual(['Travel', 'Leave policy', 'Leave form']);
+    act(() => button('Filter files').click());
+    const input = document.querySelector<HTMLInputElement>('input[type="search"]')!;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+    act(() => {
+      setValue.call(input, ' LEAVE ');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(names()).toEqual(['Leave policy', 'Leave form']);
+    expect(text()).toContain('2 of 3 files');
+  });
+
+  describe('a long table', () => {
+    // happy-dom has no layout: give every element a size, as React Aria's own tests do, so the
+    // virtualizer works out which rows are in view.
+    const width = 1000;
+    const height = 600;
+    const sized: [string, PropertyDescriptor | undefined][] = [];
+    beforeAll(() => {
+      for (const [prop, value] of [['clientWidth', width], ['clientHeight', height]] as const) {
+        sized.push([prop, Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop)]);
+        Object.defineProperty(HTMLElement.prototype, prop, { configurable: true, get: () => value });
+      }
+    });
+    afterAll(() => {
+      for (const [prop, desc] of sized) {
+        if (desc) Object.defineProperty(HTMLElement.prototype, prop, desc);
+        else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
+      }
+    });
+    const many = Array.from({ length: 3000 }, (_, i) => ({ id: `r${i}`, name: `Row ${String(i).padStart(4, '0')}`, size: i }));
+    const columns = [
+      { key: 'name', label: 'Name', sortable: true },
+      { key: 'size', label: 'Size', kind: 'number' as const, sortable: true, sortFirst: 'desc' as const },
+    ];
+    const drawn = () => [...document.querySelectorAll('.quill-table-cell[data-primary]')].map((c) => c.textContent);
+
+    it('draws only the rows in view, and still counts them all', () => {
+      draw(<Table noun="rows" virtual columns={columns} rows={many} />);
+      const rows = drawn();
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.length).toBeLessThan(60);
+      expect(rows[0]).toBe('Row 0000');
+      expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(true);
+      expect(document.querySelector('[role="grid"]')!.getAttribute('aria-rowcount')).toBe('3001');
+      expect(text()).toContain('3000 rows');
+    });
+
+    it('draws the next rows as it scrolls', () => {
+      draw(<Table noun="rows" virtual columns={columns} rows={many} />);
+      const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+      act(() => {
+        grid.scrollTop = 56 * 1000;
+        grid.dispatchEvent(new Event('scroll'));
+      });
+      const rows = drawn();
+      expect(rows).toContain('Row 1005');
+      expect(rows).not.toContain('Row 0000');
+      expect(rows.length).toBeLessThan(60);
+    });
+
+    it('sorts every row, not just those drawn', () => {
+      const sorts = vi.fn();
+      draw(<Table noun="rows" virtual columns={columns} rows={many} onSort={sorts} />);
+      const size = () => [...document.querySelectorAll<HTMLElement>('.quill-table-head[data-allows-sorting]')][1]!;
+      act(() => size().click());
+      expect(sorts).toHaveBeenLastCalledWith({ key: 'size', dir: 'desc' });
+      expect(drawn()[0]).toBe('Row 2999');
+      expect(drawn().length).toBeLessThan(60);
+      act(() => size().click());
+      expect(drawn()[0]).toBe('Row 0000');
+    });
+
+    it('looks as it always did while loading or empty', () => {
+      draw(<Table noun="rows" virtual columns={columns} rows={[]} empty="No rows yet." />);
+      expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(false);
+      expect(text()).toContain('No rows yet.');
+    });
   });
 
   it('folds a long trail and puts actions past two in More', () => {

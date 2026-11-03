@@ -53,3 +53,15 @@ function Parts() {
 const meta: Meta<typeof Parts> = { title: 'Quill/From the Lit kit', component: Parts };
 export default meta;
 export const AllParts: StoryObj<typeof Parts> = {};
+
+const states = ['needs', 'running', 'done', 'failed'] as const;
+const longRows = Array.from({ length: 5000 }, (_, i) => ({ id: `d${i}`, name: `Document ${i + 1}`, state: states[i % states.length], size: (i * 7) % 97, at: new Date(Date.UTC(2026, 0, 1) + i * 3_600_000).toISOString() }));
+
+/** Five thousand rows with `virtual`: only those in view are drawn; filter, sort and select still cover them all. */
+export const LongTable: StoryObj<typeof Table> = {
+  render: () => (
+    <div style={{ padding: 'var(--space-6)', maxWidth: 'var(--measure-wide)' }}>
+      <Table noun="documents" virtual filterable selectable columns={[{ key: 'name', label: 'Name', sortable: true }, { key: 'state', label: 'State', kind: 'status', sortable: true }, { key: 'size', label: 'Pages', kind: 'number', sortable: true }, { key: 'at', label: 'Changed', kind: 'date', sortable: true, sortFirst: 'desc' }]} rows={longRows} />
+    </div>
+  ),
+};

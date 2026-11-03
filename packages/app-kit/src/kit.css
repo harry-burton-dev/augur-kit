@@ -613,7 +613,7 @@
   .quill-table-find:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .quill-table-find:focus-visible { outline: var(--focus-ring) solid var(--focus); }
   .quill-table-wrap { overflow: auto; }
-  .quill-table table { width: 100%; border-collapse: collapse; font-size: var(--type-body); line-height: var(--leading-body); }
+  .quill-table table, .quill-table-grid { width: 100%; border-collapse: collapse; font-size: var(--type-body); line-height: var(--leading-body); }
   .quill-table-head { position: sticky; top: 0; z-index: 1; height: 44px; padding: 0 var(--space-3); text-align: left; font-weight: 500; white-space: nowrap; background: color-mix(in srgb, var(--slate) 85%, transparent); border-bottom: 1px solid var(--hairline); outline: none; }
   .quill-table-head[data-allows-sorting] { cursor: pointer; }
   .quill-table-head[data-focus-visible] { box-shadow: inset 0 0 0 1.5px var(--focus); }
@@ -648,6 +648,16 @@
   .quill-table-state[data-error] { color: var(--danger); }
   .quill-table-state p { margin: 0 0 var(--space-4); }
   .quill-table-skel td { padding: var(--space-4) var(--space-3); }
+  /* Virtual (long lists): the layout places every row and cell at a fixed height; a cell keeps one line and truncates. */
+  .quill-table[data-virtual] .quill-table-grid { overflow: auto; }
+  .quill-table[data-virtual] .quill-table-head, .quill-table[data-virtual] .quill-table-sel, .quill-table[data-virtual] .quill-table-cell { width: 100%; height: 100%; box-sizing: border-box; }
+  .quill-table[data-virtual] .quill-table-head, .quill-table[data-virtual] .quill-table-sel { display: flex; align-items: center; }
+  .quill-table[data-virtual] .quill-table-head[data-end] { justify-content: flex-end; }
+  .quill-table[data-virtual] .quill-table-cell { display: block; overflow: hidden; text-overflow: ellipsis; line-height: 55px; }
+  .quill-table[data-virtual][data-density='compact'] .quill-table-cell { line-height: 39px; }
+  .quill-table[data-virtual] [data-primary] { max-width: none; min-width: 0; }
+  .quill-table[data-virtual] .quill-table-cell[data-wrap] { white-space: nowrap; padding-block: 0; }
+  .quill-table[data-virtual] .quill-table-row:last-child .quill-table-cell { border-bottom: 1px solid var(--hairline); }
 
   /* Cards, tally, timeline, path, refs */
   .quill-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: var(--space-3); }
