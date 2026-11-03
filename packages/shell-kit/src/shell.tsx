@@ -93,11 +93,8 @@ export function Shell({ model, children }: ShellProps) {
         if (model.moveFloor(e.key === 'PageUp' ? 'up' : 'down')) e.preventDefault();
       }
     };
-    // An app's drawer took (or gave back) the right edge: the floor gauge moves to stay just left of it.
-    const onDrawer = (e: Event) => (model.drawerInset = Math.max(0, (e as CustomEvent<{ inset?: number }>).detail?.inset ?? 0));
     const ends = ['keydown', 'pointerdown', 'wheel'] as const;
     window.addEventListener('keydown', onWindowKey);
-    window.addEventListener('ui-drawer', onDrawer);
     for (const type of ends) window.addEventListener(type, model.endCard, { capture: true, passive: true });
     const clock = setInterval(() => {
       model.now = Date.now();
@@ -105,7 +102,6 @@ export function Shell({ model, children }: ShellProps) {
     }, 30_000);
     return () => {
       window.removeEventListener('keydown', onWindowKey);
-      window.removeEventListener('ui-drawer', onDrawer);
       for (const type of ends) window.removeEventListener(type, model.endCard, { capture: true });
       clearInterval(clock);
       model.stop();
@@ -157,7 +153,7 @@ export function Shell({ model, children }: ShellProps) {
       data-floor-tone={here ? floorTone(here) : undefined}
       data-background={background}
       data-view={model.view}
-      style={{ '--app-drawer-inset': `${model.drawerInset}px` } as CSSProperties}
+      data-gauge={model.currentFloor ? '' : undefined}
     >
       <div className="aerie-ground">
         <div ref={ground} className="aerie-water" />

@@ -23,6 +23,12 @@
 .aerie-stage { position: absolute; inset: var(--band-top) 0 0; z-index: 1; isolation: isolate; overflow: auto; -webkit-mask-image: linear-gradient(to bottom, transparent, black var(--space-4)); mask-image: linear-gradient(to bottom, transparent, black var(--space-4)); transform-origin: 50% 100%; transition: transform var(--motion-calm) var(--s-ease), filter var(--motion-calm) var(--s-ease); }
 /* looking up: the water and the app tip away below you and go dark */
 .aerie-shell[data-open] .aerie-ground { transform: translateY(14%) scale(1.04); filter: brightness(0.5) saturate(0.7); }
+/* The floor gauge keeps a lane of its own at the right edge, so it never covers an app: the stage ends where the
+   lane starts (the notch, the open app's icon pinned beside it, the gauge's padding and its gap from the edge,
+   the same numbers as .aerie-notch and .aerie-pinned below). Opened out to show floor names, it
+   reaches over the app only while you point at it or tab through it. */
+.aerie-shell { --gauge-lane: calc(28px + 22px + var(--space-1) + var(--space-2) * 3 + 2px); }
+.aerie-shell[data-gauge] .aerie-stage { right: var(--gauge-lane); }
 .aerie-shell[data-open] .aerie-stage { transform: perspective(1400px) translateY(12%) rotateX(9deg) scale(0.96); filter: brightness(0.38) saturate(0.6) blur(2px); }
 .aerie-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -191,7 +197,7 @@
 .aerie-shell[data-floor-kind='team'] { --floor-mark: var(--floor-team-high); }
 .aerie-shell[data-floor-tone='department'] { --floor-mark: var(--floor-department-high); }
 .aerie-shell[data-floor-kind='org'] { --floor-mark: var(--floor-org-high); }
-.aerie-gauge { position: absolute; z-index: 3; right: calc(var(--space-2) + var(--app-drawer-inset, 0px)); top: 50%; transform: translateY(-50%); padding: var(--space-2); border-radius: var(--radius-inset); border: 1px solid transparent; transition: right var(--motion-slow) var(--ease-out), opacity var(--motion-slow) var(--ease-standard), background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
+.aerie-gauge { position: absolute; z-index: 3; right: var(--space-2); top: 50%; transform: translateY(-50%); padding: var(--space-2); border-radius: var(--radius-inset); border: 1px solid transparent; transition: opacity var(--motion-slow) var(--ease-standard), background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
 .aerie-gauge ol { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
 .aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: 13.5px; width: 1px; background: var(--hairline); }
 .aerie-shell[data-open] .aerie-gauge { opacity: 0; pointer-events: none; }

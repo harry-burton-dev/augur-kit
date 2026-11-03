@@ -147,7 +147,7 @@ function travel(direction: FloorDirection, way: 1 | -1): string {
 const DRAWN = [
   'product', 'workspace', 'user', 'online', 'statusLabel', 'apps', 'recent', 'agents', 'agentsLoading', 'agentsError', 'functions',
   'streamLoading', 'streamError', 'findResults', 'findGroups', 'settings', 'away', 'canSwitchWorkspace', 'navs', 'backTo', 'area',
-  'floors', 'version', 'background', 'drawerInset',
+  'floors', 'version', 'background',
 ] as const;
 
 /** The elements the drawn Shell hands its model, so moves and focus can reach them. */
@@ -228,8 +228,6 @@ export class ShellModel extends EventTarget {
   said = '';
   /** A notification just arrived and pulses the point once. */
   arriving = false;
-  /** How much of the right edge an app's drawer takes, so the gauge stays left of it. */
-  drawerInset = 0;
 
   private _current = '';
   private _floor = '';

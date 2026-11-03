@@ -1,4 +1,7 @@
 // @vitest-environment happy-dom
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -93,5 +96,27 @@ describe('Shell floor keys', () => {
     expect(floor).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'org' }));
     key({ key: 'PageDown', altKey: true });
     expect(floor).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'me' }));
+  });
+});
+
+describe('Shell floor gauge', () => {
+  it('keeps a lane of its own, so the open app ends where the gauge starts', () => {
+    const model = exampleShell();
+    draw(model);
+    const shell = document.querySelector('.aerie-shell')!;
+    expect(shell.hasAttribute('data-gauge')).toBe(true);
+    expect(document.querySelector('.aerie-gauge')).not.toBeNull();
+    const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'shell.css'), 'utf8');
+    expect(css).toMatch(/\.aerie-shell\[data-gauge\] \.aerie-stage \{ right: var\(--gauge-lane\); \}/);
+    // An app's drawer no longer moves the gauge: the drawer is inside the stage, left of the lane.
+    expect(css).not.toContain('--app-drawer-inset');
+  });
+
+  it('gives the app the whole width when there are no floors to show', () => {
+    const model = exampleShell();
+    model.floors = [];
+    draw(model);
+    expect(document.querySelector('.aerie-shell')!.hasAttribute('data-gauge')).toBe(false);
+    expect(document.querySelector('.aerie-gauge')).toBeNull();
   });
 });
