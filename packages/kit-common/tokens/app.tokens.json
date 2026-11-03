@@ -131,5 +131,27 @@
       "$type": "duration",
       "$description": "Focus pull: how long something that needs you takes to pull focus to itself, and the rest to step back. Common's motion-calm."
     }
+  },
+  "path": {
+    "path-dim-1": {
+      "$value": "0.64",
+      "$type": "number",
+      "$description": "The lit path (PDR-010): the opacity of the current row's neighbours, one step from where you are. What is inside the current row stays at full strength. Hover and focus bring a row back to full strength."
+    },
+    "path-dim-2": {
+      "$value": "0.44",
+      "$type": "number",
+      "$description": "The lit path: the opacity of the parent's neighbours, two steps from where you are. Below text contrast on its own, so hover and focus always bring the row back to full strength."
+    },
+    "path-dim-3": {
+      "$value": "0.3",
+      "$type": "number",
+      "$description": "The lit path: the opacity of rows three or more steps from where you are. Below text contrast on its own, so hover and focus always bring the row back to full strength."
+    },
+    "path-soft": {
+      "$value": "0.6px",
+      "$type": "dimension",
+      "$description": "The lit path: the slight blur on rows three or more steps from where you are, so the furthest ones sit back. Under a pixel, so the words stay readable; hover and focus take it off."
+    }
   }
 }

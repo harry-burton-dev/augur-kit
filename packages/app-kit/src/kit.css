@@ -262,29 +262,48 @@
 
   /* The navigation path: the path you took is lit, its neighbours dimmed, a line joins it from the top down. */
   .quill-tree { display: flex; flex-direction: column; min-width: 0; }
+  .quill-tree.quill-path-tree { --tree-ground: var(--slate); gap: 0; }
   .quill-tree-row {
     position: relative; display: flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); min-width: 0;
     padding: 0 var(--space-3) 0 calc(var(--space-3) + var(--tree-level) * var(--space-4));
     border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer;
-    transition: opacity var(--motion-slow) var(--ease-out), background var(--motion-quick) var(--ease-standard);
+    background-image: linear-gradient(var(--row-tint, transparent), var(--row-tint, transparent));
+    transition: opacity var(--motion-slow) var(--ease-out), filter var(--motion-slow) var(--ease-out), box-shadow var(--motion-slow) var(--ease-out);
   }
   .quill-tree-row[data-level='0'] { font-size: var(--type-body); }
-  .quill-tree[data-light='path'] .quill-tree-row:not(.quill-tree-lit):not(.quill-tree-inside) { opacity: var(--path-dim); }
-  .quill-tree .quill-tree-row:hover, .quill-tree .quill-tree-row:focus-visible { opacity: 1; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  /* Dimmed by distance from where you are: the current one's neighbours one step, its parent's two, anything further three, softened. */
+  .quill-tree[data-light='path'] .quill-tree-row[data-distance='1'] { opacity: var(--path-dim-1); }
+  .quill-tree[data-light='path'] .quill-tree-row[data-distance='2'] { opacity: var(--path-dim-2); }
+  .quill-tree[data-light='path'] .quill-tree-row[data-distance='3'] { opacity: var(--path-dim-3); filter: blur(var(--path-soft)); }
+  /* Something inside needs you: never dimmed past the first step, so its words stay readable. */
+  .quill-tree[data-light='path'] .quill-tree-row[data-needs]:not([data-distance='0']) { opacity: var(--path-dim-1); filter: none; }
+  /* Hover and focus always bring a row back to full strength, so its words meet contrast. */
+  .quill-tree .quill-tree-row:hover, .quill-tree .quill-tree-row:focus-visible { opacity: 1; filter: none; --row-tint: color-mix(in srgb, var(--ink) 6%, transparent); }
+  @media (prefers-contrast: more) { .quill-tree .quill-tree-row { opacity: 1 !important; filter: none !important; } }
   .quill-tree-row:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-gap) * -1); }
-  .quill-tree-row[data-current] { background: color-mix(in srgb, var(--ink) 9%, transparent); font-weight: 500; }
+  .quill-tree-row[data-current] { --row-tint: color-mix(in srgb, var(--ink) 9%, transparent); font-weight: 500; }
   .quill-tree-row[aria-disabled] { cursor: not-allowed; }
+  .quill-tree-row:hover > .augur-reason, .quill-tree-row:focus > .augur-reason { opacity: 1; transform: none; z-index: 2; }
+  /* The breadcrumb: the path's rows stick to the top of the rail, each under the one above (the kit sets each top). */
+  .quill-tree-row[data-pinned] { position: sticky; top: 0; z-index: 1; background-color: var(--tree-ground); }
+  .quill-tree-fold { color: var(--ink-muted); }
+  .quill-tree-fold:hover, .quill-tree-fold:focus-visible { color: var(--ink); }
+  /* Needs you: the row blooms, and its sentence is always written under its name. */
+  .quill-tree-row[data-needs] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 40%, transparent), 0 0 var(--space-3) color-mix(in srgb, var(--green) 18%, transparent); }
+  .quill-tree-row[data-needs] .quill-tree-dot { background: var(--green); }
   .quill-tree-dot { flex: none; width: var(--space-1); height: var(--space-1); margin-inline: 1px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--motion-slow) var(--ease-out), background var(--motion-slow) var(--ease-out); }
   .quill-tree-lit .quill-tree-dot { background: var(--ink); transform: scale(1.5); }
   .quill-tree-row[data-current] .quill-tree-dot { transform: scale(2); box-shadow: 0 0 0 1px var(--focus); }
   .quill-tree-icon { flex: none; color: var(--ink-muted); }
-  .quill-tree-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quill-tree-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .quill-tree-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quill-tree-needs { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: var(--space-1); color: var(--green); font-size: var(--type-small); line-height: var(--leading-small); font-weight: 400; }
   .quill-tree-count { color: var(--ink-muted); font-size: var(--type-label); font-variant-numeric: tabular-nums; }
   .quill-tree-line { position: absolute; left: calc(var(--space-3) + var(--line-level) * var(--space-4) + 2px); width: 1px; background: color-mix(in srgb, var(--ink) 55%, transparent); pointer-events: none; }
   .quill-tree-line[data-part='start'] { top: 50%; bottom: 0; }
   .quill-tree-line[data-part='through'] { top: 0; bottom: 0; }
   .quill-tree-line[data-part='end'] { top: 0; height: 50%; }
-  .quill-tree-line[data-part='end']::after { content: ''; position: absolute; bottom: 0; left: 0; width: calc(var(--space-4) - var(--space-1)); height: 1px; background: inherit; }
+  .quill-tree-line[data-part='end']::after { content: ''; position: absolute; bottom: 0; left: 0; width: calc(var(--line-span, 1) * var(--space-4) - var(--space-1)); height: 1px; background: inherit; }
 
   /* A reel: a lane of cards, its light at the start when the cards are pulled in. */
   .quill-reel {
