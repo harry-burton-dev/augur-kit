@@ -11,6 +11,16 @@
       "$type": "dimension",
       "$description": "An app's right drawer (ui-app-frame): what can be done with what's on screen, its filters and its settings."
     },
+    "frame-overlay-below": {
+      "$value": "1100px",
+      "$type": "dimension",
+      "$description": "An app frame narrower than this (its own width, a container query) shows the drawer as an overlay from the right edge, opened on demand, and keeps a strip of its button in place of the column."
+    },
+    "frame-icons-below": {
+      "$value": "800px",
+      "$type": "dimension",
+      "$description": "An app frame narrower than this folds the rail to its icons, whatever the person chose at a wider width; its button opens the whole rail as an overlay from the left edge."
+    },
     "ring-gap": {
       "$value": "20px",
       "$type": "dimension",
