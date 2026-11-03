@@ -186,7 +186,7 @@ describe('PathTree', () => {
     const rows = [...document.querySelectorAll('[role="treeitem"]')];
     expect(rows.map((r) => r.querySelector('.quill-tree-label')!.textContent)).toEqual(['A', 'A1', 'Deep', 'A2', 'B']);
     expect(rows.filter((r) => r.classList.contains('quill-tree-lit')).map((r) => r.textContent)).toEqual(['A', 'A1']);
-    expect(rows[1]!.getAttribute('aria-current')).toBe('page');
+    expect(rows[1]!.getAttribute('aria-current')).toBe('location');
     // What you opened isn't dimmed: only the path's neighbours are.
     expect(rows[2]!.classList.contains('quill-tree-inside')).toBe(true);
     expect(document.querySelectorAll('.quill-tree-line').length).toBeGreaterThan(0);
