@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Dialog, Icon, Segmented } from '@augur/kit-common';
 import { AppFrame, RailLink } from './app-frame.js';
-import { FocusField, FocusItem, type Ambience, type Depth } from './focus.js';
+import { FocusField, FocusItem, FocusStage, useRack, type Ambience, type Depth, type Plane } from './focus.js';
 import { FrontPage, frontSections, type FrontPageConfig } from './front-page.js';
 import { Palette, type PaletteItem } from './palette.js';
 import { PathTree, type PathLight, type PathNode } from './path-tree.js';
@@ -182,12 +182,12 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   argTypes: {
     depth: { control: 'inline-radio', options: ['veil', 'lens', 'scrim'] },
-    ambience: { control: 'inline-radio', options: ['soft', 'quiet'] },
+    ambience: { control: 'inline-radio', options: ['quiet', 'soft'] },
     reveal: { control: 'inline-radio', options: ['pull', 'all'] },
     light: { control: 'inline-radio', options: ['path', 'flat'] },
     ringShape: { control: 'inline-radio', options: ['auto', 'ring', 'list'] },
   },
-  args: { depth: 'veil', ambience: 'soft', reveal: 'pull', light: 'path', ringShape: 'auto' },
+  args: { depth: 'veil', ambience: 'quiet', reveal: 'pull', light: 'path', ringShape: 'auto' },
 } satisfies Meta<typeof Example>;
 
 export default meta;
@@ -196,19 +196,19 @@ type Story = StoryObj<typeof meta>;
 /** A whole app: the title front page with reels, the lit path, tiles, the radial menu, the palette ( / ) and a dialog. */
 export const App: Story = {};
 
-/** The other way of each choice, one control away: depth `lens` or `scrim`, ambience `quiet`, reveal `all`, light `flat`, ring `list`. */
-export const Alternatives: Story = { args: { depth: 'lens', ambience: 'quiet', reveal: 'all', light: 'flat', ringShape: 'list' } };
+/** The other way of each choice, one control away: depth `lens` or `scrim`, ambience `soft`, reveal `all`, light `flat`, ring `list`. */
+export const Alternatives: Story = { args: { depth: 'lens', ambience: 'soft', reveal: 'all', light: 'flat', ringShape: 'list' } };
 
 function FocusPullExample() {
     const [pulled, setPulled] = useState(true);
-    const [ambience, setAmbience] = useState<Ambience>('soft');
+    const [ambience, setAmbience] = useState<Ambience>('quiet');
     return (
       <div className="flex flex-col gap-5">
         <div className="flex gap-4">
           <Button kind="secondary" onPress={() => setPulled(!pulled)}>
             {pulled ? 'Let go' : 'Pull focus'}
           </Button>
-          <Segmented label="Ambience" value={ambience} onChange={(v) => setAmbience(v as Ambience)} options={[{ value: 'soft', label: 'Soft' }, { value: 'quiet', label: 'Quiet' }]} />
+          <Segmented label="Ambience" value={ambience} onChange={(v) => setAmbience(v as Ambience)} options={[{ value: 'quiet', label: 'Quiet' }, { value: 'soft', label: 'Soft' }]} />
         </div>
         <FocusField pulled={pulled} ambience={ambience} className="flex gap-4">
           <FocusItem className="p-4 rounded-inset bg-surface-raised">A document you read last week</FocusItem>
@@ -221,3 +221,38 @@ function FocusPullExample() {
 
 /** Focus pull on its own: one thing needs action, the rest step back. */
 export const FocusPull: StoryObj = { render: () => <FocusPullExample /> };
+
+function Surface({ plane, on, children }: { plane: Plane; on: boolean; children: string }) {
+  useRack(on, { plane });
+  return on ? <p className="text-ink">{children}</p> : null;
+}
+
+function PlanesExample({ depth }: { depth: Depth }) {
+  const [work, setWork] = useState(false);
+  const [active, setActive] = useState(false);
+  const [decision, setDecision] = useState(false);
+  return (
+    <div className="flex flex-col gap-5 p-6">
+      <div className="flex gap-4">
+        <Button kind="secondary" onPress={() => setWork(!work)}>{work ? 'Lower the card' : 'Raise a card in the work'}</Button>
+        <Button kind="secondary" onPress={() => setActive(!active)}>{active ? 'Close the surface' : 'Open a surface'}</Button>
+        <Button kind="secondary" onPress={() => setDecision(!decision)}>{decision ? 'Close the decision' : 'Stack a decision'}</Button>
+      </div>
+      <FocusStage depth={depth}>
+        <div className="flex flex-col gap-4 p-4 rounded-inset bg-surface-raised">
+          <p className="text-ink">The work plane: what the app shows. One surface in front sends it far; two send it deep; a card within it sends it soft.</p>
+          <Surface plane="work" on={work}>A needs-you card</Surface>
+          <Surface plane="active" on={active}>A surface</Surface>
+          <Surface plane="decision" on={decision}>A decision</Surface>
+        </div>
+      </FocusStage>
+    </div>
+  );
+}
+
+/** The focal planes: soft, far and deep, each from what stands in front of the work. */
+export const Planes: StoryObj<{ depth: Depth }> = {
+  render: (args) => <PlanesExample {...args} />,
+  args: { depth: 'veil' },
+  argTypes: { depth: { control: 'inline-radio', options: ['veil', 'lens', 'scrim'] } },
+};

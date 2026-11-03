@@ -2,7 +2,7 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { FocusStage, useRack } from './focus.js';
+import { FocusStage, focusLevel, useRack, type Plane } from './focus.js';
 import { frontSections, FrontPage } from './front-page.js';
 import { PathTree, type PathNode } from './path-tree.js';
 import { RingProvider, useRingTarget, type RingAction } from './radial-menu.js';
@@ -24,7 +24,7 @@ const key = (el: Element, k: string, extra: KeyboardEventInit = {}) => act(() =>
 
 describe('FocusStage', () => {
   function Racks({ on }: { on: boolean }) {
-    useRack(on, { x: 10, y: 20, width: 30, height: 40 });
+    useRack(on, { hole: { x: 10, y: 20, width: 30, height: 40 } });
     return <p>Inside</p>;
   }
 
@@ -45,6 +45,40 @@ describe('FocusStage', () => {
       </FocusStage>,
     );
     expect(document.querySelector('.quill-stage')!.hasAttribute('data-racked')).toBe(false);
+  });
+
+  it('sends the work plane far for one surface, deep for two, and soft for one within the work', () => {
+    function On({ plane }: { plane: Plane }) {
+      useRack(true, { plane });
+      return null;
+    }
+    const focus = () => document.querySelector('.quill-stage')!.getAttribute('data-focus');
+    draw(
+      <FocusStage>
+        <Racks on />
+      </FocusStage>,
+    );
+    expect(focus()).toBe('far');
+    draw(
+      <FocusStage>
+        <Racks on />
+        <On plane="decision" />
+      </FocusStage>,
+    );
+    expect(focus()).toBe('deep');
+    draw(
+      <FocusStage>
+        <On plane="work" />
+      </FocusStage>,
+    );
+    expect(focus()).toBe('soft');
+    draw(
+      <FocusStage>
+        <Racks on={false} />
+      </FocusStage>,
+    );
+    expect(focus()).toBeNull();
+    expect(focusLevel([{ plane: 'work' }, { plane: 'active' }])).toBe('far');
   });
 
   it('uses the veil for a hole even when the lens was chosen, since a blurred plane can keep nothing sharp', () => {

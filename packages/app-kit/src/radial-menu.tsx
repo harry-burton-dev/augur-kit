@@ -173,7 +173,7 @@ export function RadialMenu({ label, actions, onAction, target, point, shape = 'a
   const [leaving, setLeaving] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
   const items = useRef<(HTMLButtonElement | null)[]>([]);
-  useRack(true, box, target);
+  useRack(true, { hole: box, returnTo: target });
 
   // Keep up with the subject if the page scrolls or resizes under the menu.
   useLayoutEffect(() => {

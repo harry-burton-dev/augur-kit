@@ -27,3 +27,4 @@ export { Person, People, initials, type PersonProps, type PeopleProps, type Pers
 export { Tip, type TipProps } from './tip.js';
 export { Progress, Steps, type ProgressProps, type Step } from './progress.js';
 export { Letterbox, type LetterboxProps } from './letterbox.js';
+export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
