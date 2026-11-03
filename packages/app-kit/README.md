@@ -11,6 +11,36 @@ Its parts arrive as the Lit kit's groups move to React; until then apps keep `@a
 
 No preflight: apps draw inside the shell, which already sets the page's base.
 
+## The app-frontend starter
+
+One way to mount, route, load and call (AUGUR's ADR 0054). It wraps TanStack Query, TanStack Router and openapi-fetch, which ride inside this package in the kit bundle, so an app never imports them and none of their types are part of the kit's promise.
+
+```tsx
+import { defineReactApp, placeRoutes, place, createAppClient, useAppContext, useData, DataView } from '@augur/app-kit';
+import manifest from '../manifest.json' with { type: 'json' };
+import type { paths } from './api-types.js';
+
+export const places = placeRoutes({
+  front: place('/', Front),
+  library: place('/libraries/:library', Library, { sort: ['name', 'date'] }),
+});
+
+function Library() {
+  const { library } = places.library.useParams();
+  const { sort } = places.library.useSearch();
+  const api = createAppClient<paths>(useAppContext(), { base: '/api/folio/v1', appName: manifest.name });
+  const state = useData(['library', library], () => api.get('/libraries/{id}', { params: { id: library } }), { refreshOn: ['folio.library.changed'] });
+  return <DataView state={state} loading="Loading the library">{(l) => <LibraryView library={l} sort={sort} />}</DataView>;
+}
+
+export default defineReactApp({ name: manifest.name, App: Frame, routes: places, Glance, Picker, styles, intents: { 'library.open': (p) => `/libraries/${(p as { id: string }).id}` } });
+```
+
+- `defineReactApp` is the entry's default export. Each mount gets React, `useAppContext()`, data loading and the app's places. A request (`ctx.reply`) mounts the `Picker`; `Glance` and `surfaces` are the manifest's surfaces; `styles` is added to the page once. Data is kept per floor, so the shell mounting the app again keeps it, and no floor sees another's.
+- `placeRoutes` puts the places on the address bar under wherever the shell mounted the app. Each place has `to`, `useParams`, `useSearch`, `useGo`, `useOpen` and `Link`. Search parameters are plain words, checked by the place's spec.
+- `useData(key, load, { refreshOn })` loads and keeps data; a failure to answer is retried, a refusal never. `refreshOn` names domain event topics on `ctx.bus`. `useChange(run, { refreshes })` makes a change and refreshes what it touched. `DataView` is the one loading, empty and failed state.
+- `createAppClient<paths>(ctx, { base, appName })` calls through `ctx.fetch` (token and floor included), typed from openapi-typescript's `paths`. Every failure is one `AppError`, read from an RFC 9457 problem with AUGUR's `reason` and `whoCanChange`.
+
 ## Parts
 
 Quill re-exports all of Common, so an app imports everything from `@augur/app-kit`. Its own parts are the ones only apps need:
