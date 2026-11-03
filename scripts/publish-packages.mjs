@@ -74,6 +74,13 @@ function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...opts });
 }
 
+/**
+ * A 403 from the registry: this repository may not read or write that package. GitHub Packages ties
+ * each package to the repositories given access to it, so a package first published from another
+ * repository stays closed to this one until its owner adds it (package settings → Manage Actions access).
+ */
+export const isForbidden = (err) => /E403|403 Forbidden|permission_denied/.test(String(err?.stderr ?? err?.message ?? err));
+
 function isPublished(name, version, npmrc, registry) {
   try {
     return run('npm', ['view', `${name}@${version}`, 'version', '--registry', registry, '--userconfig', npmrc]).trim() === version;
@@ -98,10 +105,19 @@ function main() {
   const tag = distTag(process.env.GITHUB_REF_NAME);
 
   const done = [];
+  // Packages this repository may not touch are skipped, so the rest (and the kit release) still go out;
+  // the Release workflow fails at its end while any are left.
+  const blocked = [];
   for (const { directory, pkg } of libraries()) {
     const name = publishedName(pkg.name, scope);
-    if (!dryRun && isPublished(name, pkg.version, npmrc, registry)) {
-      console.log(`${name}@${pkg.version} is already published`);
+    try {
+      if (!dryRun && isPublished(name, pkg.version, npmrc, registry)) {
+        console.log(`${name}@${pkg.version} is already published`);
+        continue;
+      }
+    } catch (err) {
+      if (!isForbidden(err)) throw err;
+      blocked.push(`${name}@${pkg.version}`);
       continue;
     }
     // pnpm pack applies the files list and resolves workspace: ranges; the manifest is then rewritten.
@@ -114,10 +130,22 @@ function main() {
     writeFileSync(manifestPath, `${JSON.stringify(publishedManifest({ ...packed, __directory: directory }, { scope, registry, repository }), null, 2)}\n`);
     const args = ['publish', join(out, 'package'), '--tag', tag, '--registry', registry, '--userconfig', npmrc];
     if (dryRun) args.push('--dry-run');
-    run('npm', args, { stdio: 'inherit' });
+    try {
+      run('npm', args);
+    } catch (err) {
+      if (!isForbidden(err)) throw err;
+      blocked.push(`${name}@${pkg.version}`);
+      continue;
+    }
     done.push(`${name}@${pkg.version}`);
   }
   console.log(done.length ? `Published (${tag}): ${done.join(', ')}` : 'Nothing new to publish');
+  if (blocked.length) {
+    const why = `This repository may not read or write ${blocked.join(', ')}: in each package's settings, add ${repository ?? 'this repository'} under Manage Actions access with the Write role.`;
+    console.log(`::warning::${why}`);
+    if (process.env.GITHUB_OUTPUT) writeFileSync(process.env.GITHUB_OUTPUT, `blocked=${blocked.join(' ')}\n`, { flag: 'a' });
+    else process.exitCode = 1;
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) main();

@@ -39,12 +39,16 @@ jobs:
           commit: Version packages
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      # Only a changeset that bumps a package holds the release (an empty one doesn't).
+      - name: Anything waiting to be versioned?
+        id: pending
+        run: echo "releases=$(node scripts/pending-bumps.mjs)" >> "$GITHUB_OUTPUT"
       - name: Build
-        if: steps.changesets.outputs.hasChangesets == 'false'
+        if: steps.pending.outputs.releases == '0'
         run: pnpm build
       - name: Is this kit released yet?
         id: kit
-        if: steps.changesets.outputs.hasChangesets == 'false'
+        if: steps.pending.outputs.releases == '0'
         run: |
           v=$(node -p "require('./packages/kit-bundle/package.json').version")
           if [ "$v" = "0.0.0" ] || gh release view "kit@$v" >/dev/null 2>&1; then
@@ -62,7 +66,8 @@ jobs:
         if: steps.kit.outputs.version
         run: cosign sign-blob --yes --bundle packages/kit-bundle/dist/kit.json.sigstore.json packages/kit-bundle/dist/kit.json
       - name: Publish packages
-        if: steps.changesets.outputs.hasChangesets == 'false'
+        id: publish
+        if: steps.pending.outputs.releases == '0'
         run: node scripts/publish-packages.mjs
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
@@ -79,3 +84,9 @@ jobs:
             "$out/kit-$v.tgz" "$out/kit-$v.tgz.sigstore.json" packages/kit-bundle/dist/kit.json packages/kit-bundle/dist/kit.json.sigstore.json
         env:
           GH_TOKEN: ${{ github.token }}
+      # Last, so a package this repository may not publish yet doesn't hold back the others or the kit.
+      - name: Every package published
+        if: steps.publish.outputs.blocked
+        run: |
+          echo "::error::Not published: ${{ steps.publish.outputs.blocked }}. Give this repository Write under each package's Manage Actions access, then re-run this workflow."
+          exit 1

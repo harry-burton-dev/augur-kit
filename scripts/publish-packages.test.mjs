@@ -1,7 +1,7 @@
 // node --test scripts/*.test.mjs (pnpm test:scripts)
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aliasDependencies, distTag, libraries, publishedManifest, publishedName } from './publish-packages.mjs';
+import { aliasDependencies, distTag, isForbidden, libraries, publishedManifest, publishedName } from './publish-packages.mjs';
 
 test('an @augur package publishes under the owner scope, lower-cased', () => {
   assert.equal(publishedName('@augur/mfe-sdk', 'Harry-Burton-Dev'), '@harry-burton-dev/augur-mfe-sdk');
@@ -43,4 +43,11 @@ test('main publishes as latest; a hotfix line gets its own dist-tag', () => {
 test('every package in packages/ is found', () => {
   const names = libraries().map(({ pkg }) => pkg.name);
   for (const name of ['@augur/kit-common', '@augur/app-kit', '@augur/shell-kit', '@augur/kit-bundle']) assert.ok(names.includes(name), name);
+});
+
+test('a 403 from the registry is told apart from other failures', () => {
+  assert.ok(isForbidden({ stderr: 'npm error 403 403 Forbidden - GET https://npm.pkg.github.com/x - Permission permission_denied: read_package' }));
+  assert.ok(isForbidden({ stderr: 'npm error code E403' }));
+  assert.ok(!isForbidden({ stderr: 'npm error code E404' }));
+  assert.ok(!isForbidden(new Error('ETIMEDOUT')));
 });
