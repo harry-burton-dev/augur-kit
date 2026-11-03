@@ -11,7 +11,7 @@ export { About, type AboutProps } from './about.js';
 export { More, type MoreProps } from './more.js';
 export { SelectionBar, type SelectionAction, type SelectionBarProps } from './selection-bar.js';
 export { FocusStage, FocusField, FocusItem, useRack, useDepth, focusLevel, type Depth, type Plane, type FocusLevel, type RackOptions, type Ambience, type Hole, type FocusStageProps, type FocusFieldProps, type FocusItemProps } from './focus.js';
-export { RadialMenu, RingProvider, useRingTarget, RING_MOST, type RingAction, type RingShape, type RingSubject, type RadialMenuProps, type RingProviderProps } from './radial-menu.js';
+export { RadialMenu, RingProvider, RingMore, useRingTarget, RING_MOST, RING_SLOTS, type RingAction, type RingSlot, type RingTarget, type RingShape, type RingSubject, type RadialMenuProps, type RingProviderProps, type RingMoreProps } from './radial-menu.js';
 export { PathTree, type PathNode, type PathLight, type PathTreeProps } from './path-tree.js';
 export { Reel, type ReelItem, type ReelTone, type Reveal, type ReelProps } from './reel.js';
 export { KindTile, AddTile, Tiles, type TileKind, type KindTileProps, type AddTileProps, type TilesProps } from './tiles.js';
