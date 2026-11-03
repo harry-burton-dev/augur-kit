@@ -1,0 +1,37 @@
+# AUGUR kit
+
+AUGUR's React UI kit, built and released apart from the platform (ADR 0046 in the AUGUR repository).
+
+| Package | What it is | Who uses it |
+| --- | --- | --- |
+| `@augur/kit-common` | Common: the tokens (`packages/kit-common/tokens/`), the Tailwind theme built from them, and the parts both kits share | Quill and Aerie |
+| `@augur/app-kit` | Quill: the kit apps build with | every app |
+| `@augur/shell-kit` | Aerie: the shell's own kit | the shell only |
+| `@augur/kit-bundle` | React, Common and Quill built into ready-to-load files, with `kit.json` | a deployment, which serves it at `KIT_URL` |
+
+## Work on it
+
+```sh
+pnpm install
+pnpm storybook        # the parts, at http://localhost:6007
+pnpm lint && pnpm build && pnpm typecheck && pnpm test
+pnpm changeset        # say what your change releases
+```
+
+## How it is released
+
+1. Every pull request carries a changeset. CI lints, builds, typechecks and tests it; the Storybook goes to
+   Chromatic when a part or a story changes (`CHROMATIC_PROJECT_TOKEN`).
+2. On `main`, the Release workflow keeps a **Version packages** pull request open. Merging it is the release.
+3. Each package whose version is new is published to GitHub Packages as `@harry-burton-dev/augur-<name>`.
+   AUGUR and app repositories alias it back to `@augur/<name>`.
+4. When the bundle's version is new, the workflow signs its `kit.json` with cosign keyless (the signature
+   names this repository's Release workflow on `main`) and puts the signature in the package before it is
+   published. It also makes the GitHub release `kit@<version>`, a pre-release, with `kit-<version>.tgz`,
+   `kit.json` and a signature of each.
+5. AUGUR pins one kit version in its `release/kit.json`. Its release checks the signature and serves the
+   bundle at `<KIT_URL><version>/`, and its contract tests run against it (ADR 0048).
+
+## The kit bundle
+
+See [packages/kit-bundle](packages/kit-bundle/README.md).

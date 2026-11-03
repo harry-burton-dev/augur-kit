@@ -3,17 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "AUGUR's one Storybook (ADR 0016): the React kits (Common, Quill, Aerie), with the frozen Lit kit's Storybook composed in beside them.",
+  "description": "The kit's Storybook (AUGUR's ADR 0016): Common, Quill and Aerie, published to Chromatic. The frozen Lit kit keeps its own Storybook in the AUGUR repository until SDK 2.",
   "scripts": {
     "storybook": "storybook dev -p 6007",
-    "build-storybook": "storybook build -o storybook-static",
-    "build-all": "storybook build -o storybook-static --stats-json && pnpm --filter @augur/ui-kit build-storybook && cp -r ../packages/ui-kit/storybook-static storybook-static/lit"
+    "build-storybook": "storybook build -o storybook-static --stats-json"
   },
   "devDependencies": {
     "@augur/app-kit": "workspace:*",
     "@augur/kit-common": "workspace:*",
     "@augur/shell-kit": "workspace:*",
-    "@augur/ui-kit": "workspace:*",
+    "@fontsource/jost": "5.2.8",
+    "@fontsource/nunito": "5.2.7",
     "@storybook/react-vite": "10.6.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

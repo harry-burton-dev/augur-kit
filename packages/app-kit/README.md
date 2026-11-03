@@ -1,6 +1,6 @@
 # @augur/app-kit (Quill)
 
-The React kit apps build with (ADR 0015), on [Common](../kit-common/README.md). The shell serves it, with React 19 and Common, through the import map, so it keeps the SDK's promise ([Versioning](../../../docs/versioning.md#the-react-kits-adr-0015)) and an app's bundle carries none of it.
+The React kit apps build with (ADR 0015), on [Common](../kit-common/README.md). Each kit release bundles it with React 19 and Common ([kit-bundle](../kit-bundle/README.md)); the deployment serves that bundle through the import map, so it keeps the SDK's promise ([Versioning](https://github.com/harry-burton-dev/im-platform/blob/main/docs/versioning.md#the-react-kits-adr-0015)) and an app's bundle carries none of it.
 
 Its parts arrive as the Lit kit's groups move to React; until then apps keep `@augur/ui-kit`. For an app's own layout, Tailwind with only AUGUR's tokens:
 
