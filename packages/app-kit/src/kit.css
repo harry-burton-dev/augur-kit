@@ -869,3 +869,16 @@
   .quill-tree-item-meta { flex: none; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
   .quill-tree-compact { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
 }
+
+/* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
+   loop stops (reduced-motion.test.ts in Common checks every kit). */
+@layer components {
+  @media (prefers-reduced-motion: reduce) {
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after, .quill-status[data-status='needs'][data-next] .quill-status-mark::after,
+    .quill-status[data-status='running'] .quill-status-mark::before, .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+  }
+  :root[data-motion='reduce'] {
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after, .quill-status[data-status='needs'][data-next] .quill-status-mark::after,
+    .quill-status[data-status='running'] .quill-status-mark::before, .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+  }
+}

@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
-import { Icon, IconButton, Menu } from '@augur/kit-common';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorLevel, floorMeaning, floorStack, floorTone } from './floors.js';
 import { Water } from './water.js';
 import { agentUrgency, ago, streamWords, type AgentStatus, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
@@ -19,6 +19,15 @@ const isTyping = (e: Event) => {
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 };
 
+/** An icon-only control's name, shown under it on hover and focus (Common's hover name), so an icon is never the only clue. The control carries the name itself, so this is hidden from screen readers. */
+function HoverName({ children }: { children: ReactNode }) {
+  return (
+    <span className="augur-reason augur-name" aria-hidden="true">
+      {children}
+    </span>
+  );
+}
+
 const agentWords: Record<AgentStatus, string> = { needs: 'Needs you', failed: 'Failed', running: 'Running', waiting: 'Waiting', done: 'Done', idle: 'Idle' };
 
 /**
@@ -35,7 +44,7 @@ export function Shell({ model, children }: ShellProps) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
   const root = useRef<ShellElement>(null);
   const ground = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLElement>(null);
   const place = useRef<HTMLElement>(null);
   const water = useRef<Water | null>(null);
 
@@ -79,12 +88,9 @@ export function Shell({ model, children }: ShellProps) {
         model.toggle();
         return;
       }
-      // Page Up and Page Down scroll the app first; at its top or bottom they go up or down a floor. With Alt they always do.
-      if ((e.key === 'PageUp' || e.key === 'PageDown') && model.floors.length && !model.isOpen && !e.defaultPrevented && !isTyping(e)) {
-        const up = e.key === 'PageUp';
-        const box = stage.current;
-        const atEnd = !box || (up ? box.scrollTop <= 0 : box.scrollTop + box.clientHeight >= box.scrollHeight - 1);
-        if ((e.altKey || atEnd) && model.moveFloor(up ? 'up' : 'down')) e.preventDefault();
+      // Alt with Page Up or Page Down goes up or down a floor. Page Up and Page Down alone stay the app's, to scroll.
+      if (e.altKey && (e.key === 'PageUp' || e.key === 'PageDown') && model.floors.length && !model.isOpen && !e.defaultPrevented && !isTyping(e)) {
+        if (model.moveFloor(e.key === 'PageUp' ? 'up' : 'down')) e.preventDefault();
       }
     };
     // An app's drawer took (or gave back) the right edge: the floor gauge moves to stay just left of it.
@@ -106,6 +112,7 @@ export function Shell({ model, children }: ShellProps) {
     };
   }, [model]);
 
+  const news = useNews(model);
   const mood = model.mood;
   const cap = model.caption();
   const capMood = !model.view || model.view === 'stream' ? mood : 'quiet';
@@ -164,9 +171,10 @@ export function Shell({ model, children }: ShellProps) {
           {model.card.line ? <span className="aerie-line">{model.card.line}</span> : null}
         </div>
       ) : null}
-      <div ref={stage} className="aerie-stage">
+      {/* The one main landmark: the app or screen that's open. */}
+      <main ref={stage} className="aerie-stage" aria-label={model.openNow?.name || undefined}>
         {children}
-      </div>
+      </main>
       <div
         className={`aerie-sky aerie-${mood}`}
         role="dialog"
@@ -211,8 +219,43 @@ export function Shell({ model, children }: ShellProps) {
       <div className="aerie-live" aria-live="polite">
         {model.isOpen ? `${cap.title}. ${cap.line}` : model.said}
       </div>
+      <div className="aerie-live" aria-live="polite" data-news="">
+        {news}
+      </div>
     </div>
   );
+}
+
+/**
+ * What newly needs you, in words, for a polite live region: said once when it arrives, never for
+ * what was already there when the Shell first drew (or when the stream first loaded), and never
+ * again for the same notification. Muted apps stay quiet.
+ */
+function useNews(model: ShellModel) {
+  const seen = useRef<Set<string> | null>(null);
+  const [said, setSaid] = useState('');
+  const heard = model.heard;
+  const loading = model.streamLoading;
+  useEffect(() => {
+    if (loading) return;
+    const needs = heard.filter((n) => n.level === 'needs');
+    if (!seen.current) {
+      seen.current = new Set(needs.map((n) => n.id));
+      return;
+    }
+    const known = seen.current;
+    const fresh = needs.filter((n) => !known.has(n.id));
+    for (const n of fresh) known.add(n.id);
+    if (!fresh.length) return;
+    setSaid(fresh.length === 1 ? `Needs you: ${fresh[0]!.title}, from ${model.appName(fresh[0]!.app)}` : `${fresh.length} new things need you`);
+  }, [heard, loading, model]);
+  // Cleared after a while, so the same words can be said again for the next one.
+  useEffect(() => {
+    if (!said) return;
+    const t = setTimeout(() => setSaid(''), ms('motion-hold'));
+    return () => clearTimeout(t);
+  }, [said]);
+  return said;
 }
 
 function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; mood: string; place: RefObject<HTMLElement | null> }) {
@@ -224,11 +267,9 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
     <header className="aerie-band" inert={model.isOpen}>
       <div className="aerie-left">
         {here ? (
-          <p
-            className="aerie-where"
-            aria-label={`You’re on ${here.kind === 'personal' ? 'your own floor' : here.kind === 'team' ? `${here.name}, a ${floorKindOf(here).toLowerCase()}` : here.name}`}
-          >
+          <p className="aerie-where">
             <Icon name={floorIconOf(here)} size={16} />
+            <span className="sr-only">You’re on {here.kind === 'personal' ? 'your own floor' : here.kind === 'team' ? `${here.name}, a ${floorKindOf(here).toLowerCase()}` : here.name}</span>
             <b aria-hidden="true">{here.name}</b>
           </p>
         ) : (
@@ -242,15 +283,15 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
             {model.navs.map((n) => (
               <button
                 key={n.id}
-                className="aerie-nav"
+                className="aerie-nav augur-control"
                 tabIndex={tab}
                 aria-label={n.unavailable ? `${n.label}. ${n.unavailable}` : n.current ? `${n.label}, you’re here` : n.label}
-                title={n.unavailable ?? n.label}
                 aria-current={n.current ? 'page' : undefined}
                 aria-disabled={n.unavailable ? 'true' : undefined}
                 onClick={() => !n.unavailable && !n.current && model.emit('ui-nav', { id: n.id })}
               >
                 <Icon name={n.icon} size={16} />
+                <HoverName>{n.unavailable ? `${n.label}: ${n.unavailable}` : n.label}</HoverName>
               </button>
             ))}
           </nav>
@@ -262,8 +303,9 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
           </button>
         ) : null}
       </div>
-      <button className="aerie-handle" aria-label="Open the shell" tabIndex={tab} onClick={() => model.open()}>
+      <button className="aerie-handle augur-control" aria-label="Open the shell" tabIndex={tab} onClick={() => model.open()}>
         <i />
+        <HoverName>Open the shell</HoverName>
       </button>
       {app ? (
         <p className="aerie-place">
@@ -365,7 +407,7 @@ function Dome({ model, mood }: { model: ShellModel; mood: string }) {
           return (
             <button
               key={id}
-              className={`aerie-stream${lit ? ' aerie-lit' : ''}`}
+              className={`aerie-stream augur-control${lit ? ' aerie-lit' : ''}`}
               style={style}
               tabIndex={tabIndex}
               aria-label={`Notifications: ${model.online ? streamWords(model.heard) : 'offline'}`}
@@ -376,14 +418,16 @@ function Dome({ model, mood }: { model: ShellModel; mood: string }) {
               <span className={`aerie-orb aerie-${mood}`}>
                 <i />
               </span>
+              <HoverName>Notifications</HoverName>
             </button>
           );
         }
         const fn = model.functions.find((f) => f.id === id);
         if (!fn) return null;
         return (
-          <button key={id} className={`aerie-fn${lit ? ' aerie-lit' : ''}`} style={style} tabIndex={tabIndex} aria-label={fn.label} onFocus={onFocus} onClick={() => model.openView(fn.id)}>
+          <button key={id} className={`aerie-fn augur-control${lit ? ' aerie-lit' : ''}`} style={style} tabIndex={tabIndex} aria-label={fn.label} onFocus={onFocus} onClick={() => model.openView(fn.id)}>
             <Icon name={fn.icon} />
+            <HoverName>{fn.label}</HoverName>
           </button>
         );
       })}
@@ -511,8 +555,9 @@ function Row({ model, n, muted, first, pinging }: { model: ShellModel; n: ShellN
           {a.label}
         </button>
       ))}
-      <button className="aerie-x" aria-label={`Dismiss ${n.title}`} onClick={() => model.dismiss(n.id)}>
+      <button className="aerie-x augur-control" aria-label={`Dismiss ${n.title}`} onClick={() => model.dismiss(n.id)}>
         <Icon name="close" size={16} />
+        <HoverName>Dismiss</HoverName>
       </button>
     </li>
   );
@@ -797,8 +842,8 @@ function Settings({ model }: { model: ShellModel }) {
         <span>Back, then close</span>
         {model.floors.length ? (
           <>
-            <kbd>PgUp PgDn</kbd>
-            <span>Up or down a floor, once the page is at its top or bottom (with Alt, at once)</span>
+            <kbd>Alt PgUp PgDn</kbd>
+            <span>Up or down a floor</span>
           </>
         ) : null}
       </div>
