@@ -6,4 +6,4 @@ Its Tailwind theme, Common's tokens and the shell set: `@import '@augur/shell-ki
 
 ## Parts
 
-Aerie re-exports Common. Its own parts are the shell's notices: `Toasts` (what just happened, with one way to change your mind), `AppUnavailable` (an app that is loading, failed, needs a newer AUGUR or is kept to some floors, shown and explained instead of hidden) and `Connection` (offline, reconnecting, or an ended session). Urgent things use Common's `Letterbox`. The shell loads `@augur/shell-kit/kit.css`; nothing else may.
+Aerie re-exports Common. Its own parts are the shell's notices: `Toasts` (what just happened, with one way to change your mind), `AppUnavailable` (an app that is loading, failed, needs a newer AUGUR or is kept to some floors, shown and explained instead of hidden) and `Connection` (offline, reconnecting, or an ended session). Urgent things use Common's `Letterbox`, and once stepped back wait on the edge in Common's `UrgentEdge`. The shell loads `@augur/shell-kit/kit.css`; nothing else may.
