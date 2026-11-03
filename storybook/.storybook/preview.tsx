@@ -9,6 +9,9 @@ const preview: Preview = {
   parameters: {
     layout: 'padded',
     backgrounds: { disable: true },
+    // axe on every story. A serious or critical finding fails `pnpm test` (a11y.test.tsx) and, with
+    // Storybook's test tools, the story; WCAG 2.2 AA is the bar.
+    a11y: { test: 'error', options: { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] } } },
   },
   decorators: [
     (Story) => {

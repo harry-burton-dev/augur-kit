@@ -11,6 +11,7 @@ export { cx } from './cx.js';
 export { Icon, icons, iconNames, type IconName, type IconProps } from './icon.js';
 export { Button, type ButtonKind, type ButtonProps } from './button.js';
 export { IconButton, type IconButtonProps } from './icon-button.js';
+export { AskTwice, type AskTwiceProps } from './ask-twice.js';
 export { useReason, kitDev } from './reason.js';
 export { type FieldState, type FieldCheck, type FieldProps } from './field.js';
 export { TextField, type TextFieldProps } from './text-field.js';

@@ -20,6 +20,9 @@ pnpm lint && pnpm build && pnpm typecheck && pnpm test
 pnpm changeset        # say what your change releases
 ```
 
+`pnpm test` also draws every story and runs axe on it (`storybook/a11y.test.tsx`): a serious or critical
+finding fails. Colour contrast needs a real browser, so it is checked in the Storybook's Accessibility panel.
+
 ## How it is released
 
 1. Every pull request carries a changeset. CI lints, builds, typechecks and tests it; the Storybook goes to

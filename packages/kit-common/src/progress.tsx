@@ -1,4 +1,4 @@
-import { ProgressBar } from 'react-aria-components';
+import { Label, ProgressBar } from 'react-aria-components';
 import { cx } from './cx.js';
 import { Icon } from './icon.js';
 
@@ -25,7 +25,7 @@ export function Progress({ label, value, valueText, className }: ProgressProps) 
       {({ percentage, valueText: said }) => (
         <>
           <span className="augur-progress-head">
-            <span>{label}</span>
+            <Label>{label}</Label>
             {known ? <span className="augur-progress-value">{said}</span> : null}
           </span>
           <span className="augur-bar">
