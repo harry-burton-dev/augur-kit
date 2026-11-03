@@ -1,5 +1,21 @@
 # @augur/kit-common
 
+## 0.3.0
+
+### Minor Changes
+
+- b40a02b: Focal planes and the light language.
+
+  - Breaking: the rack focus tokens are renamed for the plane they draw. `depth-blur`, `depth-saturate`, `depth-scale` and `depth-tint` are now `focus-far-blur`, `focus-far-saturate`, `focus-far-scale` and `focus-far-tint`, with the same values. Read the new names in any CSS of your own.
+  - New tokens: `focus-far-dim`; the deep plane, two surfaces behind focus (`focus-deep-blur`, `-saturate`, `-dim`, `-scale`); the soft plane, for something risen within the app (`focus-soft-blur`, `-saturate`, `-dim`, `-scale`); `motion-rack` and `motion-pull`, named moves that point at `motion-slow` and `motion-calm`; and `pattern-unavailable`, the hatching on something that can't be used.
+  - Breaking (Quill): `useRack(active, hole, returnTo)` is now `useRack(active, { hole, returnTo, plane })`. `plane` is the `Plane` the surface stands on (`ground`, `work`, `active` or `decision`) and is `active` unless it says otherwise. `FocusStage` sends the app's plane far for one surface in front of it, deep for two or more and soft for one within the work, and says which in `data-focus`. Rack focus now also dims the plane rather than only blurring it, and racks on `motion-rack`.
+  - Quill: `FocusField` is `quiet` by default (PDR-010, amendment 1): ambient things lose colour and light but are not blurred, so they stay readable. Pass `ambience="soft"` for the old look.
+  - Common: a new `Signal` part, the light language: `streak` (a count), `bloom` (needs you), `flicker` (changed), `ember` (going stale), `beacon` (urgent, leads to the letterbox) and `shadow` (unavailable, with the reason). Every signal carries its words in `label`, since light alone fails people who can't tell the colours apart. Its loops stop under reduced motion.
+
+- a2384cc: Letterbox: urgent is never dismissed (PDR-009). This changes its API: `onClose` is now `onStepBack`. Esc, and a new Step back control, put the item back on the edge; without `onStepBack`, Esc does nothing and the item must be answered first. Rename `onClose` to `onStepBack` where you use it.
+
+  Letterbox also gains `acknowledged` and `onAcknowledge` (an acknowledgement chip in the bottom bar, and the key A; acknowledging is not resolving), `bars` (what the bars above and below the frame say) and `queue` ("1 of 2 · next: …" in the top bar). Two new parts: `Explain`, the four-part explanation (what happened, why it matters, what you can do, who else can act), and `UrgentEdge`, the stepped-back urgent item on the edge rule, a button that reopens it. New tokens `letterbox-min-frame` (the frame never gets shorter than this) and `edge-rule`. `Heading` takes an optional `summaryId`.
+
 ## 0.2.0
 
 ### Minor Changes
