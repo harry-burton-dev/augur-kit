@@ -1,6 +1,6 @@
 {
   "name": "@augur/shell-kit",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Aerie: the shell's own React kit, on Common. Only the shell uses it: it is published for the shell to build with, but it is not in the kit bundle, not in the import map and not part of the SDK promise.",
