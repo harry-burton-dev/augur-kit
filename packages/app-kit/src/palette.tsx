@@ -47,7 +47,7 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
   useEffect(() => {
     if (open) setOpener(document.activeElement instanceof HTMLElement ? document.activeElement : undefined);
   }, [open]);
-  useRack(open, undefined, opener);
+  useRack(open, { returnTo: opener });
   useEffect(() => setAt(0), [query, open]);
   const chosen = items[Math.min(at, items.length - 1)];
 

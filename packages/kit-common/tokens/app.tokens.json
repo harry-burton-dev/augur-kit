@@ -1,5 +1,5 @@
 {
-  "$description": "Quill, the app kit: the rail and drawer every app frame is built from, and depth and focus (PDR-010). Edit tokens here only; scripts/build-tokens.mjs generates everything else.",
+  "$description": "Quill, the app kit: the rail and drawer every app frame is built from, and depth and focus (PDR-010): the planes an app racks back to (soft, far, deep) and its named moves. Edit tokens here only; scripts/build-tokens.mjs generates everything else.",
   "structure": {
     "measure-rail": {
       "$value": "240px",
@@ -33,25 +33,70 @@
     }
   },
   "depth": {
-    "depth-blur": {
+    "focus-far-blur": {
       "$value": "8px",
       "$type": "dimension",
-      "$description": "Rack focus (PDR-010): how far the out-of-focus plane blurs when focus moves to an active surface (a dialog, the radial menu, the palette). Strips fine detail; the layout stays where it was, so you keep your bearings."
+      "$description": "Rack focus (PDR-010), the far plane: how far the app's work blurs when one surface takes focus in front of it (a dialog, the radial menu, the palette). Strips fine detail; the layout stays where it was, so you keep your bearings."
     },
-    "depth-saturate": {
+    "focus-far-saturate": {
       "$value": "0.35",
       "$type": "number",
-      "$description": "Rack focus: how much colour the out-of-focus plane keeps. Lowering saturation dials back peripheral noise without the black of a scrim."
+      "$description": "The far plane: how much colour the app's work keeps while one surface has focus. Less colour dials back peripheral noise without the black of a scrim."
     },
-    "depth-scale": {
+    "focus-far-dim": {
+      "$value": "0.82",
+      "$type": "number",
+      "$description": "The far plane: how bright the app's work stays while one surface has focus. Dimmed with light, never a black scrim."
+    },
+    "focus-far-scale": {
       "$value": "0.995",
       "$type": "number",
-      "$description": "Depth decoupling: the out-of-focus plane shrinks this much, as a lens does when it refocuses on something closer."
+      "$description": "The far plane shrinks this much, as a lens does when it refocuses on something closer."
     },
-    "depth-tint": {
+    "focus-far-tint": {
       "$value": "rgba(28, 34, 44, 0.1)",
       "$type": "color",
-      "$description": "The faint slate the rack focus veil adds over the out-of-focus plane, so text behind it never competes. A tenth of slate-deep: never a scrim."
+      "$description": "The faint slate the rack veil adds over a racked plane, so text behind it never competes. A tenth of slate-deep: never a scrim."
+    },
+    "focus-deep-blur": {
+      "$value": "14px",
+      "$type": "dimension",
+      "$description": "Rack focus, the deep plane: how far the app's work blurs when two surfaces are stacked in front of it (a dialog opened from the palette, a decision over a menu). Further back than the far plane."
+    },
+    "focus-deep-saturate": {
+      "$value": "0.2",
+      "$type": "number",
+      "$description": "The deep plane: how much colour the app's work keeps two planes behind focus. Less than the far plane."
+    },
+    "focus-deep-dim": {
+      "$value": "0.74",
+      "$type": "number",
+      "$description": "The deep plane: how bright the app's work stays two planes behind focus. Darker than the far plane, still no scrim."
+    },
+    "focus-deep-scale": {
+      "$value": "0.99",
+      "$type": "number",
+      "$description": "The deep plane shrinks this much, a little further than the far plane."
+    },
+    "focus-soft-blur": {
+      "$value": "2.7px",
+      "$type": "dimension",
+      "$description": "Rack focus, the soft plane: the light blur, about a third of the far plane's, when something rises within the app's own plane (a needs-you card from its phrase). The app stays close behind it."
+    },
+    "focus-soft-saturate": {
+      "$value": "0.7",
+      "$type": "number",
+      "$description": "The soft plane: how much colour the app keeps while something in its own plane has focus."
+    },
+    "focus-soft-dim": {
+      "$value": "0.9",
+      "$type": "number",
+      "$description": "The soft plane: how bright the app stays while something in its own plane has focus."
+    },
+    "focus-soft-scale": {
+      "$value": "0.998",
+      "$type": "number",
+      "$description": "The soft plane shrinks this little, a third of the far plane's step back."
     },
     "ambient-blur": {
       "$value": "0.8px",
@@ -72,6 +117,19 @@
       "$value": "0.66",
       "$type": "number",
       "$description": "Navigation path (PDR-010): the opacity of a tree's rows beside the path you took. The path stays lit at full strength. 0.66 keeps dimmed words at 4.5:1 on slate."
+    }
+  },
+  "moves": {
+    "$description": "Quill's named moves, each an alias of one of Common's durations, so a change of pace is made once.",
+    "motion-rack": {
+      "$value": "{motion.motion-slow}",
+      "$type": "duration",
+      "$description": "Rack focus: how long the app takes to go out of focus, or come back, when a surface takes focus (a drawer, the palette, a dialog). Common's motion-slow."
+    },
+    "motion-pull": {
+      "$value": "{motion.motion-calm}",
+      "$type": "duration",
+      "$description": "Focus pull: how long something that needs you takes to pull focus to itself, and the rest to step back. Common's motion-calm."
     }
   }
 }

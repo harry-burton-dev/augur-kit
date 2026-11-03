@@ -120,29 +120,37 @@
   .quill-front-search { align-self: center; width: min(var(--measure-glance), 100%); }
   .quill-front-section[data-tone='action'] > .quill-section-title { color: var(--green); }
 
-  /* Depth and focus (PDR-010). The stage holds the app's plane and the rack that takes it out of focus. */
-  .quill-stage { position: relative; display: flex; flex-direction: column; min-height: 100%; isolation: isolate; }
+  /* Depth and focus (PDR-010). The stage holds the app's plane and the rack that takes it out of focus.
+     How far back the plane goes is one set of variables: far for one surface in front, deep for two or
+     more (or a Common dialog over a rack), soft for something risen within the app's own plane. */
+  .quill-stage {
+    position: relative; display: flex; flex-direction: column; min-height: 100%; isolation: isolate;
+    --plane-blur: var(--focus-far-blur); --plane-saturate: var(--focus-far-saturate); --plane-dim: var(--focus-far-dim); --plane-scale: var(--focus-far-scale);
+  }
+  .quill-stage[data-focus='soft'] { --plane-blur: var(--focus-soft-blur); --plane-saturate: var(--focus-soft-saturate); --plane-dim: var(--focus-soft-dim); --plane-scale: var(--focus-soft-scale); }
+  .quill-stage[data-focus='deep'],
+  body:has(.augur-veil) .quill-stage[data-racked] { --plane-blur: var(--focus-deep-blur); --plane-saturate: var(--focus-deep-saturate); --plane-dim: var(--focus-deep-dim); --plane-scale: var(--focus-deep-scale); }
   .quill-plane {
     display: flex; flex-direction: column; flex: 1 0 auto; transform-origin: 50% 40%;
-    transition: transform var(--motion-calm) var(--ease-out), filter var(--motion-calm) var(--ease-out);
+    transition: transform var(--motion-rack) var(--ease-out), filter var(--motion-rack) var(--ease-out);
   }
   .quill-plane > .quill-frame { flex: 1 0 auto; }
   /* Depth decoupling: the out-of-focus plane shrinks a touch, kept on the GPU so a big page never repaints. */
   .quill-stage[data-racked] > .quill-plane,
-  body:has(.augur-veil, .quill-palette-veil) .quill-stage > .quill-plane { transform: translateZ(0) scale(var(--depth-scale)); will-change: transform; }
-  /* Lens: the plane itself loses detail and colour. */
+  body:has(.augur-veil, .quill-palette-veil) .quill-stage > .quill-plane { transform: translateZ(0) scale(var(--plane-scale)); will-change: transform; }
+  /* Lens: the plane itself loses detail, colour and light. */
   .quill-stage[data-depth='lens'][data-racked] > .quill-plane,
-  body:has(.augur-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: blur(var(--depth-blur)) saturate(var(--depth-saturate)); will-change: transform, filter; }
-  /* Veil (Harry's): a layer over the plane blurs and desaturates what is behind it, with a hole for a subject. */
+  body:has(.augur-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: blur(var(--plane-blur)) saturate(var(--plane-saturate)) brightness(var(--plane-dim)); will-change: transform, filter; }
+  /* Veil (Harry's): a layer over the plane blurs, desaturates and dims what is behind it, with a hole for a subject. */
   .quill-rack {
     position: fixed; inset: 0; z-index: var(--layer-overlay); pointer-events: none; opacity: 0; visibility: hidden;
-    transition: opacity var(--motion-calm) var(--ease-out), visibility var(--motion-calm) step-end;
+    transition: opacity var(--motion-rack) var(--ease-out), visibility var(--motion-rack) step-end;
   }
-  .quill-stage[data-racked] > .quill-rack { opacity: 1; visibility: visible; transition: opacity var(--motion-calm) var(--ease-out), visibility var(--motion-calm) step-start; }
-  .quill-stage[data-depth='veil'] > .quill-rack { background: var(--depth-tint); backdrop-filter: blur(var(--depth-blur)) saturate(var(--depth-saturate)); transform: translateZ(0); will-change: opacity; }
+  .quill-stage[data-racked] > .quill-rack { opacity: 1; visibility: visible; transition: opacity var(--motion-rack) var(--ease-out), visibility var(--motion-rack) step-start; }
+  .quill-stage[data-depth='veil'] > .quill-rack { background: var(--focus-far-tint); backdrop-filter: blur(var(--plane-blur)) saturate(var(--plane-saturate)) brightness(var(--plane-dim)); transform: translateZ(0); will-change: opacity; }
   .quill-stage[data-depth='scrim'] > .quill-rack { background: var(--veil); }
-  body:has(.quill-palette-veil) .quill-stage:not([data-depth='lens']) > .quill-rack { opacity: 1; visibility: visible; transition: opacity var(--motion-calm) var(--ease-out), visibility var(--motion-calm) step-start; }
-  body:has(.quill-palette-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: blur(var(--depth-blur)) saturate(var(--depth-saturate)); }
+  body:has(.quill-palette-veil) .quill-stage:not([data-depth='lens']) > .quill-rack { opacity: 1; visibility: visible; transition: opacity var(--motion-rack) var(--ease-out), visibility var(--motion-rack) step-start; }
+  body:has(.quill-palette-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: blur(var(--plane-blur)) saturate(var(--plane-saturate)) brightness(var(--plane-dim)); }
   .quill-rack[data-hole] {
     mask-image: linear-gradient(var(--shade) 0 0), linear-gradient(var(--shade) 0 0);
     mask-size: 100% 100%, var(--hole-w) var(--hole-h);
@@ -150,11 +158,11 @@
     mask-repeat: no-repeat; mask-composite: exclude;
   }
   /* Common's dialogs over a Quill app rack it too, rather than laying a scrim over it. */
-  body:has(.quill-stage[data-depth='veil']) .augur-veil { background: var(--depth-tint); backdrop-filter: blur(var(--depth-blur)) saturate(var(--depth-saturate)); }
+  body:has(.quill-stage[data-depth='veil']) .augur-veil { background: var(--focus-far-tint); backdrop-filter: blur(var(--focus-far-blur)) saturate(var(--focus-far-saturate)) brightness(var(--focus-far-dim)); }
   body:has(.quill-stage[data-depth='lens']) .augur-veil { background: transparent; backdrop-filter: none; }
 
   /* Focus pull: while one thing in a field is pulled, the rest sit ambient. Hover or focus brings one back at once. */
-  .quill-focus-item { transition: filter var(--motion-slow) var(--ease-out), opacity var(--motion-slow) var(--ease-out); }
+  .quill-focus-item { transition: filter var(--motion-pull) var(--ease-out), opacity var(--motion-pull) var(--ease-out); }
   .quill-field[data-pulling] .quill-focus-item:not([data-focus='pulled']),
   .quill-focus-item[data-focus='ambient'] { filter: blur(var(--ambient-blur)) saturate(var(--ambient-saturate)) brightness(var(--ambient-brightness)); }
   .quill-field[data-ambience='quiet'][data-pulling] .quill-focus-item:not([data-focus='pulled']),
@@ -355,7 +363,7 @@
 @keyframes quill-ring-grow { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
 @keyframes quill-breathe { 0%, 100% { opacity: 0.6; transform: scaleY(0.94); } 50% { opacity: 1; transform: scaleY(1); } }
 @keyframes quill-summon {
-  0% { opacity: 0; transform: translateX(calc(var(--reel-card) * -1)) scaleX(1.3); filter: blur(var(--depth-blur)); }
+  0% { opacity: 0; transform: translateX(calc(var(--reel-card) * -1)) scaleX(1.3); filter: blur(var(--focus-far-blur)); }
   12% { opacity: 1; }
   64% { transform: translateX(var(--space-3)); filter: none; }
   82% { transform: translateX(calc(var(--space-1) * -1)); }
