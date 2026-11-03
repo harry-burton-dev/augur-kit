@@ -83,4 +83,8 @@
 @media (prefers-reduced-motion: reduce) {
   .aerie-menu, .aerie-menu * { transition: none !important; animation: none !important; }
 }
+/* AUGUR's own Reduce motion switch does the same as the system's. */
+:root[data-motion='reduce'] {
+  .aerie-menu, .aerie-menu * { transition: none !important; animation: none !important; }
+}
 .aerie-menu .aerie-bubble { width: 40px; height: 40px; }

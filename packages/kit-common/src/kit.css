@@ -464,3 +464,19 @@
 @keyframes augur-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes augur-rise-far { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes augur-rise { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
+   loop stops. A spinner stays a still arc and a running bar a still one; each still says it's busy
+   in words. reduced-motion.test.ts checks that every infinite animation is stopped here. */
+@layer components {
+  @media (prefers-reduced-motion: reduce) {
+    .augur-button[data-kind='danger'][data-armed]::after, .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
+    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after { animation: none; }
+    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
+  }
+  :root[data-motion='reduce'] {
+    .augur-button[data-kind='danger'][data-armed]::after, .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
+    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after { animation: none; }
+    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
+  }
+}

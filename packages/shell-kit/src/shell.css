@@ -143,7 +143,7 @@
 .aerie-text b { font-weight: 400; font-size: var(--type-body); line-height: var(--leading-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aerie-text span, .aerie-meta { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aerie-meta { flex: none; font-variant-numeric: tabular-nums; }
-.aerie-x { flex: none; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; }
+.aerie-x { position: relative; flex: none; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; }
 .aerie-x:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .aerie-note { margin: 0; padding: var(--space-6) var(--space-4); text-align: center; color: var(--ink-muted); }
 .aerie-note.aerie-error { color: var(--danger); }
@@ -248,19 +248,31 @@
 .aerie-back:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .aerie-back:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--focus); }
 .aerie-navs { flex: none; display: flex; gap: var(--space-2); }
-.aerie-nav { width: var(--space-5); height: var(--space-5); display: grid; place-items: center; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); color: var(--ink); transition: background var(--motion-quick), border-color var(--motion-quick); }
+.aerie-nav { position: relative; width: var(--space-5); height: var(--space-5); display: grid; place-items: center; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); color: var(--ink); transition: background var(--motion-quick), border-color var(--motion-quick); }
 .aerie-nav:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .aerie-nav:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--focus); }
 .aerie-nav[aria-current] { border-color: var(--floor-mark, var(--ink)); color: var(--floor-mark, var(--ink)); }
 .aerie-nav[aria-disabled="true"] { color: var(--ink-muted); opacity: 0.5; cursor: not-allowed; }
 .aerie-nav[aria-disabled="true"]:hover { background: none; }
 @media (max-width: 640px) { .aerie-mark span, .aerie-back span, .aerie-place span { display: none; } .aerie-dome > button { left: calc(50% + var(--x) * 0.6); } }
+/* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): nothing travels and every loop stops. */
 @media (prefers-reduced-motion: reduce) {
   .aerie-shell[data-open] .aerie-stage, .aerie-shell[data-open] .aerie-ground, .aerie-fade, .aerie-shell[data-open] .aerie-fade { transform: none; }
   .aerie-dome > button, .aerie-shell[data-open] .aerie-dome > button { transform: translate(-50%, -50%); transition: opacity var(--motion-base); }
-  .aerie-thread::after, .aerie-orb.aerie-needs::after { animation: none; }
   .aerie-view { animation: none; }
   .aerie-card .aerie-name, .aerie-card .aerie-kick, .aerie-card .aerie-line { animation: none; }
+  /* every loop stops (reduced-motion.test.ts) */
+  .aerie-status.aerie-needs .aerie-point::after, .aerie-orb.aerie-needs::after, .aerie-thread::after, .aerie-row.aerie-needs.aerie-first .aerie-lead::after,
+  .aerie-skel, .aerie-agent[data-status='needs'][data-next] i::after, .aerie-agent[data-status='running'] i::before { animation: none; }
+}
+:root[data-motion='reduce'] {
+  .aerie-shell[data-open] .aerie-stage, .aerie-shell[data-open] .aerie-ground, .aerie-fade, .aerie-shell[data-open] .aerie-fade { transform: none; }
+  .aerie-dome > button, .aerie-shell[data-open] .aerie-dome > button { transform: translate(-50%, -50%); transition: opacity var(--motion-base); }
+  .aerie-view { animation: none; }
+  .aerie-card .aerie-name, .aerie-card .aerie-kick, .aerie-card .aerie-line { animation: none; }
+  /* every loop stops (reduced-motion.test.ts) */
+  .aerie-status.aerie-needs .aerie-point::after, .aerie-orb.aerie-needs::after, .aerie-thread::after, .aerie-row.aerie-needs.aerie-first .aerie-lead::after,
+  .aerie-skel, .aerie-agent[data-status='needs'][data-next] i::after, .aerie-agent[data-status='running'] i::before { animation: none; }
 }
 
 /* the water, inside the ground */

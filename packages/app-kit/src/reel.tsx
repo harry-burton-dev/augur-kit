@@ -118,8 +118,7 @@ function ReelCard({ item, front, landing, onFront }: { item: ReelItem; front: bo
         className={cx('quill-reel-card', landing ? 'quill-reel-landing' : undefined)}
         data-reel-id={item.id}
         data-front={front ? '' : undefined}
-        aria-label={`${item.title}${item.when ? `, ${item.when}` : ''}${item.from ? `, from ${item.from}` : ''}`}
-        {...ring}
+                {...ring}
         onKeyDown={(e) => {
           keys(e);
           if (!e.defaultPrevented && e.key === 'Enter') {
@@ -133,6 +132,7 @@ function ReelCard({ item, front, landing, onFront }: { item: ReelItem; front: bo
         {item.when ? (
           <span className="quill-reel-when" data-urgent={item.urgent ? '' : undefined}>
             {item.when}
+            <span className="quill-sr">, </span>
           </span>
         ) : null}
         {item.art ? (
@@ -141,6 +141,8 @@ function ReelCard({ item, front, landing, onFront }: { item: ReelItem; front: bo
           </span>
         ) : null}
         <span className="quill-reel-title">{item.title}</span>
+        {/* Its name is its own words, in the order they show, so saying what you see works; who it's from is read after. */}
+        {item.from ? <span className="quill-sr">, from {item.from}</span> : null}
       </button>
     </FocusItem>
   );
