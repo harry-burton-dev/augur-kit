@@ -138,6 +138,10 @@
       "$value": "20px",
       "$type": "dimension",
       "$description": "Backdrop blur on panes, raised surfaces and overlays."
+    },
+    "pattern-unavailable": {
+      "$value": "repeating-linear-gradient(135deg, {color.hairline-strong} 0 1px, transparent 1px {space.space-1})",
+      "$description": "The fine hatching on something unavailable (a Signal's shadow, an action that can't be taken): it stays where it is and looks closed, and its words say why. A background, never the only cue."
     }
   },
   "radius": {

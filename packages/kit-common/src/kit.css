@@ -9,6 +9,44 @@
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
 
+/* Signal: the light language (streak, bloom, flicker, ember, beacon, shadow). The light is decoration and
+   the words carry the meaning, so nothing here is the only cue. Loops stop under reduced motion. */
+@layer components {
+  .augur-signal { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .augur-signal-light { position: relative; flex: none; width: var(--space-2); height: var(--space-2); border-radius: var(--radius-pill); background: var(--signal-light, var(--ink)); }
+  .augur-signal-count { font-weight: var(--weight-display); font-variant-numeric: tabular-nums; }
+  .augur-signal-more { color: var(--ink-muted); }
+  .augur-signal[data-kind='streak'] { --signal-light: var(--ink); }
+  .augur-signal[data-kind='streak'] .augur-signal-light {
+    width: calc(var(--space-2) * var(--signal-count, 1)); height: 1px; border-radius: 0;
+    background: linear-gradient(90deg, transparent, var(--light), transparent);
+  }
+  .augur-signal[data-kind='bloom'] { --signal-light: var(--green); }
+  .augur-signal[data-kind='bloom'] .augur-signal-light { box-shadow: 0 0 var(--space-2) var(--green); }
+  .augur-signal[data-kind='bloom'] .augur-signal-light::after,
+  .augur-signal[data-kind='beacon'] .augur-signal-light::after {
+    content: ''; position: absolute; inset: -2px; border-radius: inherit; border: 1px solid var(--signal-light);
+    animation: augur-ping var(--motion-ping) var(--ease-ping) infinite;
+  }
+  .augur-signal[data-kind='flicker'] { --signal-light: var(--info); }
+  .augur-signal[data-kind='flicker'] .augur-signal-light { animation: augur-signal-flicker var(--motion-calm) var(--ease-standard) both; }
+  .augur-signal[data-kind='ember'] { --signal-light: var(--warning); }
+  .augur-signal[data-kind='ember'] .augur-signal-light { animation: augur-signal-ember var(--motion-drift) var(--ease-standard) infinite; }
+  .augur-signal[data-kind='beacon'] { --signal-light: var(--danger); }
+  .augur-signal[data-kind='beacon'] .augur-signal-light { box-shadow: 0 0 var(--space-3) var(--danger); }
+  .augur-signal[data-kind='beacon'] .augur-signal-light::after { --ping-scale: 1.9; }
+  .augur-signal[data-kind='shadow'] { color: var(--ink-muted); }
+  .augur-signal[data-kind='shadow'] .augur-signal-light { background: var(--pattern-unavailable); border: 1px dashed var(--hairline-strong); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .augur-signal .augur-signal-light, .augur-signal .augur-signal-light::after { animation: none; }
+  }
+  :root[data-motion='reduce'] .augur-signal .augur-signal-light, :root[data-motion='reduce'] .augur-signal .augur-signal-light::after { animation: none; }
+}
+
+@keyframes augur-signal-flicker { 0%, 30%, 60% { opacity: 1; } 15%, 45% { opacity: 0.3; } 100% { opacity: 1; } }
+@keyframes augur-signal-ember { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
 @layer components {
   /* Buttons: one shape, five kinds. */
   /* No browser button look: each kind draws its own. */
