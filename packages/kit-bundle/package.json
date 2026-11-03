@@ -1,0 +1,32 @@
+{
+  "name": "@augur/kit-bundle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The kit as a deployment serves it (ADR 0048): React, Common and Quill as ready-to-load ES modules with their CSS, and a kit.json naming the import map entries and each file's hash.",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./kit.json": "./dist/kit.json"
+  },
+  "files": [
+    "dist",
+    "index.js",
+    "index.d.ts"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test build.test.mjs"
+  },
+  "dependencies": {
+    "@augur/app-kit": "workspace:*",
+    "@augur/kit-common": "workspace:*"
+  },
+  "devDependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "vite": "^7.3.7"
+  }
+}

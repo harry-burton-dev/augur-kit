@@ -1,0 +1,55 @@
+name: Storybook
+# The kit's Storybook, published to Chromatic (AUGUR's ADR 0016), only when a part, a token or a story
+# changes: on a pull request, or on the push to main that brings it in. Chromatic hosts each build,
+# links it from the pull request, and shows what looks different there to accept or deny. TurboSnap
+# (--only-changed) snapshots only the stories whose code changed, to stay inside the free tier.
+on:
+  pull_request:
+    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml']
+  push:
+    branches: [main]
+    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml']
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  chromatic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Can the Storybook be published?
+        id: kits
+        run: |
+          if [ -z "$CHROMATIC_PROJECT_TOKEN" ]; then
+            echo "::notice title=Storybook not published::The CHROMATIC_PROJECT_TOKEN repository secret isn't set, so nothing goes to Chromatic. A repository admin adds it in Settings, Secrets and variables, Actions."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+      - if: steps.kits.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - if: steps.kits.outputs.run == 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.kits.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.kits.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.kits.outputs.run == 'true'
+        run: pnpm --filter @augur/storybook^... build
+      # --stats-json (in build-storybook) tells TurboSnap which stories each changed file reaches.
+      - if: steps.kits.outputs.run == 'true'
+        run: pnpm --filter @augur/storybook build-storybook
+      # A pull request's visual changes are accepted or denied in Chromatic, on its own check; this
+      # job only fails if the build can't be published. Main's build is the new baseline.
+      - if: steps.kits.outputs.run == 'true'
+        working-directory: storybook
+        run: pnpm exec chromatic --storybook-build-dir storybook-static --only-changed --exit-zero-on-changes --auto-accept-changes main
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
