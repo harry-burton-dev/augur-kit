@@ -138,6 +138,10 @@
       "$value": "20px",
       "$type": "dimension",
       "$description": "Backdrop blur on panes, raised surfaces and overlays."
+    },
+    "pattern-unavailable": {
+      "$value": "repeating-linear-gradient(135deg, {color.hairline-strong} 0 1px, transparent 1px {space.space-1})",
+      "$description": "The fine hatching on something unavailable (a Signal's shadow, an action that can't be taken): it stays where it is and looks closed, and its words say why. A background, never the only cue."
     }
   },
   "radius": {
@@ -297,6 +301,16 @@
       "$value": "2.39",
       "$type": "number",
       "$description": "Urgent is letterboxed (PDR-009): the width-to-height ratio of the frame urgent and important things are shown in, the cinema's 2.39:1. Everything outside it steps back behind the scrim."
+    },
+    "letterbox-min-frame": {
+      "$value": "480px",
+      "$type": "dimension",
+      "$description": "The shortest a letterbox frame gets. On a small or narrow screen the frame holds this height rather than shrink its text to keep the ratio: legibility beats the ratio."
+    },
+    "edge-rule": {
+      "$value": "{space.space-5}",
+      "$type": "dimension",
+      "$description": "The height of the edge rule at the top of the screen, where an urgent item waits (UrgentEdge) once it is stepped back from the letterbox. The same as space-5."
     }
   },
   "tracking": {

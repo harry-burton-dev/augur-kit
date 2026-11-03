@@ -27,4 +27,7 @@ export { Choice, Segmented, type ChoiceOption, type ChoiceProps, type SegmentOpt
 export { Person, People, initials, type PersonProps, type PeopleProps, type PersonTone } from './person.js';
 export { Tip, type TipProps } from './tip.js';
 export { Progress, Steps, type ProgressProps, type Step } from './progress.js';
-export { Letterbox, type LetterboxProps } from './letterbox.js';
+export { Letterbox, type LetterboxProps, type LetterboxBars, type LetterboxQueue, type LetterboxAcknowledgement } from './letterbox.js';
+export { Explain, type ExplainProps } from './explain.js';
+export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
+export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';

@@ -1,4 +1,15 @@
-import { useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import {
+  columnFilteringFeature,
+  createFilteredRowModel,
+  createSortedRowModel,
+  globalFilteringFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
+  type ColumnDef,
+  type FilterFn,
+} from '@tanstack/react-table';
 import {
   Cell,
   Column,
@@ -8,6 +19,8 @@ import {
   Table as AriaTable,
   TableBody,
   TableHeader,
+  TableLayout,
+  Virtualizer,
   Checkbox as AriaCheckbox,
   type Selection,
   type SortDescriptor,
@@ -222,14 +235,77 @@ export interface TableProps<R extends TableRow = TableRow> {
   onRetry?: () => void;
   /** Buttons in the bar, before the filter. */
   actions?: ReactNode;
+  /**
+   * For long lists: draw only the rows in view (React Aria's virtualizer), so
+   * thousands of rows stay quick. Rows keep one line at the density's fixed
+   * height (`wrap` columns truncate instead of wrapping) and the columns share
+   * the width, the first taking the most. The table scrolls with the page, or
+   * inside a container whose height you bound. Off by default; loading, error
+   * and empty states look the same either way.
+   */
+  virtual?: boolean;
   className?: string;
+}
+
+/** Row and header heights in px for the virtualizer; they match `.quill-table-cell` and `.quill-table-head` in kit.css. */
+const ROW_HEIGHT = { default: 56, compact: 40 } as const;
+const HEAD_HEIGHT = 44;
+/** In a virtual table: the first column's share of the width, and the selection column's own width (its box and padding). */
+const PRIMARY_WIDTH = '40%';
+const SELECT_WIDTH = 52;
+
+/** Filtering then sorting, from TanStack Table's row model. None of its types leave this file. */
+const rowFeatures = tableFeatures({
+  columnFilteringFeature,
+  globalFilteringFeature,
+  filteredRowModel: createFilteredRowModel(),
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+});
+type RowFeatures = typeof rowFeatures;
+
+/** The rows to show: those matching the (lower-cased) filter, in the sort's order; ties keep the given order. */
+function useShownRows<R extends TableRow>(rows: R[], columns: TableColumn<R>[], sort: TableSort | null, q: string): R[] {
+  const defs = useMemo(
+    () =>
+      columns.map(
+        (c): ColumnDef<RowFeatures, R> => ({
+          id: c.key,
+          accessorFn: (row: R) => row[c.key] as never,
+          sortFn: (a, b) => compareBy(c, a.original, b.original),
+          sortUndefined: false,
+        }),
+      ),
+    [columns],
+  );
+  const matches = useCallback<FilterFn<RowFeatures, R>>(
+    (row, id, value: string) => {
+      const c = columns.find((x) => x.key === id);
+      const v = row.original[id];
+      return (c?.text ? c.text(v, row.original) : String(v ?? '')).toLowerCase().includes(value);
+    },
+    [columns],
+  );
+  const sortKey = sort && columns.some((c) => c.key === sort.key) ? sort.key : undefined;
+  const desc = sort?.dir === 'desc';
+  const sorting = useMemo(() => (sortKey ? [{ id: sortKey, desc }] : []), [sortKey, desc]);
+  const table = useTable({
+    features: rowFeatures,
+    columns: defs,
+    data: rows,
+    getRowId: (row) => row.id,
+    globalFilterFn: matches,
+    state: { sorting, globalFilter: q || undefined },
+  });
+  return table.getRowModel().rows.map((r) => r.original);
 }
 
 /**
  * Many things compared by the same fields. The first column takes the spare
  * width and truncates. Sortable headers cycle ascending, descending, cleared;
  * status sorts by urgency. Keyboard, selection and sorting come from React
- * Aria's table.
+ * Aria's table; filtering and sorting the rows from TanStack Table. Set
+ * `virtual` for long lists.
  */
 export function Table<R extends TableRow = TableRow>({
   label,
@@ -249,6 +325,7 @@ export function Table<R extends TableRow = TableRow>({
   onOpen,
   onRetry,
   actions,
+  virtual,
   className,
 }: TableProps<R>) {
   const [sort, setSort] = useState<TableSort | null>(initialSort);
@@ -257,19 +334,7 @@ export function Table<R extends TableRow = TableRow>({
   const [filter, setFilter] = useState('');
   const selected = selectedIds ? new Set(selectedIds) : own;
   const q = filter.trim().toLowerCase();
-  let visible = q
-    ? rows.filter((row) =>
-        columns.some((c) => {
-          const v = row[c.key];
-          return (c.text ? c.text(v, row) : String(v ?? '')).toLowerCase().includes(q);
-        }),
-      )
-    : [...rows];
-  const column = sort && columns.find((c) => c.key === sort.key);
-  if (column) {
-    const dir = sort.dir === 'asc' ? 1 : -1;
-    visible = visible.sort((a, b) => dir * compareBy(column, a, b));
-  }
+  const visible = useShownRows(rows, columns, sort, q);
   const sortBy = (key: string) => {
     const c = columns.find((x) => x.key === key);
     if (!c) return;
@@ -340,27 +405,28 @@ export function Table<R extends TableRow = TableRow>({
         </Button>
       </>,
     );
-  else
-    body = visible.map((row) => (
-      <AriaRow key={row.id} id={row.id} className="quill-table-row">
-        {selectable ? (
-          <Cell className="quill-table-sel">
-            <AriaCheckbox slot="selection" aria-label="Select" className="quill-check">
-              <span className="quill-check-box" aria-hidden="true">
-                <Icon name="check" size={12} />
-              </span>
-            </AriaCheckbox>
-          </Cell>
-        ) : null}
-        {columns.map((c, i) => (
-          <Cell key={c.key} className="quill-table-cell" data-primary={i === 0 ? '' : undefined} data-end={end(c) ? '' : undefined} data-num={c.kind === 'number' ? '' : undefined} data-wrap={c.wrap ? '' : undefined}>
-            {cell(c, row)}
-          </Cell>
-        ))}
-      </AriaRow>
-    ));
+  const virtualRows = Boolean(virtual && !loading && !error && visible.length);
+  const renderRow = (row: R) => (
+    <AriaRow key={row.id} id={row.id} className="quill-table-row">
+      {selectable ? (
+        <Cell className="quill-table-sel">
+          <AriaCheckbox slot="selection" aria-label="Select" className="quill-check">
+            <span className="quill-check-box" aria-hidden="true">
+              <Icon name="check" size={12} />
+            </span>
+          </AriaCheckbox>
+        </Cell>
+      ) : null}
+      {columns.map((c, i) => (
+        <Cell key={c.key} className="quill-table-cell" data-primary={i === 0 ? '' : undefined} data-end={end(c) ? '' : undefined} data-num={c.kind === 'number' ? '' : undefined} data-wrap={c.wrap ? '' : undefined}>
+          {cell(c, row)}
+        </Cell>
+      ))}
+    </AriaRow>
+  );
+  if (!body && !virtualRows) body = visible.map(renderRow);
   return (
-    <div className={cx('quill-table', className)} data-density={density}>
+    <div className={cx('quill-table', className)} data-density={density} data-virtual={virtualRows ? '' : undefined}>
       <div className="quill-table-bar">
         <span className="quill-label" aria-live="polite">
           {countText}
@@ -392,44 +458,63 @@ export function Table<R extends TableRow = TableRow>({
         ) : null}
       </div>
       <div className="quill-table-wrap">
-        <AriaTable
-          aria-label={label || noun}
-          aria-busy={loading || undefined}
-          selectionMode={selectable ? 'multiple' : 'none'}
-          selectionBehavior="toggle"
-          selectedKeys={selected}
-          onSelectionChange={select}
-          sortDescriptor={descriptor}
-          onSortChange={(d) => sortBy(String(d.column))}
-          onRowAction={(key) => {
-            const row = visible.find((r) => r.id === key);
-            if (row) onOpen?.(row);
-          }}
-        >
-          <TableHeader>
-            {selectable ? (
-              <Column className="quill-table-sel">
-                <AriaCheckbox slot="selection" aria-label="Select all" className="quill-check">
-                  <span className="quill-check-box" aria-hidden="true">
-                    <Icon name="check" size={12} />
-                  </span>
-                </AriaCheckbox>
-              </Column>
-            ) : null}
-            {columns.map((c, i) => (
-              <Column key={c.key} id={c.key} isRowHeader={i === 0} allowsSorting={c.sortable} className="quill-table-head quill-label" data-primary={i === 0 ? '' : undefined} data-end={end(c) ? '' : undefined}>
-                {({ allowsSorting, sortDirection }) => (
-                  <span className="quill-table-sort" data-on={sortDirection ? '' : undefined} data-dir={sortDirection}>
-                    {c.label}
-                    {allowsSorting ? <Icon name="chevron-down" size={14} /> : null}
-                  </span>
-                )}
-              </Column>
-            ))}
-          </TableHeader>
-          <TableBody>{body}</TableBody>
-        </AriaTable>
+        <Virtualized on={virtualRows} rowHeight={ROW_HEIGHT[density]}>
+          <AriaTable
+            className="quill-table-grid"
+            aria-label={label || noun}
+            aria-busy={loading || undefined}
+            selectionMode={selectable ? 'multiple' : 'none'}
+            selectionBehavior="toggle"
+            selectedKeys={selected}
+            onSelectionChange={select}
+            sortDescriptor={descriptor}
+            onSortChange={(d) => sortBy(String(d.column))}
+            onRowAction={(key) => {
+              const row = visible.find((r) => r.id === key);
+              if (row) onOpen?.(row);
+            }}
+          >
+            <TableHeader>
+              {selectable ? (
+                <Column className="quill-table-sel" defaultWidth={virtualRows ? SELECT_WIDTH : undefined} minWidth={virtualRows ? SELECT_WIDTH : undefined}>
+                  <AriaCheckbox slot="selection" aria-label="Select all" className="quill-check">
+                    <span className="quill-check-box" aria-hidden="true">
+                      <Icon name="check" size={12} />
+                    </span>
+                  </AriaCheckbox>
+                </Column>
+              ) : null}
+              {columns.map((c, i) => (
+                <Column key={c.key} id={c.key} isRowHeader={i === 0} allowsSorting={c.sortable} defaultWidth={virtualRows && i === 0 ? PRIMARY_WIDTH : undefined} className="quill-table-head quill-label" data-primary={i === 0 ? '' : undefined} data-end={end(c) ? '' : undefined}>
+                  {({ allowsSorting, sortDirection }) => (
+                    <span className="quill-table-sort" data-on={sortDirection ? '' : undefined} data-dir={sortDirection}>
+                      {c.label}
+                      {allowsSorting ? <Icon name="chevron-down" size={14} /> : null}
+                    </span>
+                  )}
+                </Column>
+              ))}
+            </TableHeader>
+            {virtualRows ? (
+              <TableBody items={visible} dependencies={[columns, selectable, density]}>
+                {renderRow}
+              </TableBody>
+            ) : (
+              <TableBody>{body}</TableBody>
+            )}
+          </AriaTable>
+        </Virtualized>
       </div>
     </div>
+  );
+}
+
+/** Wraps the table in React Aria's virtualizer when on, so only the rows in view are drawn. */
+function Virtualized({ on, rowHeight, children }: { on: boolean; rowHeight: number; children: ReactNode }) {
+  if (!on) return <>{children}</>;
+  return (
+    <Virtualizer layout={TableLayout} layoutOptions={{ rowHeight, headingHeight: HEAD_HEIGHT }}>
+      {children}
+    </Virtualizer>
   );
 }

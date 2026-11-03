@@ -10,8 +10,8 @@ export { FrontPage, frontSections, type FrontPageProps, type FrontPageConfig, ty
 export { About, type AboutProps } from './about.js';
 export { More, type MoreProps } from './more.js';
 export { SelectionBar, type SelectionAction, type SelectionBarProps } from './selection-bar.js';
-export { FocusStage, FocusField, FocusItem, useRack, useDepth, type Depth, type Ambience, type Hole, type FocusStageProps, type FocusFieldProps, type FocusItemProps } from './focus.js';
-export { RadialMenu, RingProvider, useRingTarget, RING_MOST, type RingAction, type RingShape, type RingSubject, type RadialMenuProps, type RingProviderProps } from './radial-menu.js';
+export { FocusStage, FocusField, FocusItem, useRack, useDepth, focusLevel, type Depth, type Plane, type FocusLevel, type RackOptions, type Ambience, type Hole, type FocusStageProps, type FocusFieldProps, type FocusItemProps } from './focus.js';
+export { RadialMenu, RingProvider, RingMore, useRingTarget, RING_MOST, RING_SLOTS, type RingAction, type RingSlot, type RingTarget, type RingShape, type RingSubject, type RadialMenuProps, type RingProviderProps, type RingMoreProps } from './radial-menu.js';
 export { PathTree, type PathNode, type PathLight, type PathTreeProps } from './path-tree.js';
 export { Reel, type ReelItem, type ReelTone, type Reveal, type ReelProps } from './reel.js';
 export { KindTile, AddTile, Tiles, type TileKind, type KindTileProps, type AddTileProps, type TilesProps } from './tiles.js';
@@ -28,3 +28,7 @@ export { Lifecycle, type LifecycleState, type LifecycleProps } from './lifecycle
 export { PeoplePicker, principalKey, principalRows, type Principal, type PrincipalSearch, type PeoplePickerProps } from './people-picker.js';
 export { Reader, Contents, slugFor, loadReader, type ReaderProps, type ContentsProps, type ReaderHandle, type ReaderSize, type ReaderWidth, type OutlineItem, type MarkedPassage } from './reader.js';
 export { FilterBar, filterValue, type FilterDef, type FilterValue, type FilterBarProps } from './filter-bar.js';
+export { defineReactApp, useAppContext, type AppMount, type AppIntent, type AppProps, type PickerProps, type AppSurfaceProps, type ReactAppSpec, type ReactApp } from './react-app.js';
+export { placeRoutes, place, readSearch, mountedAt, type Place, type PlaceSpec, type PlaceArgs, type PlaceLinkProps, type PlaceRoutesOptions, type AppRoutes, type ParamsOf, type SearchOf, type SearchSpec, type SearchKind } from './routes.js';
+export { createAppClient, AppError, isAppError, type AppClient, type AppClientOptions, type AppFetcher, type AnyPaths, type Answer, type CallOptions, type HttpMethod, type PathsFor, type Problem, type ErrorWords } from './client.js';
+export { useData, useChange, useRefresh, DataView, DataProvider, newDataClient, type AppBus, type DataKey, type DataState, type DataOptions, type DataClient, type ChangeState, type ChangeOptions, type DataViewProps } from './query.js';

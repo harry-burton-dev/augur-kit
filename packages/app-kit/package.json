@@ -1,6 +1,6 @@
 {
   "name": "@augur/app-kit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Quill: the React kit apps build with, on Common. Served to every app through the shell's import map, under the SDK promise.",
@@ -23,7 +23,11 @@
   },
   "dependencies": {
     "@augur/kit-common": "workspace:*",
+    "@tanstack/react-query": "5.104.4",
+    "@tanstack/react-router": "1.170.44",
+    "@tanstack/react-table": "9.3.1",
     "markdown-it": "^14.3.3",
+    "openapi-fetch": "0.17.0",
     "react-aria-components": "1.22.1"
   },
   "peerDependencies": {
