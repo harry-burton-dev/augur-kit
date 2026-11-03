@@ -8,9 +8,12 @@ The kit as a deployment serves it (ADR 0048 in the AUGUR repository). `pnpm buil
 | `dev/` | The same with React's development build, for a shell's dev server |
 | `tokens.css`, `kit-common.css`, `app-kit.css` | The CSS every page links, in that order |
 | `kit.json` | The version, what is in it, the import map entries, the stylesheets and every file's hash |
+| `kit.json.sigstore.json` | In a released package only: the cosign keyless signature of `kit.json`, naming this repository's Release workflow on `main` |
 
 The specifiers are the React and kit entries of `sharedModules` in AUGUR's `@augur/mfe-sdk`; AUGUR's tests
 fail when the two disagree. Aerie is not in the bundle: the shell builds it in, since apps never use it.
+
+To trust a copy, check the signature of `kit.json`, then each file against its hash: AUGUR's release does both before it puts the bundle in its web image.
 
 A page loads it with an import map whose entries are `<KIT_URL><version>/<file>`, and whose `integrity`
 entries are the hashes from `kit.json`, so a CDN in front of `KIT_URL` can't serve anything else.

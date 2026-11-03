@@ -25,9 +25,10 @@ pnpm changeset        # say what your change releases
 2. On `main`, the Release workflow keeps a **Version packages** pull request open. Merging it is the release.
 3. Each package whose version is new is published to GitHub Packages as `@harry-burton-dev/augur-<name>`.
    AUGUR and app repositories alias it back to `@augur/<name>`.
-4. When the bundle's version is new, the workflow makes the GitHub release `kit@<version>`, a pre-release:
-   `kit-<version>.tgz`, its `kit.json`, and a cosign keyless signature of each, naming this repository's
-   Release workflow on `main`.
+4. When the bundle's version is new, the workflow signs its `kit.json` with cosign keyless (the signature
+   names this repository's Release workflow on `main`) and puts the signature in the package before it is
+   published. It also makes the GitHub release `kit@<version>`, a pre-release, with `kit-<version>.tgz`,
+   `kit.json` and a signature of each.
 5. AUGUR pins one kit version in its `release/kit.json`. Its release checks the signature and serves the
    bundle at `<KIT_URL><version>/`, and its contract tests run against it (ADR 0048).
 

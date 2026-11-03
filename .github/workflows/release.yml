@@ -3,9 +3,10 @@ name: Release
 # Merging it is the release. This workflow then:
 #   1. publishes each package whose version isn't in GitHub Packages yet, as @<owner>/augur-<name>
 #      (scripts/publish-packages.mjs), for AUGUR and apps to build against;
-#   2. when the kit bundle's version is new, makes the GitHub release kit@<version>: the bundle as
-#      kit-<version>.tgz and its kit.json, each signed with cosign keyless, so the signature names this
-#      workflow on this repository's main. AUGUR's release checks it, then serves the bundle at its
+#   2. when the kit bundle's version is new, signs its kit.json with cosign keyless before it is
+#      published (the package carries the signature), and makes the GitHub release kit@<version>: the
+#      bundle as kit-<version>.tgz and its kit.json, each signed, so the signature names this workflow
+#      on this repository's main. AUGUR's release checks it, then serves the bundle at its
 #      KIT_URL (ADR 0048 in the AUGUR repository). Every kit release starts as a beta (a pre-release).
 on:
   push:
@@ -41,11 +42,6 @@ jobs:
       - name: Build
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build
-      - name: Publish packages
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: node scripts/publish-packages.mjs
-        env:
-          NODE_AUTH_TOKEN: ${{ github.token }}
       - name: Is this kit released yet?
         id: kit
         if: steps.changesets.outputs.hasChangesets == 'false'
@@ -60,18 +56,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - if: steps.kit.outputs.version
         uses: sigstore/cosign-installer@v3
-      - name: Sign and release the kit
+      # Signed before the packages are published, so @augur/kit-bundle carries its own signature
+      # (dist/kit.json.sigstore.json): AUGUR checks it from the package, with no release download.
+      - name: Sign the kit
+        if: steps.kit.outputs.version
+        run: cosign sign-blob --yes --bundle packages/kit-bundle/dist/kit.json.sigstore.json packages/kit-bundle/dist/kit.json
+      - name: Publish packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: node scripts/publish-packages.mjs
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+      - name: Release the kit
         if: steps.kit.outputs.version
         run: |
           v="${{ steps.kit.outputs.version }}"
           out="$RUNNER_TEMP/kit"
           mkdir -p "$out"
           tar -czf "$out/kit-$v.tgz" -C packages/kit-bundle/dist .
-          cp packages/kit-bundle/dist/kit.json "$out/kit.json"
           cosign sign-blob --yes --bundle "$out/kit-$v.tgz.sigstore.json" "$out/kit-$v.tgz"
-          cosign sign-blob --yes --bundle "$out/kit.json.sigstore.json" "$out/kit.json"
           node scripts/kit-notes.mjs "$v" > "$out/notes.md"
           gh release create "kit@$v" --prerelease --target "$GITHUB_SHA" --title "Kit $v" --notes-file "$out/notes.md" \
-            "$out/kit-$v.tgz" "$out/kit-$v.tgz.sigstore.json" "$out/kit.json" "$out/kit.json.sigstore.json"
+            "$out/kit-$v.tgz" "$out/kit-$v.tgz.sigstore.json" packages/kit-bundle/dist/kit.json packages/kit-bundle/dist/kit.json.sigstore.json
         env:
           GH_TOKEN: ${{ github.token }}
