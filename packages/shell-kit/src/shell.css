@@ -93,6 +93,9 @@
 .aerie-fn:hover, .aerie-fn:focus-visible, .aerie-fn.aerie-lit { color: var(--ink); }
 .aerie-fn:hover::before, .aerie-fn:focus-visible::before, .aerie-fn.aerie-lit::before { opacity: 1; }
 .aerie-fn:focus-visible, .aerie-stream:focus-visible { outline-offset: 2px; border-radius: 50%; }
+.aerie-fn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.aerie-fn[aria-disabled="true"]:hover { color: var(--ink-muted); }
+.aerie-fn[aria-disabled="true"]:hover::before { opacity: 0; }
 .aerie-stream { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .aerie-thread { position: absolute; left: 50%; bottom: calc(100% - 4px); width: 1px; height: 60vh; transform: translateX(-50%); pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ink) 18%, transparent) 60%, color-mix(in srgb, var(--ink) 40%, transparent)); }
 .aerie-thread::after { content: ''; position: absolute; inset: 0; opacity: 0;

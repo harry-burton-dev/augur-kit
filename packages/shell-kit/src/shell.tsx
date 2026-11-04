@@ -28,6 +28,9 @@ function HoverName({ children }: { children: ReactNode }) {
   );
 }
 
+/** The names of a control that can't be used now: its label carries the reason, and its hover name shows it, so it stays and says why. */
+const unavailableNames = (label: string, unavailable: string) => ({ label: `${label}. ${unavailable}`, hover: `${label}: ${unavailable}` });
+
 const agentWords: Record<AgentStatus, string> = { needs: 'Needs you', failed: 'Failed', running: 'Running', waiting: 'Waiting', done: 'Done', idle: 'Idle' };
 
 /**
@@ -281,13 +284,13 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
                 key={n.id}
                 className="aerie-nav augur-control"
                 tabIndex={tab}
-                aria-label={n.unavailable ? `${n.label}. ${n.unavailable}` : n.current ? `${n.label}, you’re here` : n.label}
+                aria-label={n.unavailable ? unavailableNames(n.label, n.unavailable).label : n.current ? `${n.label}, you’re here` : n.label}
                 aria-current={n.current ? 'page' : undefined}
                 aria-disabled={n.unavailable ? 'true' : undefined}
                 onClick={() => !n.unavailable && !n.current && model.emit('ui-nav', { id: n.id })}
               >
                 <Icon name={n.icon} size={16} />
-                <HoverName>{n.unavailable ? `${n.label}: ${n.unavailable}` : n.label}</HoverName>
+                <HoverName>{n.unavailable ? unavailableNames(n.label, n.unavailable).hover : n.label}</HoverName>
               </button>
             ))}
           </nav>
@@ -421,9 +424,18 @@ function Dome({ model, mood }: { model: ShellModel; mood: string }) {
         const fn = model.functions.find((f) => f.id === id);
         if (!fn) return null;
         return (
-          <button key={id} className={`aerie-fn augur-control${lit ? ' aerie-lit' : ''}`} style={style} tabIndex={tabIndex} aria-label={fn.label} onFocus={onFocus} onClick={() => model.openView(fn.id)}>
+          <button
+            key={id}
+            className={`aerie-fn augur-control${lit ? ' aerie-lit' : ''}`}
+            style={style}
+            tabIndex={tabIndex}
+            aria-label={fn.unavailable ? unavailableNames(fn.label, fn.unavailable).label : fn.label}
+            aria-disabled={fn.unavailable ? 'true' : undefined}
+            onFocus={onFocus}
+            onClick={() => !fn.unavailable && model.openView(fn.id)}
+          >
             <Icon name={fn.icon} />
-            <HoverName>{fn.label}</HoverName>
+            <HoverName>{fn.unavailable ? unavailableNames(fn.label, fn.unavailable).hover : fn.label}</HoverName>
           </button>
         );
       })}
