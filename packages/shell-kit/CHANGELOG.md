@@ -1,5 +1,16 @@
 # @augur/shell-kit
 
+## 0.5.0
+
+### Minor Changes
+
+- ea56160: The floor gauge keeps a lane of its own at the right edge, and the open app's stage ends where it starts, so the gauge never covers an app at any width. The gauge no longer follows an app's drawer (`ui-drawer`), and the model's `drawerInset` field is gone.
+
+### Patch Changes
+
+- Updated dependencies [92c7f8a]
+  - @augur/kit-common@0.6.0
+
 ## 0.4.0
 
 ### Minor Changes
