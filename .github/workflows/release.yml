@@ -53,6 +53,11 @@ jobs:
             echo "::error::The Version packages step failed before it pushed its branch; see its log."
             exit 1
           fi
+      # The Version packages step leaves the versioned branch checked out. What is released is only ever
+      # main as pushed, so go back to it before looking: a release happens when the Version packages
+      # pull request is merged, never from the branch that proposes it.
+      - name: Back to main as pushed
+        run: git checkout --force --detach "$GITHUB_SHA" && git clean -fdq
       # Only a changeset that bumps a package holds the release (an empty one doesn't).
       - name: Anything waiting to be versioned?
         id: pending
