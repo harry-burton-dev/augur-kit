@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Input, TextField as AriaTextField } from 'react-aria-components';
 import { FieldHead, FieldHint, Icon, cx, useFieldCheck, useReason, useValue, type FieldProps } from '@augur/kit-common';
 import { List, type ListItem } from './list.js';
@@ -72,6 +72,7 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
   const asked = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const input = useRef<HTMLInputElement>(null);
+  const foundId = useId();
   const { reasoned, describe, caption } = useReason(disabled, reason);
   useFieldCheck({ check: () => true, focus: () => input.current?.focus(), name, value: () => chosen.map(principalKey).join(',') });
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -130,7 +131,7 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
             className="augur-input"
             autoComplete="off"
             placeholder={placeholder}
-            aria-expanded={showing}
+            aria-controls={showing ? foundId : undefined}
             {...describe}
             onKeyDown={(e) => {
               if (e.key === 'Escape' && query) {
@@ -147,21 +148,23 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
       </AriaTextField>
       {caption}
       {showing ? (
-        <List
-          className="quill-people-found"
-          label="People and teams found"
-          noun={['match', 'matches']}
-          density="compact"
-          items={principalRows(found ?? [], multiple ? chosen : [], check)}
-          loading={looking && found === undefined}
-          error={failure || undefined}
-          empty="No one by that name. Try part of a name or an email."
-          onOpen={(item) => {
-            const p = found?.find((f) => principalKey(f) === item.id);
-            if (p && !item.disabled) choose(p);
-          }}
-          onRetry={() => void find(query)}
-        />
+        <div id={foundId}>
+          <List
+            className="quill-people-found"
+            label="People and teams found"
+            noun={['match', 'matches']}
+            density="compact"
+            items={principalRows(found ?? [], multiple ? chosen : [], check)}
+            loading={looking && found === undefined}
+            error={failure || undefined}
+            empty="No one by that name. Try part of a name or an email."
+            onOpen={(item) => {
+              const p = found?.find((f) => principalKey(f) === item.id);
+              if (p && !item.disabled) choose(p);
+            }}
+            onRetry={() => void find(query)}
+          />
+        </div>
       ) : null}
     </div>
   );
