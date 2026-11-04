@@ -30,15 +30,29 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Opening the pull request needs a token that may: RELEASE_TOKEN (a fine-grained token with Contents
+      # and Pull requests write here), whose pull requests also start CI. Without it, the run's own token
+      # is used, which may open it only when "Allow GitHub Actions to create and approve pull requests" is
+      # on. If neither can, the branch is still pushed and the next step says where to open it by hand.
       - name: Version packages pull request
         id: changesets
+        continue-on-error: true
         uses: changesets/action@v1
         with:
           version: pnpm version-packages
           title: Version packages
           commit: Version packages
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+      - name: Open the Version packages pull request by hand
+        if: steps.changesets.outcome == 'failure'
+        run: |
+          if git ls-remote --exit-code origin changeset-release/main >/dev/null; then
+            echo "::warning title=Version packages pull request not opened::This workflow may not open pull requests here. Open it from https://github.com/$GITHUB_REPOSITORY/compare/main...changeset-release/main (title: Version packages), or set RELEASE_TOKEN so it opens itself."
+          else
+            echo "::error::The Version packages step failed before it pushed its branch; see its log."
+            exit 1
+          fi
       # Only a changeset that bumps a package holds the release (an empty one doesn't).
       - name: Anything waiting to be versioned?
         id: pending

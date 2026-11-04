@@ -28,6 +28,12 @@ finding fails. Colour contrast needs a real browser, so it is checked in the Sto
 1. Every pull request carries a changeset. CI lints, builds, typechecks and tests it; the Storybook goes to
    Chromatic when a part or a story changes (`CHROMATIC_PROJECT_TOKEN`).
 2. On `main`, the Release workflow keeps a **Version packages** pull request open. Merging it is the release.
+   The workflow opens it with the `RELEASE_TOKEN` secret, a fine-grained token with Contents and Pull
+   requests write on this repository, so its CI runs too. Without that secret it can open it only when
+   Settings → Actions → "Allow GitHub Actions to create and approve pull requests" is on; otherwise the run
+   stays green, pushes the `changeset-release/main` branch and leaves a warning with the link to open the
+   pull request by hand. Packages are published only when no changeset is waiting, so open and merge it
+   soon after the changes it gathers.
 3. Each package whose version is new is published to GitHub Packages as `@harry-burton-dev/augur-<name>`.
    AUGUR and app repositories alias it back to `@augur/<name>`.
 4. When the bundle's version is new, the workflow signs its `kit.json` with cosign keyless (the signature
