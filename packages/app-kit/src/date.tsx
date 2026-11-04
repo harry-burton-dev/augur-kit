@@ -1,80 +1,99 @@
 import { useRef, useState, type CSSProperties, type DragEvent, type ReactNode } from 'react';
-import { Input, TextField as AriaTextField } from 'react-aria-components';
+import {
+  Button as AriaButton,
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Input,
+  Popover,
+  TextField as AriaTextField,
+} from 'react-aria-components';
+import { CalendarDate, endOfMonth, getDayOfWeek, parseDate, type DateDuration } from '@internationalized/date';
 import { FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, type FieldProps, type FieldState } from '@augur/kit-common';
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-const DAY_MS = 86_400_000;
+const FRIDAY = 5;
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** A local day as YYYY-MM-DD. */
 export const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const fromIso = (iso: string) => {
-  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
-  return new Date(y!, m! - 1, d!);
-};
-const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+/** The local day a moment falls on. */
+const dayOf = (d: Date) => new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate());
+/** 0 for Sunday to 6 for Saturday, whatever the locale's first day. */
+const weekday = (d: CalendarDate) => getDayOfWeek(d, 'en-US');
+/** A day that really exists, or null: 31 February is null, not 3 March. */
 const real = (y: number, m: number, d: number) => {
-  const at = new Date(y, m, d);
-  return at.getFullYear() === y && at.getMonth() === m && at.getDate() === d ? at : null;
+  if (m < 1 || m > 12 || d < 1) return null;
+  const at = new CalendarDate(y, m, d);
+  return at.year === y && at.month === m && at.day === d ? at : null;
 };
-const isoOr = (d: Date | null) => (d ? isoDay(d) : null);
+const read = (iso: string) => {
+  try {
+    return parseDate(iso.slice(0, 10));
+  } catch {
+    return null;
+  }
+};
+const SHIFT: Record<string, keyof DateDuration> = { d: 'days', w: 'weeks', m: 'months', y: 'years' };
 
 /**
  * A day typed in words, as people say it: "13 nov", "nov 13 2027", "13/11",
  * "2026-11-13", "today", "tomorrow", "friday" (the next one), "end of week",
- * "end of month", "+2w", "+3d", "-1m". Returns YYYY-MM-DD, or null.
+ * "end of month", "+2w", "+3d", "-1m". Returns YYYY-MM-DD, or null. A month
+ * on from 31 January is the last day of February, never 3 March.
  */
 export const parseDay = (text: string, now = new Date()): string | null => {
   const t = text.trim().toLowerCase().replace(/[,.]/g, ' ').replace(/\s+/g, ' ');
-  const today = startOf(now);
+  const today = dayOf(now);
   if (!t) return null;
-  if (t === 'today' || t === 'now') return isoDay(today);
-  if (t === 'tomorrow') return isoDay(new Date(today.getTime() + DAY_MS));
-  if (t === 'yesterday') return isoDay(new Date(today.getTime() - DAY_MS));
-  if (t === 'end of week') return isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() + ((5 - today.getDay() + 7) % 7)));
-  if (t === 'end of month') return isoDay(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+  if (t === 'today' || t === 'now') return today.toString();
+  if (t === 'tomorrow') return today.add({ days: 1 }).toString();
+  if (t === 'yesterday') return today.subtract({ days: 1 }).toString();
+  if (t === 'end of week') return today.add({ days: (FRIDAY - weekday(today) + 7) % 7 }).toString();
+  if (t === 'end of month') return endOfMonth(today).toString();
   const shift = /^([+-])\s?(\d{1,3})\s?(d|day|days|w|wk|week|weeks|m|month|months|y|year|years)$/.exec(t);
   if (shift) {
     const n = Number(shift[2]) * (shift[1] === '-' ? -1 : 1);
-    const unit = shift[3]![0];
-    const at = new Date(today);
-    if (unit === 'd') at.setDate(at.getDate() + n);
-    else if (unit === 'w') at.setDate(at.getDate() + n * 7);
-    else if (unit === 'm') at.setMonth(at.getMonth() + n);
-    else at.setFullYear(at.getFullYear() + n);
-    return isoDay(at);
+    return today.add({ [SHIFT[shift[3]![0]!]!]: n }).toString();
   }
-  const weekday = DAYS.findIndex((d) => t === d || (t.length > 3 && d === t.slice(0, 3) && /^[a-z]+$/.test(t)));
-  if (weekday >= 0) return isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() + ((weekday - today.getDay() + 7) % 7 || 7)));
+  const day = DAYS.findIndex((d) => t === d || (t.length > 3 && d === t.slice(0, 3) && /^[a-z]+$/.test(t)));
+  if (day >= 0) return today.add({ days: (day - weekday(today) + 7) % 7 || 7 }).toString();
   let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(t);
-  if (m) return isoOr(real(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  if (m) return real(Number(m[1]), Number(m[2]), Number(m[3]))?.toString() ?? null;
   m = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(t);
   if (m) {
-    const y = m[3] ? (m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])) : today.getFullYear();
-    return isoOr(real(y, Number(m[2]) - 1, Number(m[1])));
+    const y = m[3] ? (m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])) : today.year;
+    return real(y, Number(m[2]), Number(m[1]))?.toString() ?? null;
   }
   const words = t.split(' ').filter((w) => !DAYS.includes(w.slice(0, 3)) || /\d/.test(w) || MONTHS.includes(w.slice(0, 3)));
   const month = words.findIndex((w) => /^[a-z]+$/.test(w) && MONTHS.includes(w.slice(0, 3)));
   const numbers = words.filter((w) => /^\d+(st|nd|rd|th)?$/.test(w)).map((w) => parseInt(w, 10));
   if (month >= 0 && numbers.length >= 1 && numbers.length <= 2 && words.length === numbers.length + 1) {
-    const mi = MONTHS.indexOf(words[month]!.slice(0, 3));
-    const [day, year] = numbers[0]! > 31 ? [numbers[1], numbers[0]] : numbers;
-    if (!day) return null;
-    return isoOr(real(year ?? today.getFullYear(), mi, day));
+    const mi = MONTHS.indexOf(words[month]!.slice(0, 3)) + 1;
+    const [d, year] = numbers[0]! > 31 ? [numbers[1], numbers[0]] : numbers;
+    if (!d) return null;
+    return real(year ?? today.year, mi, d)?.toString() ?? null;
   }
   return null;
 };
 
 /** A day in words: "Fri 13 Nov", with the year when it isn't this one. */
 export const dayName = (iso: string, now = new Date()) => {
-  const d = fromIso(iso);
-  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', ...(d.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }) }).replace(',', '');
+  const d = read(iso);
+  if (!d) return iso;
+  const at = new Date(d.year, d.month - 1, d.day);
+  return at.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', ...(d.year === now.getFullYear() ? {} : { year: 'numeric' }) }).replace(',', '');
 };
 
 /** How far a day is from today, in words: "today", "in 15 days", "3 days ago". */
 export const dayDistance = (iso: string, now = new Date()) => {
-  const n = Math.round((fromIso(iso).getTime() - startOf(now).getTime()) / DAY_MS);
+  const d = read(iso);
+  if (!d) return '';
+  const n = d.compare(dayOf(now));
   if (n === 0) return 'today';
   if (n === 1) return 'tomorrow';
   if (n === -1) return 'yesterday';
@@ -110,20 +129,22 @@ export interface DateFieldProps extends FieldProps {
 
 /**
  * A day, said in words ("Fri 13 Nov · in 15 days") and typed in words ("13
- * nov", "friday", "+2w"), with up to four quick choices under it and the
- * calendar one press away. Its value is YYYY-MM-DD. Takes part in a Dialog's
- * checks like TextField.
+ * nov", "friday", "+2w"), with up to four quick choices under it and a
+ * calendar one press away. The calendar starts its weeks and names its
+ * months in the person's language. Its value is YYYY-MM-DD. Takes part in a
+ * Dialog's checks like TextField.
  */
 export function DateField({ label, hint, required, optional, disabled, state, message, className, value: given, defaultValue, onChange, name, empty = 'Not set', quick = DEFAULT_QUICK, now = new Date() }: DateFieldProps) {
   const [own, setOwnValue] = useState(defaultValue ?? '');
   const value = given ?? own;
   const [draft, setDraft] = useState<string | undefined>(undefined);
   const [check, setCheck] = useState<{ state: FieldState; message?: string }>({ state: 'idle' });
+  const [calendar, setCalendar] = useState(false);
   const shown = shownState(state, message, check);
   const { describedBy, line } = useMessage(shown.message);
   const input = useRef<HTMLInputElement>(null);
-  const native = useRef<HTMLInputElement>(null);
   const typing = draft !== undefined;
+  const picked = value ? read(value) : null;
 
   const choose = (iso: string) => {
     setDraft(undefined);
@@ -185,22 +206,36 @@ export function DateField({ label, hint, required, optional, disabled, state, me
       <div className="augur-field-box">
         <Input ref={input} className="augur-input" placeholder={empty} autoComplete="off" />
         <StateMark state={shown.state} />
-        <button
-          type="button"
-          className="quill-date-cal"
-          aria-label="Choose on a calendar"
-          disabled={disabled}
-          onClick={() => {
-            try {
-              native.current?.showPicker();
-            } catch {
-              native.current?.focus();
-            }
-          }}
-        >
-          <Icon name="calendar" size={16} />
-        </button>
-        <input ref={native} className="quill-date-native" type="date" tabIndex={-1} aria-hidden="true" value={value} onChange={(e) => choose(e.target.value)} />
+        <DialogTrigger isOpen={calendar} onOpenChange={setCalendar}>
+          <AriaButton className="quill-date-cal" aria-label="Choose on a calendar" isDisabled={disabled}>
+            <Icon name="calendar" size={16} />
+          </AriaButton>
+          <Popover className="augur-popover quill-calendar-pop" placement="bottom end" offset={6}>
+            <Dialog className="quill-calendar-dialog" aria-label={`${label}: choose a day`}>
+              <Calendar
+                className="quill-calendar"
+                aria-label={label}
+                value={picked}
+                defaultFocusedValue={picked ?? dayOf(now)}
+                onChange={(d) => {
+                  choose(d.toString());
+                  setCalendar(false);
+                }}
+              >
+                <header className="quill-calendar-head">
+                  <AriaButton slot="previous" className="quill-calendar-step" aria-label="Previous month">
+                    <Icon name="back" size={14} />
+                  </AriaButton>
+                  <Heading className="quill-calendar-month" />
+                  <AriaButton slot="next" className="quill-calendar-step" aria-label="Next month">
+                    <Icon name="arrow" size={14} />
+                  </AriaButton>
+                </header>
+                <CalendarGrid className="quill-calendar-grid">{(d) => <CalendarCell date={d} className="quill-calendar-day" />}</CalendarGrid>
+              </Calendar>
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
       </div>
       {shownQuick.length || (value && !required) ? (
         <div className="quill-date-quick">

@@ -2,7 +2,7 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { DateField, parseDay } from './date.js';
+import { DateField, dayDistance, parseDay } from './date.js';
 import { List, Table } from './list.js';
 import { PageHead, Section } from './page.js';
 import { Details, Notice, State } from './states.js';
@@ -227,6 +227,28 @@ describe('the parts apps took from the Lit kit', () => {
     draw(<DateField label="Due" now={now} onChange={change} />);
     act(() => button('End of month').click());
     expect(change).toHaveBeenCalledWith('2026-11-30');
+  });
+
+  it('keeps to days that exist and to the end of a short month', () => {
+    const now = new Date('2026-01-31T12:00:00');
+    expect(parseDay('+1m', now)).toBe('2026-02-28');
+    expect(parseDay('31/02', now)).toBeNull();
+    expect(parseDay('2026-13-01', now)).toBeNull();
+    expect(parseDay('friday', now)).toBe('2026-02-06');
+    expect(parseDay('end of week', new Date('2026-11-06T09:00:00'))).toBe('2026-11-06');
+    expect(dayDistance('2026-02-03', now)).toBe('in 3 days');
+  });
+
+  it('chooses a day on its calendar', async () => {
+    const now = new Date('2026-11-02T12:00:00');
+    const change = vi.fn();
+    draw(<DateField label="Due" now={now} defaultValue="2026-11-13" onChange={change} />);
+    await act(async () => (document.querySelector('.quill-date-cal') as HTMLElement).click());
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.querySelector('.quill-calendar-month')!.textContent).toContain('November 2026');
+    const day20 = [...dialog.querySelectorAll('.quill-calendar-day')].find((c) => c.textContent === '20' && !c.hasAttribute('data-outside-month')) as HTMLElement;
+    await act(async () => day20.click());
+    expect(change).toHaveBeenCalledWith('2026-11-20');
   });
 
   it('shows a notice’s tone and its one action', () => {

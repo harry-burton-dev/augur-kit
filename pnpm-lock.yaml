@@ -35,6 +35,9 @@ importers:
       '@augur/kit-common':
         specifier: workspace:*
         version: link:../kit-common
+      '@internationalized/date':
+        specifier: 3.12.4
+        version: 3.12.4
       '@tanstack/react-query':
         specifier: 5.104.4
         version: 5.104.4(@types/react@19.3.0)(react@19.3.1)
