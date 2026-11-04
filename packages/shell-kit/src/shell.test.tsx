@@ -53,6 +53,33 @@ describe('Shell landmarks and names', () => {
   });
 });
 
+describe('Shell unavailable functions', () => {
+  it('keeps an unavailable function on the arc, says why, and does not run it when pressed', () => {
+    const model = exampleShell('stream');
+    const reason = 'Agents are turned off here. An organisation admin can turn them on.';
+    model.functions = model.functions.map((f) => (f.id === 'agents' ? { ...f, unavailable: reason } : f));
+    const heard = vi.fn();
+    model.addEventListener('ui-function', heard);
+    const body = draw(model);
+    const fn = [...body.querySelectorAll<HTMLButtonElement>('.aerie-fn')].find((b) => b.getAttribute('aria-label')?.startsWith('Agents'))!;
+    expect(fn).toBeTruthy();
+    expect(fn.disabled).toBe(false);
+    expect(fn.getAttribute('aria-disabled')).toBe('true');
+    expect(fn.getAttribute('aria-label')).toBe(`Agents. ${reason}`);
+    expect(fn.querySelector('.augur-name')!.textContent).toBe(`Agents: ${reason}`);
+    act(() => fn.click());
+    expect(model.view).toBe('stream');
+    expect(heard).not.toHaveBeenCalled();
+  });
+
+  it('leaves a function that can be used as it was', () => {
+    const body = draw(exampleShell('stream'));
+    const fn = [...body.querySelectorAll<HTMLButtonElement>('.aerie-fn')].find((b) => b.getAttribute('aria-label') === 'Settings')!;
+    expect(fn.hasAttribute('aria-disabled')).toBe(false);
+    expect(fn.querySelector('.augur-name')!.textContent).toBe('Settings');
+  });
+});
+
 describe('Shell news', () => {
   it('says a new thing that needs you once, never what was there at first', () => {
     const model = exampleShell();

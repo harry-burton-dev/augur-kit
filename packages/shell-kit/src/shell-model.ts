@@ -52,6 +52,8 @@ export interface ShellFunction {
   id: string;
   label: string;
   icon: string;
+  /** Why it can't be used now, said instead of hiding it: the button stays, looks unavailable and pressing it does nothing. */
+  unavailable?: string;
 }
 
 /**
