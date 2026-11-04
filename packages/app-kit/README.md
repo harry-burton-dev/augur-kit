@@ -45,7 +45,7 @@ export default defineReactApp({ name: manifest.name, App: Frame, routes: places,
 
 Quill re-exports all of Common, so an app imports everything from `@augur/app-kit`. Its own parts are the ones only apps need:
 
-- `AppFrame` lays out the three columns of docs/app-patterns.md. The rail holds `RailLink`s, the main column holds the screen, and the drawer holds `About`. The app's name and icon at the top of the rail open its `FrontPage`. The rail and the drawer fold to a strip, which the frame remembers on this device, and the frame tells the shell how much of the edge its drawer takes (`ui-drawer`).
+- `AppFrame` lays out the three columns of docs/app-patterns.md. The rail holds `RailLink`s, the main column holds the screen, and the drawer holds `About`. The app's name and icon at the top of the rail open its `FrontPage`. The rail and the drawer fold to a strip, which the frame remembers on this device, and the frame tells the shell how much of the edge its drawer takes (`ui-drawer`). It keeps that layout at every width, measured by its own width with a container query: below `frame-overlay-below` (1100 px) the drawer keeps its strip and opens over the page when asked, and below `frame-icons-below` (800 px) the rail shows its icons and opens over the page the same way. An overlay closes on Escape, on a press outside it, or when a section is picked.
 - `FrontPage` has three sections: what needs you, what's new, and what's worth knowing. An empty section still says something.
 - `About` is always in the same order: what it is, owner, floor, state, links and history. An empty row stays and says so.
 - `More` goes under a long list ("Showing 50 of 312 records"). `SelectionBar` holds what to do with several picked things.

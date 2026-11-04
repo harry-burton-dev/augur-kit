@@ -9,20 +9,33 @@
 @source not './**/*.stories.tsx';
 
 @layer components {
-  /* The frame: rail, main column, drawer. */
+  /* The frame: rail, main column, drawer. The room around it is the container its shape is measured by. */
+  .quill-room { container: quill-frame / inline-size; display: flex; flex-direction: column; flex: 1 0 auto; min-height: 100%; }
   .quill-frame {
     --frame-rail: var(--measure-rail);
     --frame-drawer: var(--measure-drawer);
     --frame-strip: 56px;
-    display: grid; grid-template-columns: minmax(0, 1fr); min-height: 100%;
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'main'; flex: 1 0 auto; min-height: 100%;
     background: var(--slate); color: var(--ink); font-family: var(--font-sans); font-size: var(--type-body); line-height: var(--leading-body);
     transition: grid-template-columns var(--motion-slow) var(--ease-out);
   }
-  .quill-frame[data-rail='closed'] { --frame-rail: var(--frame-strip); }
-  .quill-frame[data-drawer='closed'] { --frame-drawer: var(--frame-strip); }
-  .quill-frame[data-rail] { grid-template-columns: var(--frame-rail) minmax(0, 1fr); }
-  .quill-frame[data-drawer] { grid-template-columns: minmax(0, 1fr) var(--frame-drawer); }
-  .quill-frame[data-rail][data-drawer] { grid-template-columns: var(--frame-rail) minmax(0, 1fr) var(--frame-drawer); }
+  /* Folded or over the page, the rail and the drawer keep only their strip in the grid. */
+  .quill-frame[data-rail='closed'], .quill-frame[data-rail='over'] { --frame-rail: var(--frame-strip); }
+  .quill-frame[data-drawer='closed'], .quill-frame[data-drawer='over'] { --frame-drawer: var(--frame-strip); }
+  .quill-frame[data-rail] { grid-template-columns: var(--frame-rail) minmax(0, 1fr); grid-template-areas: 'rail main'; }
+  .quill-frame[data-drawer] { grid-template-columns: minmax(0, 1fr) var(--frame-drawer); grid-template-areas: 'main drawer'; }
+  .quill-frame[data-rail][data-drawer] { grid-template-columns: var(--frame-rail) minmax(0, 1fr) var(--frame-drawer); grid-template-areas: 'rail main drawer'; }
+  .quill-rail { grid-area: rail; }
+  .quill-main { grid-area: main; }
+  .quill-drawer { grid-area: drawer; }
+  /* Over the page: from its own edge, its full width, above the main column, with the shadow of something raised. */
+  .quill-frame[data-rail='over'] .quill-rail,
+  .quill-frame[data-drawer='over'] .quill-drawer {
+    position: absolute; top: 0; bottom: 0; z-index: 4; background: var(--slate); box-shadow: var(--shadow-overlay);
+    animation: quill-fade var(--motion-base) var(--ease-out);
+  }
+  .quill-frame[data-rail='over'] .quill-rail { left: 0; width: var(--measure-rail); overflow: visible; }
+  .quill-frame[data-drawer='over'] .quill-drawer { right: 0; width: var(--measure-drawer); }
 
   .quill-rail { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; padding: var(--space-4) var(--space-3) var(--space-6); border-right: 1px solid var(--hairline); overflow: hidden auto; }
   .quill-rail-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
@@ -73,12 +86,17 @@
   .quill-frame[data-drawer='closed'] .quill-drawer-inner { opacity: 0; visibility: hidden; }
   .quill-frame[data-turning] .quill-drawer-inner { opacity: 0; transform: translateX(var(--travel-near)); transition: none; }
 
-  @media (max-width: 960px) {
+  /* One layout at every width, by the frame's own width (tokens frame-overlay-below and frame-icons-below;
+     a query can't read a variable, so the numbers are here too and frame-widths.test.ts keeps them in step).
+     The kit sets data-rail and data-drawer to match; these rules hold the page together until it has measured. */
+  @container quill-frame (width < 1100px) {
     .quill-page-aside { grid-template-columns: minmax(0, 1fr); }
-    .quill-frame[data-drawer] { grid-template-columns: minmax(0, 1fr); }
-    .quill-frame[data-rail][data-drawer] { grid-template-columns: var(--frame-rail) minmax(0, 1fr); }
-    .quill-drawer { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--hairline); }
-    .quill-drawer-inner { position: static; max-height: none; }
+    .quill-frame[data-drawer='open'] { --frame-drawer: var(--frame-strip); }
+    .quill-frame[data-drawer='open'] .quill-drawer-inner { opacity: 0; visibility: hidden; }
+  }
+  @container quill-frame (width < 800px) {
+    .quill-frame[data-rail='open'] { --frame-rail: var(--frame-strip); }
+    .quill-frame[data-rail='open'] .quill-rail-label, .quill-frame[data-rail='open'] .quill-app span { display: none; }
   }
 
   /* The front page: what needs you, what's new, what's worth knowing. */
@@ -868,4 +886,17 @@
   .quill-tree-item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .quill-tree-item-meta { flex: none; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
   .quill-tree-compact { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+}
+
+/* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
+   loop stops (reduced-motion.test.ts in Common checks every kit). */
+@layer components {
+  @media (prefers-reduced-motion: reduce) {
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after, .quill-status[data-status='needs'][data-next] .quill-status-mark::after,
+    .quill-status[data-status='running'] .quill-status-mark::before, .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+  }
+  :root[data-motion='reduce'] {
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after, .quill-status[data-status='needs'][data-next] .quill-status-mark::after,
+    .quill-status[data-status='running'] .quill-status-mark::before, .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+  }
 }
