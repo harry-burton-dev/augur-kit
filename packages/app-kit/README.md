@@ -60,7 +60,7 @@ The parts apps used from the Lit kit, on React with the same words, looks and li
 | `ui-list`, `ui-table` | `List` (a React Aria grid list), `Table` (a React Aria table) |
 | `ui-card`, `ui-cards`, `ui-tally`, `ui-timeline`, `ui-path`, `ui-ref`, `ui-refs` | `Card`, `Cards`, `Tally`, `Timeline`, `Path`, `Ref`, `Refs` |
 | `ui-date`, `ui-drop-zone`, `ui-surface` | `DateField`, `DropZone`, `Surface` |
-| `ui-editor`, `ui-prose`, `ui-tree` | `Editor`, `Prose` (with `readMentions`, `writeMentions`, `plainText`), `Tree` (a React Aria tree) |
+| `ui-editor`, `ui-prose`, `ui-tree` | `Editor` (on Tiptap, ADR 0058: mentions sit in the text as chips; its engine loads the first time a page shows one), `Prose` (with `readMentions`, `writeMentions`, `plainText`), `Tree` (a React Aria tree) |
 | `ui-tag-picker` | `TagPicker` (a React Aria combo box; `onCreate` for a word that isn't a tag yet) |
 | `ui-lifecycle`, `ui-people-picker` | `Lifecycle` (`onMove`), `PeoplePicker` (`onPick`, and `onChange` with `multiple`) |
 | `ui-reader`, `ui-contents` | `Reader` (a ref gives `goTo`, `headingFor`, `marked`; `onOutline`, `onPosition`), `Contents` (`onSelect`) |

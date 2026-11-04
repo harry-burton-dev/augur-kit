@@ -32,6 +32,9 @@ describe.each(Object.entries(modules).map(([file, mod]) => [file.replace('../pac
       root!.render(<Story />);
       await new Promise((r) => setTimeout(r, 0));
     });
+    // Parts that load their code on first use (the editor) say aria-busy until it arrives: check them as they will be used.
+    for (let i = 0; i < 50 && document.querySelector('.quill-editor[aria-busy]'); i++) await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(document.querySelector('.quill-editor[aria-busy]'), 'the editor loaded').toBeNull();
     const a11y = (Story.parameters?.a11y ?? {}) as { options?: axe.RunOptions; disable?: boolean };
     if (a11y.disable) return;
     // In happy-dom, contrast can't be measured: it is checked in the Storybook's panel and Chromatic.

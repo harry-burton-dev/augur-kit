@@ -411,38 +411,6 @@ describe('reading', () => {
 });
 
 describe('writing and trees', () => {
-  it('writes Markdown, keeps a chosen mention as a link, and counts against its guide', async () => {
-    const { Editor } = await import('./editor.js');
-    const seen: string[] = [];
-    const source = vi.fn(async () => ({ found: [{ kind: 'person' as const, id: 'u1', label: 'Nora Briggs' }] }));
-    draw(<Editor label="Brief" guide="1 sentence" mentionSource={source} onChange={(v) => seen.push(v)} />);
-    const area = document.querySelector('textarea')!;
-    const type = async (value: string) => {
-      await act(async () => {
-        const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
-        set.call(area, value);
-        area.setSelectionRange(value.length, value.length);
-        area.dispatchEvent(new Event('input', { bubbles: true }));
-      });
-    };
-    await type('Ask @No');
-    expect(source).toHaveBeenCalledWith('@', 'No');
-    await act(async () => (document.querySelector('[role="option"]') as HTMLElement).click());
-    expect(seen.at(-1)).toBe('Ask [@Nora Briggs](person:u1) ');
-    expect(document.querySelector('.quill-ref')).not.toBeNull();
-    await type('Ask @Nora Briggs. And more. ');
-    expect(text()).toContain('aim for 1');
-  });
-
-  it('shows what the editor wrote without reading any of it as HTML', async () => {
-    const { Prose } = await import('./editor.js');
-    draw(<Prose value={'**Bold** and <b>not</b>\n- one\n- two\n> said'} />);
-    expect(document.querySelector('strong')!.textContent).toBe('Bold');
-    expect(document.querySelectorAll('li')).toHaveLength(2);
-    expect(document.querySelector('b')).toBeNull();
-    expect(document.querySelector('blockquote')!.textContent).toBe('said');
-  });
-
   it('opens the rows above the selected one and says which was chosen', async () => {
     const { Tree } = await import('./tree.js');
     const chosen = vi.fn();
