@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { kitDir, readKit } from './index.js';
-import { MODULES, sri } from './build.mjs';
+import { MODULES, STYLES, sri } from './build.mjs';
 
 // Run after `pnpm build`: checks the bundle it wrote.
 const kit = readKit();
@@ -23,4 +23,12 @@ test('every file it names is there, with the hash it gives', () => {
 test('React is bundled once: Quill imports the same React the import map serves', () => {
   const quill = readFileSync(`${kitDir}${kit.imports['@augur/app-kit']}`, 'utf8');
   assert.doesNotMatch(quill, /from\s*["']react["']/, 'no bare react import left');
+});
+
+test('it links the tokens, the typefaces and both kits\' parts, and serves every font file the typefaces name', () => {
+  assert.deepEqual(kit.styles, STYLES.map(([name]) => name));
+  const fonts = readFileSync(`${kitDir}fonts.css`, 'utf8');
+  const urls = [...fonts.matchAll(/url\(\.\/([^)]+)\)/g)].map((m) => m[1]);
+  assert.ok(urls.length > 0, 'fonts.css names its files');
+  for (const url of urls) assert.ok(kit.integrity[url], `${url} is served, with a hash`);
 });

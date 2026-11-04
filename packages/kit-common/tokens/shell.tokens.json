@@ -110,7 +110,12 @@
     "travel-floor": {
       "$value": "96px",
       "$type": "dimension",
-      "$description": "How far the screen travels between floors: away the way you're going, in from the other side. Under reduced motion nothing travels; it crossfades."
+      "$description": "How far the screen travels between floors: away the way you're going, in from the other side. Under reduced motion nothing travels; it crossfades.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0px"
+        }
+      }
     },
     "motion-title": {
       "$value": "2400ms",

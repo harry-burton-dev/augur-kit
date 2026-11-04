@@ -3,13 +3,14 @@
 // shell.tokens.json (Aerie, the shell kit) and app.tokens.json (Quill, the
 // app kit). Those files are the only place tokens are edited (ADR 0015). From
 // them it writes:
-//   dist/tokens.css         every token as a CSS custom property, on :root
+//   dist/tokens.css         every token as a CSS custom property, on :root, then each motion
+//                           token's reduced value ($extensions.augur.reduced) under reduced motion
 //   dist/theme.css          the Tailwind v4 theme for Common: Tailwind's own palette and scales removed
 //   dist/theme-shell.css    what Aerie adds to it (the shell set)
 //   dist/theme-app.css      what Quill adds to it (the app set)
 //   src/generated/tokens.ts the typed token map
 import StyleDictionary from 'style-dictionary';
-import { mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -106,5 +107,16 @@ const sd = new StyleDictionary({
 
 mkdirSync(join(root, 'dist'), { recursive: true });
 await sd.buildAllPlatforms();
-const count = (await sd.getPlatformTokens('css')).allTokens.length;
-console.log(`kit-common: wrote ${count} tokens`);
+const { allTokens } = await sd.getPlatformTokens('css');
+
+// Reduced motion, from the system or the page's own setting (data-motion="reduce" on <html>, which a
+// host sets from a person's preference): one switch for both. Each token with a reduced value takes it,
+// so moves become near-instant, nothing travels and loops stop. Custom properties inherit, so the
+// switch reaches every part, in shadow roots too.
+const reduced = allTokens.filter((t) => t.$extensions?.augur?.reduced !== undefined);
+const lines = (indent) => reduced.map((t) => `${indent}--${t.name}: ${t.$extensions.augur.reduced};`).join('\n');
+appendFileSync(
+  join(root, 'dist/tokens.css'),
+  `\n:root[data-motion='reduce'] {\n${lines('  ')}\n}\n\n@media (prefers-reduced-motion: reduce) {\n  :root {\n${lines('    ')}\n  }\n}\n`,
+);
+console.log(`kit-common: wrote ${allTokens.length} tokens, ${reduced.length} with a reduced-motion value`);

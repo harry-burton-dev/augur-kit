@@ -342,51 +342,96 @@
     }
   },
   "motion": {
-    "$description": "DRAFT. Durations and easing. Motion is slow and continuous on the water, quick and quiet on controls. Everything still works with prefers-reduced-motion: things appear in place instead of moving.",
+    "$description": "DRAFT. Durations and easing. Motion is slow and continuous on the water, quick and quiet on controls. Everything still works with reduced motion: things appear in place instead of moving. A token's $extensions.augur.reduced is its value under reduced motion, from the system (prefers-reduced-motion) or the page's own setting (data-motion=\"reduce\" on <html>).",
     "motion-instant": {
       "$value": "80ms",
       "$type": "duration",
-      "$description": "Colour and opacity on hover: a word brightening, an outline appearing."
+      "$description": "Colour and opacity on hover: a word brightening, an outline appearing.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0.01ms"
+        }
+      }
     },
     "motion-quick": {
       "$value": "160ms",
       "$type": "duration",
-      "$description": "Small things that answer a press: a menu opening, a row's actions appearing, a closing panel."
+      "$description": "Small things that answer a press: a menu opening, a row's actions appearing, a closing panel.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0.01ms"
+        }
+      }
     },
     "motion-base": {
       "$value": "240ms",
       "$type": "duration",
-      "$description": "Most changes of state: a field's line, a toggle's track, the bulk bar, the veil."
+      "$description": "Most changes of state: a field's line, a toggle's track, the bulk bar, the veil.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0.01ms"
+        }
+      }
     },
     "motion-slow": {
       "$value": "320ms",
       "$type": "duration",
-      "$description": "Something arriving: a dialog rising, a popover, the tide sliding a day, Search opening."
+      "$description": "Something arriving: a dialog rising, a popover, the tide sliding a day, Search opening.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0.01ms"
+        }
+      }
     },
     "motion-calm": {
       "$value": "600ms",
       "$type": "duration",
-      "$description": "A scene changing: the Shell's sky, a Glance, the menu stepping back."
+      "$description": "A scene changing: the Shell's sky, a Glance, the menu stepping back.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0.01ms"
+        }
+      }
     },
     "motion-spin": {
       "$value": "900ms",
       "$type": "duration",
-      "$description": "One turn of a working arc (a busy button, Running)."
+      "$description": "One turn of a working arc (a busy button, Running).",
+      "$extensions": {
+        "augur": {
+          "reduced": "0s"
+        }
+      }
     },
     "motion-run": {
       "$value": "1200ms",
       "$type": "duration",
-      "$description": "One pass of the hairline that runs under a busy field or a loading state."
+      "$description": "One pass of the hairline that runs under a busy field or a loading state.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0s"
+        }
+      }
     },
     "motion-shimmer": {
       "$value": "1600ms",
       "$type": "duration",
-      "$description": "One sweep of a skeleton's shimmer."
+      "$description": "One sweep of a skeleton's shimmer.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0s"
+        }
+      }
     },
     "motion-ping": {
       "$value": "2400ms",
       "$type": "duration",
-      "$description": "One ring of the ping: look now."
+      "$description": "One ring of the ping: look now.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0s"
+        }
+      }
     },
     "motion-still": {
       "$value": "3000ms",
@@ -401,12 +446,22 @@
     "motion-drift": {
       "$value": "9000ms",
       "$type": "duration",
-      "$description": "Ambient loops that should never be noticed: the Bubble's iridescent swirl, an idle agent breathing. (The water runs on its own engine.)"
+      "$description": "Ambient loops that should never be noticed: the Bubble's iridescent swirl, an idle agent breathing. (The water runs on its own engine.)",
+      "$extensions": {
+        "augur": {
+          "reduced": "0s"
+        }
+      }
     },
     "travel-near": {
       "$value": "24px",
       "$type": "dimension",
-      "$description": "How far a screen travels as it arrives or leaves: an app rising into place, sinking on Back. Under reduced motion nothing travels; it crossfades."
+      "$description": "How far a screen travels as it arrives or leaves: an app rising into place, sinking on Back. Under reduced motion nothing travels; it crossfades.",
+      "$extensions": {
+        "augur": {
+          "reduced": "0px"
+        }
+      }
     },
     "ease-standard": {
       "$value": "cubic-bezier(.4, 0, .2, 1)",

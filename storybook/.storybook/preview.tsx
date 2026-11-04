@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react-vite';
 import '@augur/kit-common/tokens.css';
+import '@augur/kit-common/fonts.css';
 import './page.css';
 import '@augur/kit-common/kit.css';
 import '@augur/app-kit/kit.css';

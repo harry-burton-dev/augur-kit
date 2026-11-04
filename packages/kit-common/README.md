@@ -3,7 +3,7 @@
 What both of AUGUR's React kits stand on (ADR 0015): the tokens, the Tailwind theme built from them, and, as the Lit kit moves to React, the controls both kits share. Aerie (`@augur/shell-kit`) is the shell's kit and Quill (`@augur/app-kit`) the apps' kit; each adds its own token set.
 
 ```sh
-pnpm --filter @augur/kit-common build   # tokens.css, the Tailwind theme and the typed token map
+pnpm --filter @augur/kit-common build   # tokens.css, fonts.css, the Tailwind theme and the typed token map
 pnpm --filter @augur/kit-common test
 ```
 
@@ -19,9 +19,15 @@ The three files in `tokens/`, in the W3C design tokens format, are the only plac
 
 `scripts/build-tokens.mjs` (Style Dictionary) writes from them:
 
-- `dist/tokens.css`: every token as a CSS custom property on `:root`, named for the token alone (`color.slate` is `--slate`).
+- `dist/tokens.css`: every token as a CSS custom property on `:root`, named for the token alone (`color.slate` is `--slate`). After it come the reduced-motion values: a motion token whose `$extensions.augur.reduced` is set takes that value under `@media (prefers-reduced-motion: reduce)` and under `:root[data-motion='reduce']`, which a host sets on `<html>` from a person's preference. One switch for both: moves become near-instant (`0.01ms`), loops stop (`0s`) and nothing travels (`0px`). Custom properties inherit, so it reaches every part, in shadow roots too. Reading times (`motion-still`, `motion-hold`, `motion-title`, `motion-toast`) have no reduced value: a toast doesn't go sooner. Give a new movement token a reduced value in its token file, never in a part's CSS.
 - `dist/theme.css`, `theme-shell.css`, `theme-app.css`: the Tailwind v4 theme. `theme.css` clears Tailwind's own palette and scales, so only AUGUR's tokens exist as classes, and each utility reads the token's variable (`bg-slate` is `var(--slate)`, `p-4` is `var(--space-4)`, `text-body` brings its leading). Durations, layers and effects have no Tailwind utility and stay variables.
 - `@augur/kit-common/tokens`: the typed map (`tokens`, `token('ink')`).
+
+## Typefaces
+
+The `font-*` tokens name Jost (`font-sans`) and Nunito (`font-rounded`). Common serves them itself from Fontsource (AUGUR's ADR 0015), so a deployment with no internet still shows them. `scripts/build-fonts.mjs` writes `dist/fonts.css`, the `@font-face` rules for the weights the kit uses (Jost 200 to 600, Nunito 400 and 600), and copies only the files they name into `dist/fonts/`, next to it. A page loads `@augur/kit-common/fonts.css` once; the kit bundle serves it as `fonts.css` with its `fonts/` and lists it in `kit.json`'s `styles`, so a shell that links those has the typefaces with nothing else to install.
+
+## Using the tokens
 
 Load a kit's theme, not these files: `@augur/app-kit/theme.css` in an app, `@augur/shell-kit/theme.css` in the shell. New `floor-*` tokens also have to be copied into the design tool by hand.
 
