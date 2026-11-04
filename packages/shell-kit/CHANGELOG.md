@@ -1,5 +1,12 @@
 # @augur/shell-kit
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [afc6305]
+  - @augur/kit-common@0.7.0
+
 ## 0.5.0
 
 ### Minor Changes

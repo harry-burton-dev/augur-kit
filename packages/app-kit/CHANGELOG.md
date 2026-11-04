@@ -1,5 +1,12 @@
 # @augur/app-kit
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [afc6305]
+  - @augur/kit-common@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
