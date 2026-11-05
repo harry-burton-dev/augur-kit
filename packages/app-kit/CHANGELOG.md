@@ -1,5 +1,15 @@
 # @augur/app-kit
 
+## 0.8.0
+
+### Minor Changes
+
+- fe744dd: Quill writes dates the person's way (PER-323): `writeDate(when, options, formats)` and `useFormats()` read the shell's `ctx.formats` (AUGUR SDK 2.0), falling back to the browser's. The date field's words, the timeline's days and times, and a table's date column use them in place of `en-GB`; the timeline groups by day in their time zone. What a date field puts back to edit stays English, as it reads it.
+
+### Patch Changes
+
+- f24fa98: `AppError` reads a problem the way AUGUR's services send it: `reason` is the stable code (`forbidden`), now also `code`, and the message is `detail`. Before, a service's code became the message, so a refusal read "forbidden" rather than its sentence. A `reason` written as a sentence is still shown as the message.
+
 ## 0.7.1
 
 ### Patch Changes
