@@ -1,7 +1,7 @@
 import { useId, type ReactNode } from 'react';
 
 /**
- * Nothing is obtuse (docs/shell-principles.md): a control that can't be used now
+ * Nothing is obtuse (Shell principles, in the AUGUR handbook): a control that can't be used now
  * stays where it is, stays focusable, and says why in one sentence: who can,
  * what it's waiting for, or what would turn it on. The reason shows under the
  * control on hover and focus, and is read with it.

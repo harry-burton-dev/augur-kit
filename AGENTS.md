@@ -7,9 +7,10 @@ AUGUR itself, its ADRs and its guides are in the `augur` repository; read its AG
 there before changing what the kit promises.
 
 ## Where to look
-- AUGUR's ADRs (`augur` docs/decisions), especially 0015 (React, Quill, Tailwind), 0016 (Storybook and
+- AUGUR's decisions (ADRs and PDRs) in the Decision register, in the AUGUR handbook on Google Drive
+  (`04 Decisions`, https://drive.google.com/drive/folders/16wXmUMRNP2_vXAlf4kBMF9hCDNUXg7yO), especially 0015 (React, Quill, Tailwind), 0016 (Storybook and
   Chromatic), 0046 (this repository) and 0048 (the kit bundle and `KIT_URL`).
-- docs/app-patterns.md and docs/shell-principles.md in `augur`, for how parts look and behave.
+- App patterns and Shell principles, in the AUGUR handbook's `02 Principles`, for how parts look and behave.
 - The task: its Linear issue (team PER, initiative AUGUR).
 
 ## Rules

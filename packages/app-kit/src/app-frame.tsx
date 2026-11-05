@@ -68,7 +68,7 @@ export interface AppFrameProps {
 }
 
 /**
- * An app's page, in three columns with one job each (docs/app-patterns.md):
+ * An app's page, in three columns with one job each (App patterns, in the AUGUR handbook):
  * the rail says where you can go, the main column shows what's here, and the
  * drawer says more about it. The rail and the drawer fold to a strip of icons,
  * and the frame remembers that on this device. The shell's bar stays the only
@@ -76,7 +76,7 @@ export interface AppFrameProps {
  * or goes, the frame fires `ui-drawer` on the window with the width it takes,
  * so the shell keeps its floor gauge clear of it.
  *
- * One layout at every width (docs/app-patterns.md), by the frame's own width:
+ * One layout at every width (App patterns, in the AUGUR handbook), by the frame's own width:
  * below `frame-overlay-below` the drawer keeps only its strip and opens over
  * the page when asked; below `frame-icons-below` the rail shows its icons and
  * opens over the page the same way. An overlay closes on Escape, on a press

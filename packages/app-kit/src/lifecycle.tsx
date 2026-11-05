@@ -29,7 +29,7 @@ export interface LifecycleProps {
  * passed filled, the one it's in ringed and named, the rest hollow. Under the
  * track, a button for each state the person may move it to; with none, `why`
  * says what would let them. Take states from `@augur/records` so every app's
- * lifecycle reads the same (docs/app-patterns.md).
+ * lifecycle reads the same (App patterns, in the AUGUR handbook).
  */
 export function Lifecycle({ states, state, moves = [], offLine = [], why, label, busy, onMove, className }: LifecycleProps) {
   const shown = states.filter((s) => !offLine.includes(s.id) || s.id === state);
