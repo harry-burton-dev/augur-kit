@@ -3,13 +3,13 @@
 This repository holds AUGUR's React UI kit (AUGUR's ADR 0046): Common (`@augur/kit-common`, with the three
 token files), Quill (`@augur/app-kit`, for apps) and Aerie (`@augur/shell-kit`, the shell's own), their
 Storybook, and the kit bundle (`@augur/kit-bundle`) that deployments serve at their kit URL (ADR 0048).
-AUGUR itself, its ADRs and its guides are in the `im-platform` repository; read its AGENTS.md and the ADRs
+AUGUR itself, its ADRs and its guides are in the `augur` repository; read its AGENTS.md and the ADRs
 there before changing what the kit promises.
 
 ## Where to look
-- AUGUR's ADRs (`im-platform` docs/decisions), especially 0015 (React, Quill, Tailwind), 0016 (Storybook and
+- AUGUR's ADRs (`augur` docs/decisions), especially 0015 (React, Quill, Tailwind), 0016 (Storybook and
   Chromatic), 0046 (this repository) and 0048 (the kit bundle and `KIT_URL`).
-- docs/app-patterns.md and docs/shell-principles.md in `im-platform`, for how parts look and behave.
+- docs/app-patterns.md and docs/shell-principles.md in `augur`, for how parts look and behave.
 - The task: its Linear issue (team PER, initiative AUGUR).
 
 ## Rules
