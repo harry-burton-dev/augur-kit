@@ -2,7 +2,7 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { FocusStage, focusLevel, useRack, type Plane } from './focus.js';
+import { deploymentDepth, FocusStage, focusLevel, useRack, type Plane } from './focus.js';
 import { frontSections, FrontPage } from './front-page.js';
 import { PathTree, type PathNode } from './path-tree.js';
 import { RingProvider, useRingTarget, type RingAction } from './radial-menu.js';
@@ -45,6 +45,32 @@ describe('FocusStage', () => {
       </FocusStage>,
     );
     expect(document.querySelector('.quill-stage')!.hasAttribute('data-racked')).toBe(false);
+  });
+
+  it('draws depth the deployment’s way when it says (PDR-010, amendment 2), over the app’s', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'augur-depth';
+    meta.content = 'scrim';
+    document.head.append(meta);
+    try {
+      draw(
+        <FocusStage depth="lens">
+          <p>Inside</p>
+        </FocusStage>,
+      );
+      expect(document.querySelector('.quill-stage')!.getAttribute('data-depth')).toBe('scrim');
+      meta.content = 'glass';
+      expect(deploymentDepth()).toBeUndefined();
+      draw(
+        <FocusStage depth="lens">
+          <p>Inside</p>
+        </FocusStage>,
+      );
+      expect(document.querySelector('.quill-stage')!.getAttribute('data-depth')).toBe('lens');
+    } finally {
+      meta.remove();
+    }
+    expect(deploymentDepth()).toBeUndefined();
   });
 
   it('sends the work plane far for one surface, deep for two, and soft for one within the work', () => {

@@ -65,8 +65,26 @@ interface Stage {
 
 const StageContext = createContext<Stage | null>(null);
 
+const DEPTHS: readonly Depth[] = ['veil', 'lens', 'scrim'];
+
+/**
+ * How the deployment draws depth, when it says (PDR-010, amendment 2): its
+ * FOCUS_DEPTH setting, which the web container writes into the page's
+ * `augur-depth` meta. An org whose desktops have no GPU (virtual desktops)
+ * picks `scrim`, which blurs nothing. Nothing, or anything else, means the
+ * deployment leaves it to the app.
+ */
+export function deploymentDepth(doc: Pick<Document, 'querySelector'> | undefined = typeof document === 'undefined' ? undefined : document): Depth | undefined {
+  const set = doc?.querySelector<HTMLMetaElement>('meta[name="augur-depth"]')?.content.trim();
+  return DEPTHS.find((d) => d === set);
+}
+
 export interface FocusStageProps {
-  /** How the out-of-focus plane is drawn. `veil` unless the person or the app chose otherwise. */
+  /**
+   * How the out-of-focus plane is drawn, when the deployment doesn't say:
+   * the deployment's choice (`deploymentDepth`) is about its machines, so it
+   * wins. `veil` when neither says.
+   */
   depth?: Depth;
   children: ReactNode;
   className?: string;
@@ -78,7 +96,9 @@ export interface FocusStageProps {
  * over it, everything else in the stage goes out of focus. The layout never
  * moves, so you keep your place.
  */
-export function FocusStage({ depth = 'veil', children, className }: FocusStageProps) {
+export function FocusStage({ depth: asked, children, className }: FocusStageProps) {
+  const [deployed] = useState(() => deploymentDepth());
+  const depth: Depth = deployed ?? asked ?? 'veil';
   const [racks, setRacks] = useState<Racking[]>([]);
   const returnTo = useRef<HTMLElement | undefined>(undefined);
   const stage = useMemo<Stage>(

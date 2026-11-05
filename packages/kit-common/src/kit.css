@@ -581,3 +581,17 @@
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
   }
 }
+
+/* A deployment whose desktops have no GPU (FOCUS_DEPTH=scrim, which the web container writes into the
+   page's augur-depth meta; PDR-010, amendment 2): nothing blurs what's behind it, and the see-through
+   surfaces turn solid so what's on them stays readable without the blur. Outside any layer, so it wins. */
+:root:has(meta[name='augur-depth'][content='scrim']) {
+  --surface-pane: var(--slate-deep);
+  --surface-raised: var(--slate);
+  --surface-overlay: var(--slate);
+}
+:root:has(meta[name='augur-depth'][content='scrim']) *,
+:root:has(meta[name='augur-depth'][content='scrim']) *::before,
+:root:has(meta[name='augur-depth'][content='scrim']) *::after {
+  backdrop-filter: none;
+}
