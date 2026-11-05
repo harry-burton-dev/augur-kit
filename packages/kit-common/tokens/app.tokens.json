@@ -140,6 +140,11 @@
       "$value": "{motion.motion-calm}",
       "$type": "duration",
       "$description": "Focus pull: how long something that needs you takes to pull focus to itself, and the rest to step back. Common's motion-calm."
+    },
+    "motion-trail": {
+      "$value": "{motion.motion-calm}",
+      "$type": "duration",
+      "$description": "The lit path's trail: how long the line from the top of a tree down to where you are takes to draw itself after you move, each level starting a motion-instant after the one above. Common's motion-calm."
     }
   },
   "path": {

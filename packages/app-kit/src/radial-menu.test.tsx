@@ -3,7 +3,7 @@ import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ms } from '@augur/kit-common';
-import { placeActions, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
+import { pageActions, placeActions, RING_MORE_ID, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -298,6 +298,75 @@ describe('RingMore', () => {
     draw(
       <RingProvider>
         <RingMore subject={() => undefined} />
+      </RingProvider>,
+    );
+    expect(document.querySelector('.quill-ring-more')).toBeNull();
+  });
+});
+
+describe('RadialMenu overflow into More (W3.5b)', () => {
+  const many: RingAction[] = Array.from({ length: 12 }, (_, i) => ({ id: `a${i}`, label: `Action ${String.fromCharCode(65 + i)}`, icon: 'arrow' }));
+
+  it('keeps the first seven in their slots and puts More in the slot left free', () => {
+    const { first, rest } = pageActions(many);
+    expect(first).toHaveLength(8);
+    expect(first.find((p) => p.action.id === RING_MORE_ID)?.slot).toBe('nw');
+    expect(rest.map((a) => a.id)).toEqual(['a7', 'a8', 'a9', 'a10', 'a11']);
+  });
+
+  it('opens More as a ring of its own, and Esc goes back to More', () => {
+    draw(
+      <RingProvider overflow="more">
+        <Thing subject={{ label: 'Access control standard', actions: many, onAction: () => {} }} />
+      </RingProvider>,
+    );
+    const thing = document.querySelector('button')!;
+    act(() => void thing.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 })));
+    expect(document.querySelector('[role="menu"]')!.getAttribute('data-shape')).toBe('ring');
+    expect(names()).toHaveLength(8);
+    const more = items().find((i) => i.hasAttribute('data-more'))!;
+    expect(more.getAttribute('aria-haspopup')).toBe('menu');
+    act(() => more.click());
+    expect(names()).toEqual(['Action H', 'Action I', 'Action J', 'Action K', 'Action L']);
+    expect(readout()).toContain('Esc goes back');
+    key(document.activeElement!, 'Escape');
+    expect(names()).toHaveLength(8);
+    expect(document.activeElement).toBe(items().find((i) => i.hasAttribute('data-more')));
+  });
+
+  it('stays a list past eight unless the app asks for More', () => {
+    open({ label: 'Access control standard', actions: many, onAction: () => {} });
+    expect(document.querySelector('[role="menu"]')!.getAttribute('data-shape')).toBe('list');
+  });
+});
+
+describe('List rows with a radial menu (W3.5b)', () => {
+  it('opens the row’s menu on right-click and from its "more" mark, and draws nothing without ringFor', async () => {
+    const { List } = await import('./list.js');
+    const items = [{ id: 'n1', title: 'Approve the roster', actions: [{ id: '0', label: 'Approve' }] }];
+    const ringFor = () => ({ label: 'Approve the roster', actions: [{ id: 'open', label: 'Open', icon: 'arrow' as const }], onAction: () => {} });
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} ringFor={ringFor} />
+      </RingProvider>,
+    );
+    const words = document.querySelector('.quill-list-text')!;
+    act(() => void words.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 })));
+    expect(document.querySelector('[role="menu"]')!.getAttribute('aria-label')).toBe('Actions for Approve the roster');
+    act(() => root?.unmount());
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} ringFor={ringFor} />
+      </RingProvider>,
+    );
+    const more = document.querySelector<HTMLButtonElement>('.quill-ring-more')!;
+    expect(more.getAttribute('aria-label')).toBe('More actions for Approve the roster');
+    act(() => more.click());
+    expect(document.querySelector('[role="menu"]')).not.toBeNull();
+    act(() => root?.unmount());
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} />
       </RingProvider>,
     );
     expect(document.querySelector('.quill-ring-more')).toBeNull();

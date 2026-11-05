@@ -94,6 +94,27 @@ describe('Letterbox', () => {
   });
 });
 
+describe('Letterbox, W3.5b', () => {
+  it('keeps what does not fit behind More, shown in place when asked', () => {
+    draw(<Letterbox open heading="Server 3 bake halted" more={<p>Every server's error rate</p>} />);
+    const more = button('More')!;
+    const text = document.getElementById(more.getAttribute('aria-controls')!)!;
+    expect(more.getAttribute('aria-expanded')).toBe('false');
+    expect(text.hidden).toBe(true);
+    act(() => more.click());
+    expect(button('Less')!.getAttribute('aria-expanded')).toBe('true');
+    expect(text.hidden).toBe(false);
+    expect(document.querySelector('.augur-letterbox-frame')!.getAttribute('data-more')).toBe('open');
+  });
+
+  it('is solid unless the app asks for the see-through frame', () => {
+    draw(<Letterbox open heading="Server 3 bake halted" />);
+    expect(document.querySelector('.augur-letterbox')!.getAttribute('data-look')).toBe('solid');
+    act(() => root!.render(<Letterbox open look="see-through" heading="Server 3 bake halted" />));
+    expect(document.querySelector('.augur-letterbox')!.getAttribute('data-look')).toBe('see-through');
+  });
+});
+
 describe('Explain', () => {
   it('labels each of the four parts in words', () => {
     draw(<Explain what="It failed." why="Nobody can upgrade." canDo="See what failed." whoElse="Lee Park can." />);

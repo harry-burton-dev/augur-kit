@@ -501,6 +501,23 @@
     padding: var(--space-6) var(--edge); background: var(--slate); border-block: 1px solid var(--hairline); overflow: auto;
   }
   .augur-letterbox-modal[data-entering] .augur-letterbox-frame { animation: augur-open-frame var(--motion-slow) var(--ease-out); }
+  /* The frame never scrolls: what doesn't fit waits behind More, and showing it lets the frame grow past the ratio. */
+  .augur-letterbox-frame[data-more='open'] { aspect-ratio: auto; }
+  .augur-letterbox-more { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+  .augur-letterbox-more-text { display: flex; flex-direction: column; gap: var(--space-3); color: var(--ink-muted); }
+  .augur-letterbox-more-text[hidden] { display: none; }
+  /* See-through: the bars are solid, as a cinema's are, and the frame is a window onto the work behind, racked to the
+     deep plane, so you keep your place. The bars carry the words; nothing in the frame competes with what is behind it. */
+  .augur-letterbox[data-look='see-through']::before, .augur-letterbox[data-look='see-through']::after { display: none; }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-bar { align-self: stretch; background: var(--slate-deep); }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-bar[data-edge='top'] { align-items: flex-end; }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-bar[data-edge='bottom'] { align-items: flex-start; }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-frame {
+    background: var(--focus-far-tint); backdrop-filter: blur(var(--focus-deep-blur)) saturate(var(--focus-deep-saturate)) brightness(var(--focus-deep-dim));
+    border-block-color: var(--danger);
+  }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-modal[data-entering] .augur-letterbox-bar[data-edge='top'] { animation: augur-bar-in-top var(--motion-calm) var(--ease-out); }
+  .augur-letterbox[data-look='see-through'] .augur-letterbox-modal[data-entering] .augur-letterbox-bar[data-edge='bottom'] { animation: augur-bar-in-bottom var(--motion-calm) var(--ease-out); }
   /* Acknowledged is not resolved: the chip says which, in words. */
   .augur-ack {
     display: inline-flex; align-items: center; gap: var(--space-3); padding: var(--space-1) var(--space-3);
@@ -539,6 +556,9 @@
 @keyframes augur-run { 0% { left: 0; width: 0; } 50% { width: 30%; } 100% { left: 100%; width: 0; } }
 @keyframes augur-open-frame { from { clip-path: inset(50% 0); } to { clip-path: inset(0 0); } }
 @keyframes augur-fade { from { opacity: 0; } to { opacity: 1; } }
+/* The see-through letterbox's bars close in from the screen's edges, as the edge rules becoming the bars. */
+@keyframes augur-bar-in-top { from { transform: translateY(-100%); } to { transform: none; } }
+@keyframes augur-bar-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes augur-rise-far { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes augur-rise { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
