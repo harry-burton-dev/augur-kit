@@ -1,6 +1,8 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon, cx, type IconName } from '@augur/kit-common';
 import { Status, type StatusName } from './states.js';
+import { dayKey, writeDate, type AppFormats } from './formats.js';
+import { useFormats } from './react-app.js';
 
 export type FloorKind = 'personal' | 'team' | 'org';
 
@@ -141,15 +143,14 @@ export interface TimelineItem {
   what: ReactNode;
 }
 
-const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
-/** "Today", "Yesterday", or the day as "Tue 27 Oct" (with the year when it isn't this year). */
-export const dayWords = (at: Date, now = new Date()) => {
-  if (sameDay(at, now)) return 'Today';
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (sameDay(at, yesterday)) return 'Yesterday';
-  return at.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', ...(at.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }) }).replace(',', '');
+/** "Today", "Yesterday", or the day as "Tue 27 Oct" (with the year when it isn't this year), in the person's time zone and way of writing. */
+export const dayWords = (at: Date, now = new Date(), formats: AppFormats = {}) => {
+  const day = dayKey(at, formats.timeZone);
+  if (day === dayKey(now, formats.timeZone)) return 'Today';
+  if (day === dayKey(new Date(now.getTime() - 86_400_000), formats.timeZone)) return 'Yesterday';
+  const thisYear = day.slice(0, 4) === dayKey(now, formats.timeZone).slice(0, 4);
+  return writeDate(at, { weekday: 'short', day: 'numeric', month: 'short', ...(thisYear ? {} : { year: 'numeric' }) }, formats);
 };
 
 export interface TimelineProps {
@@ -164,6 +165,7 @@ export interface TimelineProps {
 /** What happened, newest first, grouped by day: who, then what, at a time of day. Five show; the rest wait behind "Earlier". */
 export function Timeline({ items, limit = 5, now = new Date(), className }: TimelineProps) {
   const [open, setOpen] = useState(false);
+  const formats = useFormats();
   const sorted = [...items].sort((a, b) => b.at.localeCompare(a.at));
   const folds = limit > 0 && sorted.length > limit;
   const shown = folds && !open ? sorted.slice(0, limit) : sorted;
@@ -171,7 +173,7 @@ export function Timeline({ items, limit = 5, now = new Date(), className }: Time
   let last = '';
   shown.forEach((item, i) => {
     const at = new Date(item.at);
-    const day = dayWords(at, now);
+    const day = dayWords(at, now, formats);
     if (day !== last)
       rows.push(
         <li key={`day-${i}`} className="quill-timeline-day quill-label">
@@ -181,7 +183,7 @@ export function Timeline({ items, limit = 5, now = new Date(), className }: Time
     last = day;
     rows.push(
       <li key={item.id ?? `ev-${i}`} className="quill-timeline-ev">
-        <time dateTime={item.at}>{at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</time>
+        <time dateTime={item.at}>{writeDate(at, { hour: '2-digit', minute: '2-digit' }, formats)}</time>
         <span>
           <b>{item.who}</b> {item.what}
         </span>
