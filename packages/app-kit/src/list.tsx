@@ -27,6 +27,7 @@ import {
 } from 'react-aria-components';
 import { Button, Icon, cx, type IconName } from '@augur/kit-common';
 import { State, Status, statusUrgency, type StatusName } from './states.js';
+import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 
 /** A thing to do about one row, shown as a word at its end ("Approve", "Open"). */
 export interface ListAction {
@@ -74,7 +75,25 @@ export interface ListProps {
   onOpen?: (item: ListItem) => void;
   onAction?: (item: ListItem, action: ListAction) => void;
   onRetry?: () => void;
+  /**
+   * What the radial menu offers on a row: right-click or a long press on it, or its "more" mark. Leave out
+   * for no menu. Inside a RingProvider (AppFrame has one); outside one, nothing is drawn.
+   */
+  ringFor?: (item: ListItem) => RingSubject | undefined;
   className?: string;
+}
+
+/** A row's words and controls, opening the radial menu where the row has one. */
+function RowRing({ ring, children }: { ring: () => RingSubject | undefined; children: ReactNode }) {
+  const target = useRingTarget(ring);
+  // Keys stay with the grid row; the "more" mark is the keyboard's way in.
+  const { onKeyDown: _keys, ...pointer } = target;
+  return (
+    <span className="quill-list-ring" {...pointer}>
+      {children}
+      <RingMore subject={ring} />
+    </span>
+  );
 }
 
 /**
@@ -83,7 +102,7 @@ export interface ListProps {
  * row that needs you pings; the rest are a still green. Arrows, Home, End and
  * Enter come from React Aria's grid list.
  */
-export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, onOpen, onAction, onRetry, className }: ListProps) {
+export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, onOpen, onAction, onRetry, ringFor, className }: ListProps) {
   const [one, many] = noun;
   const count = items.length;
   const head = bar ? <div className="quill-list-bar quill-label">{loading ? `${many}…` : `${count} ${count === 1 ? one : many}`}</div> : null;
@@ -129,32 +148,39 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
         >
           {rows.map((item) => (
             <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined}>
-              {item.icon && !item.status ? (
-                <Icon name={item.icon} size={16} className="quill-list-icon" />
-              ) : (
-                <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
-              )}
-              <span className="quill-list-text">
-                <b>{item.title}</b>
-                {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
-              </span>
-              {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
-              {(item.actions ?? []).slice(0, 2).map((action, i) => {
-                const off = Boolean(item.disabled || action.disabled);
-                return (
-                  <Button
-                    key={action.id}
-                    kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
-                    size="sm"
-                    disabled={off}
-                    reason={action.disabled ? action.reason : item.reason}
-                    aria-label={`${action.label}: ${item.title}`}
-                    onPress={() => onAction?.(item, action)}
-                  >
-                    {action.label}
-                  </Button>
+              {(() => {
+                const content = (
+                  <>
+                  {item.icon && !item.status ? (
+                    <Icon name={item.icon} size={16} className="quill-list-icon" />
+                  ) : (
+                    <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
+                  )}
+                  <span className="quill-list-text">
+                    <b>{item.title}</b>
+                    {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
+                  </span>
+                  {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
+                  {(item.actions ?? []).slice(0, 2).map((action, i) => {
+                    const off = Boolean(item.disabled || action.disabled);
+                    return (
+                      <Button
+                        key={action.id}
+                        kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
+                        size="sm"
+                        disabled={off}
+                        reason={action.disabled ? action.reason : item.reason}
+                        aria-label={`${action.label}: ${item.title}`}
+                        onPress={() => onAction?.(item, action)}
+                      >
+                        {action.label}
+                      </Button>
+                    );
+                  })}
+                  </>
                 );
-              })}
+                return ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
+              })()}
             </GridListItem>
           ))}
         </GridList>

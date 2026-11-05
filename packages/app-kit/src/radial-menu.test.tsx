@@ -339,3 +339,36 @@ describe('RadialMenu overflow into More (W3.5b)', () => {
     expect(document.querySelector('[role="menu"]')!.getAttribute('data-shape')).toBe('list');
   });
 });
+
+describe('List rows with a radial menu (W3.5b)', () => {
+  it('opens the row’s menu on right-click and from its "more" mark, and draws nothing without ringFor', async () => {
+    const { List } = await import('./list.js');
+    const items = [{ id: 'n1', title: 'Approve the roster', actions: [{ id: '0', label: 'Approve' }] }];
+    const ringFor = () => ({ label: 'Approve the roster', actions: [{ id: 'open', label: 'Open', icon: 'arrow' as const }], onAction: () => {} });
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} ringFor={ringFor} />
+      </RingProvider>,
+    );
+    const words = document.querySelector('.quill-list-text')!;
+    act(() => void words.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 })));
+    expect(document.querySelector('[role="menu"]')!.getAttribute('aria-label')).toBe('Actions for Approve the roster');
+    act(() => root?.unmount());
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} ringFor={ringFor} />
+      </RingProvider>,
+    );
+    const more = document.querySelector<HTMLButtonElement>('.quill-ring-more')!;
+    expect(more.getAttribute('aria-label')).toBe('More actions for Approve the roster');
+    act(() => more.click());
+    expect(document.querySelector('[role="menu"]')).not.toBeNull();
+    act(() => root?.unmount());
+    draw(
+      <RingProvider>
+        <List label="What needs you" items={items} />
+      </RingProvider>,
+    );
+    expect(document.querySelector('.quill-ring-more')).toBeNull();
+  });
+});

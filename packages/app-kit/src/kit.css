@@ -632,9 +632,12 @@
   .quill-list[data-density='compact'] .quill-list-row { min-height: 44px; }
   .quill-list-row:last-child { border-bottom: 0; }
   .quill-list-row[data-hovered] { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+  /* A row with a radial menu: its words and controls open it, and its "more" mark shows while the row is hovered or has focus. */
+  .quill-list-ring { display: contents; }
+  .quill-list-row[data-focus-visible] .quill-ring-more, .quill-list-row[data-focused] .quill-ring-more { opacity: 1; }
   .quill-list-row[data-focus-visible] { box-shadow: inset 0 0 0 1.5px var(--focus); }
   .quill-list-row[data-disabled] { cursor: default; }
-  .quill-list-row[data-disabled] > :is(.quill-list-lead, .quill-list-icon, .quill-list-meta), .quill-list-row[data-disabled] .quill-list-text > b { opacity: 0.4; }
+  .quill-list-row[data-disabled] :is(.quill-list-lead, .quill-list-icon, .quill-list-meta), .quill-list-row[data-disabled] .quill-list-text > b { opacity: 0.4; }
   .quill-list-lead { flex: none; position: relative; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-muted); }
   .quill-list-lead[data-status='needs'] { background: var(--green); border-color: var(--green); opacity: 0.75; }
   .quill-list-lead[data-status='needs'][data-first] { opacity: 1; }
