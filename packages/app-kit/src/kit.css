@@ -387,6 +387,11 @@
     background: var(--tile-face); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent), var(--tile-drop);
     transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), filter var(--motion-base) var(--ease-out);
   }
+  /* A tile and its "more" mark (PDR-010, amendment 6), bottom right, clear of a document's folded corner and the ribbon. */
+  .quill-tile-place { position: relative; display: grid; }
+  .quill-tile-more { position: absolute; right: var(--space-2); bottom: var(--space-2); }
+  .quill-tile-place[data-kind='document'] .quill-tile-more { color: color-mix(in srgb, var(--slate-deep) 70%, transparent); }
+  .quill-tile-place[data-kind='document'] .quill-tile-more:hover { color: var(--slate-deep); background: color-mix(in srgb, var(--slate-deep) 12%, transparent); }
   .quill-tile:hover { transform: translateY(calc(var(--space-1) * -1)); filter: brightness(1.06); }
   .quill-tile:active { transform: translateY(1px); }
   .quill-tile:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
@@ -397,7 +402,8 @@
       var(--space-1) var(--space-2) var(--space-4) calc(var(--space-2) * -1) color-mix(in srgb, var(--shade) 55%, transparent);
   }
   .quill-tile[data-kind='series'] .quill-tile-count { font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: var(--weight-title); }
-  .quill-tile[data-kind='document'] { --tile-face: var(--ink); color: var(--slate-deep); clip-path: polygon(0 0, calc(100% - var(--space-4)) 0, 100% var(--space-4), 100% 100%, 0 100%); }
+  /* A page, but not a bright one: dimmer than the text on slate, so documents don't always win the eye over the places around them (PDR-010, amendment 4). */
+  .quill-tile[data-kind='document'] { --tile-face: color-mix(in srgb, var(--ink) 72%, var(--slate)); color: var(--slate-deep); clip-path: polygon(0 0, calc(100% - var(--space-4)) 0, 100% var(--space-4), 100% 100%, 0 100%); }
   .quill-tile[data-kind='document'] .quill-tile-top { color: color-mix(in srgb, var(--slate-deep) 70%, transparent); }
   .quill-tile[data-kind='document'] .quill-tile-state { color: var(--navy); }
   .quill-tile[data-kind='library'] { box-shadow: inset var(--space-1) 0 0 var(--tile-mark, var(--navy)), inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent), var(--tile-drop); }

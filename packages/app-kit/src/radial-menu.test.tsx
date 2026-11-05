@@ -3,6 +3,7 @@ import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ms } from '@augur/kit-common';
+import { KindTile } from './tiles.js';
 import { pageActions, placeActions, RING_MORE_ID, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -290,6 +291,24 @@ describe('RingMore', () => {
     key(items()[0]!, 'Escape');
     settle();
     expect(document.activeElement).toBe(document.querySelector('.the-row'));
+  });
+
+  it('sits beside a tile and opens the tile’s own menu (PDR-010, amendment 6)', () => {
+    vi.useFakeTimers();
+    const opened = vi.fn();
+    draw(
+      <RingProvider>
+        <KindTile kind="document" eyebrow="Document" name="Site plan" onOpen={opened} ring={() => subject} />
+      </RingProvider>,
+    );
+    const more = document.querySelector('.quill-tile-place > .quill-ring-more') as HTMLButtonElement;
+    expect(more.getAttribute('aria-label')).toBe('More actions for Site plan');
+    act(() => more.click());
+    expect(opened).not.toHaveBeenCalled();
+    expect(document.querySelector('[role="menu"]')!.getAttribute('aria-label')).toBe('Actions for Site plan');
+    key(items()[0]!, 'Escape');
+    settle();
+    expect(document.activeElement).toBe(document.querySelector('.quill-tile'));
   });
 
   it('is not drawn outside a RingProvider or with nothing to offer', () => {
