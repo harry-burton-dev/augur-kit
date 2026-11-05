@@ -70,6 +70,11 @@ describe('createAppClient', () => {
     expect(err).toMatchObject({ status: 409, message: 'Archived libraries take no changes.', whoCanChange: 'The library’s leads', code: 'https://augur/problems/archived', retryable: false });
   });
 
+  it('reads a problem as AUGUR’s services send it: the code in reason, the sentence in detail', () => {
+    const body = { type: 'about:blank', title: 'Forbidden', status: 403, detail: 'Only the floor’s leads can pass it down.', reason: 'forbidden', whoCanChange: 'A lead of this floor', error: 'forbidden', message: 'Only the floor’s leads can pass it down.' };
+    expect(AppError.fromProblem(403, body)).toMatchObject({ message: 'Only the floor’s leads can pass it down.', code: 'forbidden', reason: 'forbidden', whoCanChange: 'A lead of this floor' });
+  });
+
   it('reads the older { error, message } body, and says the app isn’t answering for a 5xx or no answer', async () => {
     expect(AppError.fromProblem(413, { error: 'too-large', message: 'A file can be 50 MB at most.' })).toMatchObject({ message: 'A file can be 50 MB at most.', code: 'too-large' });
     expect(AppError.fromProblem(502, { message: 'upstream exploded' }, { appName: 'Artifacts' }).message).toBe('Artifacts isn’t answering. Try again in a moment.');
