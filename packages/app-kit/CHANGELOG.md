@@ -1,5 +1,15 @@
 # @augur/app-kit
 
+## 0.7.0
+
+### Minor Changes
+
+- d39aece: DateField counts days with @internationalized/date and opens a real calendar (React Aria's, in the person's language) instead of the browser's hidden date input. Same props. A month on from 31 January is now 28 February, not 3 March, and days that don't exist, such as 31/02, are refused.
+
+  PeoplePicker no longer puts `aria-expanded` on its text box, which axe rates critical; the box now points at what it found with `aria-controls`. New Storybook stories (Quill / Writing kit) show the picker on a stand-in for identity's directory search, and the date field's states.
+
+- 24828f6: Editor is built on Tiptap (AUGUR's ADR 0058), with the same props and the same Markdown. A mention sits in the text as one chip where it was written: the caret steps over it and one Backspace takes it out. Bold and italic show as themselves while writing; `- `, `1. ` and `> ` start a list, a numbered list or a quote, and the selection bar gains Numbered list. Pasted rich text keeps only bold, italic, lists and quotes. The engine loads with a dynamic import the first time a page shows an editor, so pages without one load nothing more. Prose reads with markdown-it (loaded the same way) and shows numbered lists too; web links show as their words.
+
 ## 0.6.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @augur/shell-kit
 
+## 0.6.0
+
+### Minor Changes
+
+- c4ce624: A Shell function can now be unavailable: `ShellFunction` takes an optional `unavailable` reason, as navs do. The button stays on the arc and focusable, looks unavailable, carries `aria-disabled` and the reason in its name and hover name, and pressing it does nothing.
+
 ## 0.5.1
 
 ### Patch Changes
