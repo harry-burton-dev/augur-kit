@@ -58,7 +58,7 @@ export interface AppFrameProps {
   busy?: boolean;
   /** Which screen is showing. A new value fades the main column in and turns the drawer with it. */
   screen?: string;
-  /** How the app goes out of focus behind a dialog, the radial menu or the palette (PDR-010). `veil` by default. */
+  /** How the app goes out of focus behind a dialog, the radial menu or the palette (PDR-010). The deployment's choice wins when it has one; else this; else `veil`. */
   depth?: Depth;
   /** How the radial menu lays out its actions: `auto` (a ring, a list past eight) by default. */
   ringShape?: RingShape;
