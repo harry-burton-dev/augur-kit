@@ -10,9 +10,10 @@ export interface AppFetcher {
 }
 
 /**
- * An RFC 9457 problem-details body, with AUGUR's two fields: `reason` says in
- * a sentence why it can't be done, and `whoCanChange` who could change that.
- * Older services answer `{ error, message }`; both are read.
+ * An RFC 9457 problem-details body, with AUGUR's two fields: `reason`, the
+ * stable code a screen can switch on (`forbidden`, `not_found`), and
+ * `whoCanChange`, who could change that. `detail` says in a sentence why it
+ * can't be done. Older services answer `{ error, message }`; both are read.
  */
 export interface Problem {
   type?: string;
@@ -33,6 +34,9 @@ export interface ErrorWords {
   appName?: string;
 }
 
+/** A code, as a service writes one: `not_found`, `too-large`. */
+const CODE = /^[a-z][a-z0-9_.-]*$/;
+
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 
@@ -47,7 +51,7 @@ export class AppError extends Error {
   readonly status: number;
   /** A short code for the problem, from the body's `code`, `error` or `type`. */
   readonly code: string | undefined;
-  /** Why it can't be done, when the service said. */
+  /** The service's stable code for why it can't be done (`forbidden`), the same as `code` when it gave one. */
   readonly reason: string | undefined;
   /** Who could change that, when the service said. */
   readonly whoCanChange: string | undefined;
@@ -89,9 +93,12 @@ export class AppError extends Error {
       ...(text(raw.whoCanChange) ? { whoCanChange: text(raw.whoCanChange) } : {}),
       status,
     };
-    const code = text(raw.code) ?? text(raw.error) ?? (problem.type && problem.type !== 'about:blank' ? problem.type : undefined);
+    // AUGUR's services give `reason` as a code (`not_found`) and the sentence as `detail`. A reason that
+    // reads as a sentence, as some early bodies sent, is still shown rather than lost.
+    const reasonIsCode = problem.reason !== undefined && CODE.test(problem.reason);
+    const code = text(raw.code) ?? text(raw.error) ?? (reasonIsCode ? problem.reason : undefined) ?? (problem.type && problem.type !== 'about:blank' ? problem.type : undefined);
     if (code) problem.code = code;
-    const said = problem.reason ?? problem.detail ?? text(raw.message) ?? problem.title;
+    const said = (reasonIsCode ? undefined : problem.reason) ?? problem.detail ?? text(raw.message) ?? problem.title;
     const message = status >= 500 || !said ? AppError.unanswered(words) : said;
     return new AppError(message, status, problem);
   }

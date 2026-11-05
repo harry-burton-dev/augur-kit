@@ -28,6 +28,8 @@ import {
 import { Button, Icon, cx, type IconName } from '@augur/kit-common';
 import { State, Status, statusUrgency, type StatusName } from './states.js';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
+import { writeDate, type AppFormats } from './formats.js';
+import { useFormats } from './react-app.js';
 
 /** A thing to do about one row, shown as a word at its end ("Approve", "Open"). */
 export interface ListAction {
@@ -215,7 +217,7 @@ export interface TableSort {
 }
 
 /** "4 min ago", "3 h ago", "2 d ago", then the date. */
-export const relativeTime = (value: unknown, now = Date.now()): string => {
+export const relativeTime = (value: unknown, now = Date.now(), formats: AppFormats = {}): string => {
   const t = value instanceof Date ? value.getTime() : Date.parse(String(value));
   if (Number.isNaN(t)) return String(value ?? '');
   const mins = Math.round((now - t) / 60000);
@@ -225,7 +227,7 @@ export const relativeTime = (value: unknown, now = Date.now()): string => {
   if (hours < 24) return `${hours} h ago`;
   const days = Math.round(hours / 24);
   if (days < 30) return `${days} d ago`;
-  return new Date(t).toLocaleDateString();
+  return writeDate(t, { dateStyle: 'medium' }, formats);
 };
 
 /** Sort comparison for one column: status by urgency, numbers and dates by value, text by locale. */
@@ -378,6 +380,7 @@ export function Table<R extends TableRow = TableRow>({
   const countText = selected.size ? `${selected.size} selected` : q ? `${visible.length} of ${rows.length} ${noun}` : `${rows.length} ${noun}`;
   const span = columns.length + (selectable ? 1 : 0);
   const end = (c: TableColumn<R>) => c.align === 'end' || c.kind === 'number';
+  const formats = useFormats();
   const cell = (c: TableColumn<R>, row: R): ReactNode => {
     const value = row[c.key];
     if (c.format) return c.format(value, row);
@@ -385,8 +388,8 @@ export function Table<R extends TableRow = TableRow>({
     if (c.kind === 'date') {
       const exact = new Date(String(value));
       return (
-        <time dateTime={String(value)} title={Number.isNaN(exact.getTime()) ? undefined : exact.toLocaleString()}>
-          {relativeTime(value)}
+        <time dateTime={String(value)} title={Number.isNaN(exact.getTime()) ? undefined : writeDate(exact, { dateStyle: 'medium', timeStyle: 'short' }, formats)}>
+          {relativeTime(value, Date.now(), formats)}
         </time>
       );
     }
