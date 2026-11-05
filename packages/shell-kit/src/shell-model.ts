@@ -654,7 +654,7 @@ export class ShellModel extends EventTarget {
 
   /**
    * Show an area title card for a moment. Cards are generated from the floor
-   * or app arrived at (docs/shell-principles.md, "Arrivals are generated"),
+   * or app arrived at (Shell principles, in the AUGUR handbook, "Arrivals are generated"),
    * never written by hand; the Area titles setting turns them off.
    */
   private showCard(card: AreaCard) {

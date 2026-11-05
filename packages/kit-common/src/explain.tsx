@@ -21,7 +21,7 @@ const parts = [
 ] as const;
 
 /**
- * Explain, never hide (docs/shell-principles.md): the four-part explanation of
+ * Explain, never hide (Shell principles, in the AUGUR handbook): the four-part explanation of
  * something that needs a person. What happened, why it matters, what you can do
  * and who else can act, each labelled in words. All four are asked for, so an
  * urgent item never leaves one of them out. Used inside a `Letterbox` and

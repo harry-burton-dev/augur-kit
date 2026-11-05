@@ -6,7 +6,7 @@ export const reducedMotion = () =>
 /**
  * Moves between screens and floors, shared by the shell and its menus so
  * every move follows one rule: the thing you chose carries you to the next
- * place, and everything else steps aside (docs/shell-principles.md, "The
+ * place, and everything else steps aside (Shell principles, in the AUGUR handbook, "The
  * choice carries you"). Moves run on the Web Animations API, so any of them
  * can be jumped to its end: a key or a press during a move never waits.
  */

@@ -3,7 +3,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Tokens only (docs/shell-principles.md): a colour or a duration in a part's markup or CSS is a token.
+// Tokens only (Shell principles, in the AUGUR handbook): a colour or a duration in a part's markup or CSS is a token.
 // Every kit's source: Common's own, Quill's and Aerie's.
 const here = dirname(fileURLToPath(import.meta.url));
 const packages = join(here, '../..');
