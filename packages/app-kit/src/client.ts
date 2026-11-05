@@ -96,7 +96,7 @@ export class AppError extends Error {
     // AUGUR's services give `reason` as a code (`not_found`) and the sentence as `detail`. A reason that
     // reads as a sentence, as some early bodies sent, is still shown rather than lost.
     const reasonIsCode = problem.reason !== undefined && CODE.test(problem.reason);
-    const code = text(raw.code) ?? (reasonIsCode ? problem.reason : undefined) ?? text(raw.error) ?? (problem.type && problem.type !== 'about:blank' ? problem.type : undefined);
+    const code = text(raw.code) ?? text(raw.error) ?? (reasonIsCode ? problem.reason : undefined) ?? (problem.type && problem.type !== 'about:blank' ? problem.type : undefined);
     if (code) problem.code = code;
     const said = (reasonIsCode ? undefined : problem.reason) ?? problem.detail ?? text(raw.message) ?? problem.title;
     const message = status >= 500 || !said ? AppError.unanswered(words) : said;

@@ -73,6 +73,8 @@ describe('createAppClient', () => {
   it('reads a problem as AUGUR’s services send it: the code in reason, the sentence in detail', () => {
     const body = { type: 'about:blank', title: 'Forbidden', status: 403, detail: 'Only the floor’s leads can pass it down.', reason: 'forbidden', whoCanChange: 'A lead of this floor', error: 'forbidden', message: 'Only the floor’s leads can pass it down.' };
     expect(AppError.fromProblem(403, body)).toMatchObject({ message: 'Only the floor’s leads can pass it down.', code: 'forbidden', reason: 'forbidden', whoCanChange: 'A lead of this floor' });
+    // When a service gives both, `error` is the code and `reason` says which kind of it.
+    expect(AppError.fromProblem(403, { error: 'unseen', reason: 'kept', message: 'It’s kept on another floor.' })).toMatchObject({ code: 'unseen', reason: 'kept', message: 'It’s kept on another floor.' });
   });
 
   it('reads the older { error, message } body, and says the app isn’t answering for a 5xx or no answer', async () => {
