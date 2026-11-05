@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ReactNode } from 'react';
 import { DateField } from './date.js';
+import { Editor, Prose, type MentionSource } from './editor.js';
 import { PeoplePicker, type Principal } from './people-picker.js';
 
 /**
@@ -98,6 +99,53 @@ export const Dates: StoryObj = {
       <DateField label="Due" hint="Say it in words: 13 nov, friday, +2w." />
       <DateField label="Review on" defaultValue="2026-12-01" />
       <DateField label="Starts" required empty="Pick a day" quick={[{ label: 'Today', value: 'today' }, { label: 'Monday', value: 'monday' }]} />
+    </Column>
+  ),
+};
+
+const THINGS = [
+  { kind: 'entity' as const, id: 'ent_1', label: 'HMS Example', floorName: 'Organisation' },
+  { kind: 'intent' as const, id: 'int_4', label: 'Keep the coast watched' },
+  { kind: 'document' as const, id: 'd-7', label: 'Patrol report' },
+];
+
+/** People and teams after `@` from the stand-in directory; things after `#`, with two kept where you can't open them. */
+const mentionSource: MentionSource = async (trigger, query) => {
+  if (trigger === '@') {
+    const found = await searchDirectory(query);
+    return { found: found.map((p) => ({ kind: p.kind, id: p.id, label: p.name })) };
+  }
+  await wait(150);
+  const q = query.toLowerCase();
+  return { found: THINGS.filter((t) => t.label.toLowerCase().includes(q)), closedCount: 2, closedReason: 'Kept on Finance. Ask its leads.' };
+};
+
+const BRIEF = 'Ask [@Nora Briggs](person:u1) to watch [#HMS Example](entity:ent_1) until **Friday**.\n\n- Report twice a day\n- Say at once if it _moves_';
+
+/** Writing with mentions: type `@no` or `#hms`. Select words for the format bar. What it writes is shown below as Prose. */
+export const Writing: StoryObj = {
+  render: () => {
+    function Story() {
+      const [value, setValue] = useState(BRIEF);
+      return (
+        <Column>
+          <Editor label="Intent" hint="What should happen, and why." guide="3 sentences" mentionSource={mentionSource} value={value} onChange={setValue} />
+          <Prose value={value} />
+          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', color: 'var(--ink-muted)', fontSize: 'var(--type-small)' }}>{value}</pre>
+        </Column>
+      );
+    }
+    return <Story />;
+  },
+};
+
+/** Empty, required, over its guide, and unavailable. */
+export const EditorStates: StoryObj = {
+  render: () => (
+    <Column>
+      <Editor label="Back-brief" placeholder="What you'll do, in your words." required />
+      <Editor label="Summary" guide="1 sentence" defaultValue="One sentence. And another one." />
+      <Editor label="Concern" disabled reason="Only the intent's owner can change this." defaultValue="Fuel runs short **on Thursday**." />
     </Column>
   ),
 };

@@ -819,10 +819,24 @@
 /* Editor, prose and tree (PER-243). */
 @layer components {
   .quill-editor-box { position: relative; align-items: stretch; }
-  .quill-editor-input { overflow: hidden; resize: none; min-height: calc(var(--leading-body) * 2 + var(--space-3) * 2); }
+  .quill-editor-area { flex: 1 1 auto; min-width: 0; }
+  .quill-editor-input { outline: none; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+  .quill-editor-input > * + * { margin-top: var(--space-3); }
+  .quill-editor-input :is(p, ul, ol, blockquote) { margin-bottom: 0; }
+  .quill-editor-input p { margin-top: 0; }
+  .quill-editor-input :is(ul, ol) { padding-left: 1.2em; }
+  .quill-editor-input ul { list-style: disc; }
+  .quill-editor-input ol { list-style: decimal; }
+  .quill-editor-input blockquote { margin-left: 0; margin-right: 0; padding-left: var(--space-4); border-left: 2px solid var(--hairline-strong); color: var(--ink-muted); }
+  .quill-editor-input strong { font-weight: 600; }
+  .quill-editor-input p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
+  .quill-editor-input[aria-disabled='true'] { color: var(--ink-muted); cursor: default; }
+  .quill-mention { display: inline-block; padding: 0 var(--space-1); border: 1px solid var(--hairline); border-radius: var(--radius-key); background: var(--surface-pane); color: var(--ink); line-height: var(--leading-small); white-space: nowrap; }
+  .quill-mention.ProseMirror-selectednode { border-color: var(--focus); }
   .quill-editor-bar { position: absolute; bottom: calc(100% + var(--space-1)); right: 0; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: var(--radius-key); background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline); box-shadow: var(--shadow-raised); }
   .quill-editor-bar button { all: unset; cursor: pointer; min-width: 28px; height: 26px; padding: 0 var(--space-2); box-sizing: border-box; display: grid; place-items: center; border-radius: var(--radius-key); font-size: var(--type-small); color: var(--ink); }
   .quill-editor-bar button:hover { background: var(--hairline); }
+  .quill-editor-bar button[aria-pressed='true'] { background: var(--hairline-strong); }
   .quill-editor-bar button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
   .quill-editor-bar b { font-weight: 700; }
   .quill-editor-bar i { font-style: italic; }
@@ -833,11 +847,12 @@
   .quill-editor-option svg { color: var(--ink-muted); }
   .quill-editor-option small { margin-left: auto; color: var(--ink-muted); font-size: var(--type-small); }
   .quill-editor-none { padding: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  .quill-editor .quill-refs { margin-top: var(--space-2); }
   .quill-editor [data-over] { color: var(--warning); }
   .quill-prose { display: flex; flex-direction: column; gap: var(--space-3); max-width: var(--measure-prose); color: var(--ink); font-size: var(--type-body); line-height: var(--leading-body); }
-  .quill-prose :is(p, ul, blockquote) { margin: 0; }
-  .quill-prose ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--space-1); list-style: disc; }
+  .quill-prose :is(p, ul, ol, blockquote) { margin: 0; }
+  .quill-prose :is(ul, ol) { padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--space-1); }
+  .quill-prose ul { list-style: disc; }
+  .quill-prose ol { list-style: decimal; }
   .quill-prose blockquote { padding-left: var(--space-4); border-left: 2px solid var(--hairline-strong); color: var(--ink-muted); }
   .quill-prose strong { font-weight: 600; }
   .quill-prose .quill-ref { vertical-align: baseline; }

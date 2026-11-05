@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { kitDir, readKit } from './index.js';
 import { MODULES, STYLES, sri } from './build.mjs';
@@ -31,4 +32,23 @@ test('it links the tokens, the typefaces and both kits\' parts, and serves every
   const urls = [...fonts.matchAll(/url\(\.\/([^)]+)\)/g)].map((m) => m[1]);
   assert.ok(urls.length > 0, 'fonts.css names its files');
   for (const url of urls) assert.ok(kit.integrity[url], `${url} is served, with a hash`);
+});
+
+/** Every file a module loads before it runs: its static imports, and theirs. */
+const loadedWith = (file) => {
+  const seen = new Set();
+  const walk = (f) => {
+    if (seen.has(f)) return;
+    seen.add(f);
+    const code = readFileSync(`${kitDir}${f}`, 'utf8');
+    for (const m of code.matchAll(/(?:^|[;}\n])\s*import\s*(?:[^'"()]*?from\s*)?["'](\.[^"']+)["']/g)) walk(join(dirname(f), m[1]));
+  };
+  walk(file);
+  return [...seen];
+};
+
+test('the editor\'s engine loads only when an editor is shown (ADR 0058)', () => {
+  const quill = loadedWith(kit.imports['@augur/app-kit']);
+  for (const f of quill) assert.doesNotMatch(readFileSync(`${kitDir}${f}`, 'utf8'), /prosemirror|ProseMirror/, `${f} loads with Quill and has ProseMirror in it`);
+  assert.ok(Object.keys(kit.integrity).some((f) => /editor-engine/.test(f) && /ProseMirror/.test(readFileSync(`${kitDir}${f}`, 'utf8'))), 'the engine is its own chunk');
 });
