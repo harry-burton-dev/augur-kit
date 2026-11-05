@@ -17,7 +17,11 @@ export interface Principal {
   meta?: string;
 }
 
-/** Finds people and teams by name. The app asks identity through the SDK. */
+/**
+ * Finds people and teams by name. The app asks identity through the SDK:
+ * `search={(q) => searchPrincipals(ctx, q)}` (SDK 1.12), whose answers already
+ * have this shape. A rejection's message is shown under the field as it is.
+ */
 export type PrincipalSearch = (query: string) => Promise<Principal[]>;
 
 export interface PeoplePickerProps extends Omit<FieldProps, 'state' | 'message' | 'required' | 'optional'> {
