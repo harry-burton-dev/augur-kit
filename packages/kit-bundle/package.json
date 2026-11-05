@@ -1,6 +1,6 @@
 {
   "name": "@augur/kit-bundle",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
