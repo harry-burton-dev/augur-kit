@@ -1,6 +1,7 @@
 import { createContext, useContext, type ComponentType, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { AppFetcher } from './client.js';
+import type { AppFormats } from './formats.js';
 import { DataProvider, newDataClient, type AppBus, type DataClient } from './query.js';
 import { PlaceFrame, ROUTES, mountedAt, routerFor } from './routes.js';
 
@@ -22,6 +23,8 @@ export interface AppMount extends AppFetcher {
   workspace: { id: string };
   intent?: AppIntent;
   reply?: { respond(result: unknown): void; cancel(): void };
+  /** How the person wants dates written (SDK 2.0); an older shell leaves it out. */
+  readonly formats?: AppFormats;
 }
 
 /** What a picker gets: the request it answers, and the two ways to end it. */
@@ -78,6 +81,14 @@ export function useAppContext<C extends AppMount = AppMount>(): C {
   const ctx = useContext(Mounted);
   if (!ctx) throw new Error('useAppContext needs a part mounted by defineReactApp.');
   return ctx as C;
+}
+
+/**
+ * How the person wants dates and times written, from the shell (`ctx.formats`), or none outside a
+ * mounted app or on an older shell: then dates are written the browser's way. Read at each render.
+ */
+export function useFormats(): AppFormats {
+  return useContext(Mounted)?.formats ?? {};
 }
 
 /** The styles each app added, and how many of its parts are mounted. */

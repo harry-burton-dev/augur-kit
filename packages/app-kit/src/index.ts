@@ -28,7 +28,8 @@ export { Lifecycle, type LifecycleState, type LifecycleProps } from './lifecycle
 export { PeoplePicker, principalKey, principalRows, type Principal, type PrincipalSearch, type PeoplePickerProps } from './people-picker.js';
 export { Reader, Contents, slugFor, loadReader, type ReaderProps, type ContentsProps, type ReaderHandle, type ReaderSize, type ReaderWidth, type OutlineItem, type MarkedPassage } from './reader.js';
 export { FilterBar, filterValue, type FilterDef, type FilterValue, type FilterBarProps } from './filter-bar.js';
-export { defineReactApp, useAppContext, type AppMount, type AppIntent, type AppProps, type PickerProps, type AppSurfaceProps, type ReactAppSpec, type ReactApp } from './react-app.js';
+export { defineReactApp, useAppContext, useFormats, type AppMount, type AppIntent, type AppProps, type PickerProps, type AppSurfaceProps, type ReactAppSpec, type ReactApp } from './react-app.js';
 export { placeRoutes, place, readSearch, mountedAt, type Place, type PlaceSpec, type PlaceArgs, type PlaceLinkProps, type PlaceRoutesOptions, type AppRoutes, type ParamsOf, type SearchOf, type SearchSpec, type SearchKind } from './routes.js';
 export { createAppClient, AppError, isAppError, type AppClient, type AppClientOptions, type AppFetcher, type AnyPaths, type Answer, type CallOptions, type HttpMethod, type PathsFor, type Problem, type ErrorWords } from './client.js';
 export { useData, useChange, useRefresh, DataView, DataProvider, newDataClient, type AppBus, type DataKey, type DataState, type DataOptions, type DataClient, type ChangeState, type ChangeOptions, type DataViewProps } from './query.js';
+export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';

@@ -12,8 +12,12 @@ import {
   TextField as AriaTextField,
 } from 'react-aria-components';
 import { CalendarDate, endOfMonth, getDayOfWeek, parseDate, type DateDuration } from '@internationalized/date';
+import { writeDate, type AppFormats } from './formats.js';
+import { useFormats } from './react-app.js';
 import { FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, type FieldProps, type FieldState } from '@augur/kit-common';
 
+/** The way a day is written back into the field for editing, which parseDay reads: English words, day first. */
+const TYPED = 'en-GB';
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const FRIDAY = 5;
@@ -81,12 +85,17 @@ export const parseDay = (text: string, now = new Date()): string | null => {
   return null;
 };
 
-/** A day in words: "Fri 13 Nov", with the year when it isn't this one. */
-export const dayName = (iso: string, now = new Date()) => {
+/**
+ * A day in words: "Fri 13 Nov", with the year when it isn't this one. With `formats` it is written
+ * the person's way (a day has no time zone, so theirs isn't applied); without, as typed back into a DateField.
+ */
+export const dayName = (iso: string, now = new Date(), formats?: AppFormats) => {
   const d = read(iso);
   if (!d) return iso;
   const at = new Date(d.year, d.month - 1, d.day);
-  return at.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', ...(d.year === now.getFullYear() ? {} : { year: 'numeric' }) }).replace(',', '');
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', ...(d.year === now.getFullYear() ? {} : { year: 'numeric' }) };
+  if (formats) return writeDate(at, options, { ...formats, timeZone: undefined });
+  return at.toLocaleDateString(TYPED, options).replace(',', '');
 };
 
 /** How far a day is from today, in words: "today", "in 15 days", "3 days ago". */
@@ -137,6 +146,7 @@ export interface DateFieldProps extends FieldProps {
 export function DateField({ label, hint, required, optional, disabled, state, message, className, value: given, defaultValue, onChange, name, empty = 'Not set', quick = DEFAULT_QUICK, now = new Date() }: DateFieldProps) {
   const [own, setOwnValue] = useState(defaultValue ?? '');
   const value = given ?? own;
+  const formats = useFormats();
   const [draft, setDraft] = useState<string | undefined>(undefined);
   const [check, setCheck] = useState<{ state: FieldState; message?: string }>({ state: 'idle' });
   const [calendar, setCalendar] = useState(false);
@@ -174,7 +184,7 @@ export function DateField({ label, hint, required, optional, disabled, state, me
     name,
     value: () => value,
   });
-  const words = value ? `${dayName(value, now)} · ${dayDistance(value, now)}` : '';
+  const words = value ? `${dayName(value, now, formats)} · ${dayDistance(value, now)}` : '';
   const shownQuick = quick.slice(0, 4);
   return (
     <AriaTextField
