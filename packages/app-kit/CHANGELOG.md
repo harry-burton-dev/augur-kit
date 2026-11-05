@@ -1,5 +1,11 @@
 # @augur/app-kit
 
+## 0.7.1
+
+### Patch Changes
+
+- 799176a: PeoplePicker's `search` says how to hand it the SDK's `searchPrincipals`, and the Writing kit stories' stand-in directory answers as identity's does: people with their email, teams with where they sit.
+
 ## 0.7.0
 
 ### Minor Changes
