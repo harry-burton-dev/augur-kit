@@ -17,6 +17,8 @@ export interface ShellNotification {
   floor?: string;
   /** Up to two things to do about it right from the stream ("Approve", "Open"); the host does them. Extras are dropped. */
   actions?: ShellNotificationAction[];
+  /** The person made this kind of notification quiet: it lands in the stream like a muted app's, without a pulse and uncounted. */
+  quiet?: boolean;
 }
 
 export interface ShellNotificationAction {
@@ -428,7 +430,7 @@ export class ShellModel extends EventTarget {
   /** Add a notification. It changes the status words and pulses the point once; the Shell never opens itself. */
   notify(n: ShellNotification) {
     this.notifications = [n, ...this.notifications.filter((x) => x.id !== n.id)];
-    if (this.muted.includes(n.app)) return;
+    if (n.quiet || this.muted.includes(n.app)) return;
     this.arriving = true;
     clearTimeout(this.arriveTimer);
     this.arriveTimer = setTimeout(() => {
@@ -736,7 +738,7 @@ export class ShellModel extends EventTarget {
 
   /** What the band and the dome count: everything but what the person muted. */
   get heard() {
-    return this.muted.length ? this.notifications.filter((n) => !this.muted.includes(n.app)) : this.notifications;
+    return this.notifications.filter((n) => !n.quiet && !this.muted.includes(n.app));
   }
 
   get mood(): 'quiet' | 'some' | 'needs' | 'offline' {
