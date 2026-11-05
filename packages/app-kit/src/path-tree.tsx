@@ -47,7 +47,16 @@ export interface PathTreeProps {
   pinned?: number;
   /** The words on the "…" row, given the folded path nodes. Default: "2 more levels". */
   foldedLabel?: (folded: PathNode[]) => string;
+  /**
+   * How the lit line arrives when the path changes. `still` draws it at once (the default); `draw` draws it
+   * from the top down to where you are, a level at a time (`motion-trail`), so you see the way you came.
+   * Reduced motion draws it at once.
+   */
+  trail?: PathTrail;
 }
+
+/** How the lit line arrives when the path changes. */
+export type PathTrail = 'still' | 'draw';
 
 /** How far a row is from where the person is: 0 is on the path or inside the current one, 3 is the furthest step. */
 export type PathDistance = 0 | 1 | 2 | 3;
@@ -198,7 +207,7 @@ const guidesOf = (rows: Row[]) => {
  * walks back: it opens the parent. Backspace walks back from anywhere.
  * Right-click (or the context-menu key) opens the row's radial menu.
  */
-export function PathTree({ label, nodes, path, onOpen, ringFor, light = 'path', pinned = 3, foldedLabel = defaultFoldedLabel }: PathTreeProps) {
+export function PathTree({ label, nodes, path, onOpen, ringFor, light = 'path', pinned = 3, foldedLabel = defaultFoldedLabel, trail: trailLook = 'still' }: PathTreeProps) {
   const pathKey = path.join('\u0000');
   const [openFor, setOpenFor] = useState<string | null>(null);
   const trail = walk(nodes, path);
@@ -273,7 +282,7 @@ export function PathTree({ label, nodes, path, onOpen, ringFor, light = 'path', 
   };
 
   return (
-    <div className="quill-tree quill-path-tree" role="tree" aria-label={label} data-light={light}>
+    <div className="quill-tree quill-path-tree" role="tree" aria-label={label} data-light={light} data-trail={trailLook}>
       {rows.map((row, i) => {
         const common = {
           rowRef: (el: HTMLDivElement | null) => void (el ? refs.current.set(row.key, el) : refs.current.delete(row.key)),
@@ -281,6 +290,8 @@ export function PathTree({ label, nodes, path, onOpen, ringFor, light = 'path', 
           onKey: (e: KeyboardEvent<HTMLDivElement>) => onKey(e, i),
           onFocus: () => setFocus(row.key),
           guides: guides[i]!,
+          // A new path draws its line anew; the same path keeps the line it has.
+          drawn: trailLook === 'draw' ? pathKey : '',
         };
         return row.kind === 'fold' ? (
           <FoldItem key={row.key} row={row} label={foldedLabel(row.folded)} onUnfold={unfold} {...common} />
@@ -298,12 +309,13 @@ interface RowProps {
   onKey: (e: KeyboardEvent<HTMLDivElement>) => void;
   onFocus: () => void;
   guides: Guide[];
+  drawn: string;
 }
 
-function Lines({ guides }: { guides: Guide[] }) {
+function Lines({ guides, drawn }: { guides: Guide[]; drawn: string }) {
   return guides.map((g) => (
     <span
-      key={`${g.level}-${g.part}`}
+      key={`${drawn}-${g.level}-${g.part}`}
       className="quill-tree-line"
       aria-hidden="true"
       data-part={g.part}
@@ -321,7 +333,7 @@ function Needs({ id, needs }: { id: string; needs: string[] }) {
   ) : null;
 }
 
-function FoldItem({ row, label, onUnfold, rowRef, tabbable, onKey, onFocus, guides }: RowProps & { row: FoldRow; label: string; onUnfold: () => void }) {
+function FoldItem({ row, label, onUnfold, rowRef, tabbable, onKey, onFocus, guides, drawn }: RowProps & { row: FoldRow; label: string; onUnfold: () => void }) {
   const needsId = useId();
   const names = row.folded.map((n) => n.label).join(', ');
   return (
@@ -343,7 +355,7 @@ function FoldItem({ row, label, onUnfold, rowRef, tabbable, onKey, onFocus, guid
       onFocus={onFocus}
       onClick={onUnfold}
     >
-      <Lines guides={guides} />
+      <Lines guides={guides} drawn={drawn} />
       <span className="quill-tree-dot" aria-hidden="true" />
       <span className="quill-tree-text">
         <span className="quill-tree-label">
@@ -356,7 +368,7 @@ function FoldItem({ row, label, onUnfold, rowRef, tabbable, onKey, onFocus, guid
   );
 }
 
-function TreeRow({ row, ringFor, onOpen, rowRef, tabbable, onKey, onFocus, guides }: RowProps & { row: NodeRow; ringFor?: (node: PathNode) => RingSubject | undefined; onOpen: (node: PathNode) => void }) {
+function TreeRow({ row, ringFor, onOpen, rowRef, tabbable, onKey, onFocus, guides, drawn }: RowProps & { row: NodeRow; ringFor?: (node: PathNode) => RingSubject | undefined; onOpen: (node: PathNode) => void }) {
   const { node, level, lit, current } = row;
   const ring = useRingTarget(() => ringFor?.(node));
   const keys = ring.onKeyDown;
@@ -391,7 +403,7 @@ function TreeRow({ row, ringFor, onOpen, rowRef, tabbable, onKey, onFocus, guide
         if (!current) onOpen(node);
       }}
     >
-      <Lines guides={guides} />
+      <Lines guides={guides} drawn={drawn} />
       <span className="quill-tree-dot" aria-hidden="true" />
       {node.icon ? <Icon name={node.locked ? 'lock' : node.icon} size={16} className="quill-tree-icon" /> : null}
       <span className="quill-tree-text">

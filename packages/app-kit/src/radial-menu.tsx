@@ -59,8 +59,20 @@ export type RingShape =
   /** A ring up to `RING_MOST` actions, a list past that (the default). */
   | 'auto';
 
-/** Past this many a ring gets slow to scan and aim at, so `auto` turns it into a list. */
+/** Past this many a ring gets slow to scan and aim at, so `auto` turns it into a list, or overflows into More. */
 export const RING_MOST = 8;
+
+/**
+ * What a ring does with more actions than slots.
+ * - `list`: the whole menu becomes a plain list (the default).
+ * - `more`: the first seven keep their slots and the eighth slot becomes More, which opens the rest as a ring
+ *   of their own (a list past eight more). The app's order decides what goes into More. W3.5b, pending
+ *   Harry's review.
+ */
+export type RingOverflow = 'list' | 'more';
+
+/** The id of the More action that holds the overflow. Never one of an app's own. */
+export const RING_MORE_ID = '\u0000more';
 
 /** What the menu is opened on. */
 export interface RingSubject {
@@ -82,12 +94,15 @@ interface Opened extends RingSubject {
 interface Ring {
   open: (subject: Opened) => void;
   shape: RingShape;
+  overflow: RingOverflow;
 }
 
 const RingContext = createContext<Ring | null>(null);
 
 export interface RingProviderProps {
   shape?: RingShape;
+  /** What a ring does past eight actions. `list` unless the app chose `more`. */
+  overflow?: RingOverflow;
   children: ReactNode;
 }
 
@@ -96,13 +111,13 @@ export interface RingProviderProps {
  * or `RingMore` shows here. AppFrame puts one in; an app can put its own round
  * a part of the page to change its shape.
  */
-export function RingProvider({ shape = 'auto', children }: RingProviderProps) {
+export function RingProvider({ shape = 'auto', overflow = 'list', children }: RingProviderProps) {
   const [opened, setOpened] = useState<Opened | null>(null);
-  const ring = useMemo<Ring>(() => ({ open: setOpened, shape }), [shape]);
+  const ring = useMemo<Ring>(() => ({ open: setOpened, shape, overflow }), [shape, overflow]);
   return (
     <RingContext.Provider value={ring}>
       {children}
-      {opened ? <RadialMenu {...opened} shape={shape} onClose={() => setOpened(null)} /> : null}
+      {opened ? <RadialMenu {...opened} shape={shape} overflow={overflow} onClose={() => setOpened(null)} /> : null}
     </RingContext.Provider>
   );
 }
@@ -256,8 +271,24 @@ export function placeActions(actions: RingAction[]): Placed[] {
   return RING_SLOTS.filter((s) => taken.has(s)).map((slot) => ({ action: taken.get(slot)!, slot }));
 }
 
+/**
+ * The first page of a ring that overflows into More: the first seven actions in their slots, and More in the
+ * slot left free (north-west when it is). `rest` is what More holds.
+ */
+export function pageActions(actions: RingAction[]): { first: Placed[]; rest: RingAction[] } {
+  const keep = RING_MOST - 1;
+  const rest = actions.slice(keep);
+  const first = placeActions(actions.slice(0, keep));
+  const free = (['nw', ...RING_SLOTS] as RingSlot[]).find((s) => !first.some((p) => p.slot === s))!;
+  const names = rest.map((a) => a.label).join(', ');
+  const more: Placed = { action: { id: RING_MORE_ID, label: 'More', icon: 'more', preview: `${rest.length} more: ${names}` }, slot: free };
+  return { first: [...first, more].sort((a, b) => RING_SLOTS.indexOf(a.slot!) - RING_SLOTS.indexOf(b.slot!)), rest };
+}
+
 export interface RadialMenuProps extends Opened {
   shape?: RingShape;
+  /** What the ring does past eight actions. */
+  overflow?: RingOverflow;
   onClose: () => void;
 }
 
@@ -294,8 +325,15 @@ const keyOf = (a: RingAction, t?: RingTarget) => (t ? `${a.id}\u0000${t.id}` : a
  * with targets, ArrowRight or Enter goes into them and ArrowLeft or Esc comes
  * back out. Focus goes back to the thing when it closes.
  */
-export function RadialMenu({ label, actions, onAction, onAsk, target, point, shape = 'auto', onClose }: RadialMenuProps) {
-  const placed = useMemo(() => placeActions(actions), [actions]);
+export function RadialMenu({ label, actions, onAction, onAsk, target, point, shape = 'auto', overflow = 'list', onClose }: RadialMenuProps) {
+  /** Whether the ring overflows into More, and whether More is open. */
+  const paged = overflow === 'more' && shape !== 'list' && actions.length > RING_MOST;
+  const [inMore, setInMore] = useState(false);
+  const placed = useMemo(() => {
+    if (!paged) return placeActions(actions);
+    const { first, rest } = pageActions(actions);
+    return inMore ? placeActions(rest) : first;
+  }, [actions, paged, inMore]);
   const list = useMemo(() => placed.map((p) => p.action), [placed]);
   const asList = shape === 'list' || (shape === 'auto' && list.length > RING_MOST);
   const [focused, setFocused] = useState(() => Math.max(0, list.findIndex((a) => !a.disabled)));
@@ -336,7 +374,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
   useEffect(() => {
     if (into) places.current[aimed]?.focus();
     else items.current[focused]?.focus();
-  }, [focused, aimed, into]);
+  }, [focused, aimed, into, inMore]);
 
   useEffect(() => () => clearTimeout(hold.current), []);
 
@@ -415,6 +453,14 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     setAimed(Math.max(0, first));
     setArmed(null);
   };
+  /** Opens More's own ring, or goes back to the first one with focus on More. */
+  const openMore = (open: boolean) => {
+    stopHold();
+    setArmed(null);
+    setInto(null);
+    setInMore(open);
+    setFocused(open ? 0 : Math.max(0, pageActions(actions).first.findIndex((p) => p.action.id === RING_MORE_ID)));
+  };
   const comeBack = () => {
     stopHold();
     setArmed(null);
@@ -424,6 +470,10 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
   /** A press or click on an action: ask, go into its targets, start its hold, or do it. */
   const chooseAction = (index: number) => {
     const a = list[index]!;
+    if (a.id === RING_MORE_ID) {
+      openMore(true);
+      return;
+    }
     if (a.disabled) {
       if (onAsk) close(() => onAsk(a.id));
       return;
@@ -454,6 +504,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     const here = list[focused];
     if (e.key === 'Escape') {
       if (inside) comeBack();
+      else if (inMore) openMore(false);
       else close();
     } else if (e.key === 'Enter' || e.key === ' ') {
       // Handled here, not by the button's own click, so a held key is a hold and not a click.
@@ -545,7 +596,9 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     top: px(Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2)),
   };
   // One readout, under the ring or the list, for what the focused choice would change.
-  const below = asList ? Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2) + list.length * size + gap : cy0 + ry + size / 2 + gap * 2;
+  // An unavailable action at the bottom writes its reason under its name: the readout goes below that.
+  const bottomWhy = tile && placed.some((p, i) => p.action.disabled && (p.action.reason || p.action.owner) && Math.sin(angles[i]!) > 0.9);
+  const below = asList ? Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2) + list.length * size + gap : cy0 + ry + size / 2 + gap * 2 + (bottomWhy ? size : 0);
   const readAt: CSSProperties = asList
     ? { left: listAt.left, top: px(Math.min(below, vh - size - gap)) }
     : { left: px(cx0), top: px(Math.min(below, vh - size - gap)), transform: 'translateX(-50%)' };
@@ -567,15 +620,18 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     }
   }
 
+  if (inMore && !hint) hint = 'Esc goes back';
+
   return createPortal(
     <>
       <div
         ref={menu}
         className="quill-ring"
         data-shape={asList ? 'list' : 'ring'}
+        data-page={paged ? (inMore ? 'more' : 'first') : undefined}
         data-leaving={leaving ? '' : undefined}
         role="menu"
-        aria-label={`Actions for ${label}`}
+        aria-label={inMore ? `More actions for ${label}` : `Actions for ${label}`}
         aria-orientation={asList ? 'vertical' : undefined}
         onKeyDown={onKey}
         onKeyUp={onKeyUp}
@@ -618,6 +674,8 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                 aria-disabled={a.disabled || undefined}
                 aria-describedby={why}
                 aria-expanded={Boolean(a.targets?.length) && !a.disabled ? into?.index === i : undefined}
+                aria-haspopup={a.id === RING_MORE_ID ? 'menu' : undefined}
+                data-more={a.id === RING_MORE_ID ? '' : undefined}
                 style={style}
                 onFocus={() => {
                   if (into && into.index !== i) comeBack();

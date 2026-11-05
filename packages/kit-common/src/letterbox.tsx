@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components';
 import { Button } from './button.js';
 import { Heading } from './heading.js';
@@ -30,6 +30,14 @@ export interface LetterboxBars {
   bottom?: ReactNode;
 }
 
+/**
+ * How the frame is drawn.
+ * - `solid`: the frame is its own surface over a blurred, darkened screen (the default).
+ * - `see-through`: the bars are solid, like a cinema's, and the frame is a window onto the work behind it,
+ *   softly out of focus, so you never lose where you were (W3.5b, pending Harry's review).
+ */
+export type LetterboxLook = 'solid' | 'see-through';
+
 export interface LetterboxProps {
   open: boolean;
   /**
@@ -54,6 +62,15 @@ export interface LetterboxProps {
   actions?: ReactNode;
   /** The explanation, such as `Explain`. */
   children?: ReactNode;
+  /**
+   * What doesn't fit the frame: the frame never scrolls, so the rest waits behind a "More" control that
+   * shows it in place. Long lists belong in the app that owns them (an action that opens it), not here.
+   */
+  more?: ReactNode;
+  /** What the "More" control says. Default "More". */
+  moreLabel?: string;
+  /** How the frame is drawn. `solid` unless the app chose otherwise. */
+  look?: LetterboxLook;
 }
 
 /** "1 of 2 · next: Backups are failing", for the top bar and the edge. */
@@ -89,8 +106,13 @@ const typing = (target: EventTarget | null) => target instanceof HTMLElement && 
  * goes away only when it is resolved. Focus stays inside while it's open.
  * Show one at a time; the others wait in `queue`. Use it rarely: for what can't wait.
  */
-export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars, queue, eyebrow, heading, summary, actions, children }: LetterboxProps) {
+export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars, queue, eyebrow, heading, summary, actions, children, more, moreLabel = 'More', look = 'solid' }: LetterboxProps) {
   const id = useId();
+  const moreId = `${id}-more`;
+  const [showMore, setShowMore] = useState(false);
+  useEffect(() => {
+    if (!open) setShowMore(false);
+  }, [open]);
   const headingId = `${id}-heading`;
   const summaryId = `${id}-summary`;
   const ackId = `${id}-ack`;
@@ -115,7 +137,7 @@ export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars,
   }, []);
 
   return (
-    <ModalOverlay isOpen={open} onOpenChange={(next) => !next && onStepBack?.()} isDismissable={false} isKeyboardDismissDisabled={!onStepBack} className="augur-letterbox">
+    <ModalOverlay isOpen={open} onOpenChange={(next) => !next && onStepBack?.()} isDismissable={false} isKeyboardDismissDisabled={!onStepBack} className="augur-letterbox" data-look={look}>
       <Modal className="augur-letterbox-modal">
         <AriaDialog role="alertdialog" aria-labelledby={headingId} aria-describedby={describedBy} className="augur-letterbox-dialog outline-none" ref={listen}>
           <div className="augur-letterbox-bar" data-edge="top">
@@ -127,10 +149,20 @@ export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars,
               </Button>
             ) : null}
           </div>
-          <div className="augur-letterbox-frame">
+          <div className="augur-letterbox-frame" data-more={showMore ? 'open' : undefined}>
             <div className="augur-letterbox-body">
               <Heading eyebrow={eyebrow} heading={heading} summary={summary} size="l" id={headingId} summaryId={summaryId} />
               {children ? <div className="augur-letterbox-text">{children}</div> : null}
+              {more ? (
+                <div className="augur-letterbox-more">
+                  <Button kind="ghost" size="sm" aria-expanded={showMore} aria-controls={moreId} onPress={() => setShowMore((v) => !v)}>
+                    {showMore ? 'Less' : moreLabel}
+                  </Button>
+                  <div id={moreId} className="augur-letterbox-more-text" hidden={!showMore}>
+                    {more}
+                  </div>
+                </div>
+              ) : null}
               {actions ? <div className="augur-letterbox-actions">{actions}</div> : null}
             </div>
           </div>

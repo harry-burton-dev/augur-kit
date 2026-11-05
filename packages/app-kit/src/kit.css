@@ -322,6 +322,14 @@
   .quill-tree-line[data-part='through'] { top: 0; bottom: 0; }
   .quill-tree-line[data-part='end'] { top: 0; height: 50%; }
   .quill-tree-line[data-part='end']::after { content: ''; position: absolute; bottom: 0; left: 0; width: calc(var(--line-span, 1) * var(--space-4) - var(--space-1)); height: 1px; background: inherit; }
+  /* The trail draws itself from the top down to where you are, a level at a time; reduced motion's durations draw it at once. */
+  .quill-tree[data-trail='draw'] .quill-tree-line {
+    transform-origin: top; animation: quill-trail var(--motion-trail) var(--ease-out) both;
+    animation-delay: calc(var(--line-level) * var(--motion-instant));
+  }
+  .quill-tree[data-trail='draw'] .quill-tree-line[data-part='through'], .quill-tree[data-trail='draw'] .quill-tree-line[data-part='end'] {
+    animation-delay: calc((var(--line-level) + 0.5) * var(--motion-instant));
+  }
 
   /* A reel: a lane of cards, its light at the start when the cards are pulled in. */
   .quill-reel {
@@ -442,6 +450,7 @@
 @keyframes quill-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes quill-ring-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 @keyframes quill-ring-hold { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes quill-trail { from { transform: scaleY(0); } to { transform: none; } }
 @keyframes quill-ring-grow { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
 @keyframes quill-breathe { 0%, 100% { opacity: 0.6; transform: scaleY(0.94); } 50% { opacity: 1; transform: scaleY(1); } }
 @keyframes quill-summon {

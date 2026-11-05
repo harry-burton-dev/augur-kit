@@ -159,3 +159,21 @@ describe('PathTree: the lit path', () => {
     expect(onOpen).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('PathTree: the trail (W3.5b)', () => {
+  it('draws the line still unless asked to draw it', () => {
+    draw(<PathTree label="Collections" nodes={deep} path={full} onOpen={() => {}} pinned={0} />);
+    expect(document.querySelector('[role="tree"]')!.getAttribute('data-trail')).toBe('still');
+  });
+
+  it('draws the line anew when the path changes, and keeps it while the path stays', () => {
+    const at = (path: string[]) => <PathTree label="Collections" nodes={deep} path={path} onOpen={() => {}} pinned={0} trail="draw" />;
+    draw(at(['l0', 'l1']));
+    expect(document.querySelector('[role="tree"]')!.getAttribute('data-trail')).toBe('draw');
+    const before = document.querySelector('.quill-tree-line');
+    act(() => root!.render(at(['l0', 'l1'])));
+    expect(document.querySelector('.quill-tree-line')).toBe(before);
+    act(() => root!.render(at(['l0', 'l1', 'l2'])));
+    expect(document.querySelector('.quill-tree-line')).not.toBe(before);
+  });
+});

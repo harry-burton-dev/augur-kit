@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import { cx, Icon, IconButton, type IconName } from '@augur/kit-common';
 import { tokens } from '@augur/kit-common/tokens';
 import { FocusStage, type Depth } from './focus.js';
-import { RingProvider, type RingShape } from './radial-menu.js';
+import { RingProvider, type RingOverflow, type RingShape } from './radial-menu.js';
 
 /** Where the person's choice to fold the rail or the drawer is kept, on this device. */
 const KEPT = { rail: 'augur-app-frame:rail-closed', drawer: 'augur-app-frame:drawer-closed' };
@@ -62,6 +62,8 @@ export interface AppFrameProps {
   depth?: Depth;
   /** How the radial menu lays out its actions: `auto` (a ring, a list past eight) by default. */
   ringShape?: RingShape;
+  /** What the radial menu does past eight actions: `list` by default, or `more` to keep a ring and overflow into More. */
+  ringOverflow?: RingOverflow;
   children: ReactNode;
 }
 
@@ -86,7 +88,7 @@ export interface AppFrameProps {
  * the app's one radial menu, so anything inside can open it with
  * `useRingTarget`.
  */
-export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, drawerLabel = 'Details', aside, measure = 'wide', busy, screen, depth, ringShape, children }: AppFrameProps) {
+export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, drawerLabel = 'Details', aside, measure = 'wide', busy, screen, depth, ringShape, ringOverflow, children }: AppFrameProps) {
   const [railClosed, setRailClosed] = useState(() => remembered(KEPT.rail));
   const [drawerClosed, setDrawerClosed] = useState(() => remembered(KEPT.drawer));
   const [shape, setShape] = useState<Shape>('wide');
@@ -171,7 +173,7 @@ export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, d
 
   return (
     <FocusStage depth={depth}>
-      <RingProvider shape={ringShape}>
+      <RingProvider shape={ringShape} overflow={ringOverflow}>
         <div ref={room} className="quill-room" onKeyDown={onKeyDown}>
         <div
           className="quill-frame"
