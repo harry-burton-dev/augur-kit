@@ -1,5 +1,12 @@
 # @augur/kit-bundle
 
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [799176a]
+  - @augur/app-kit@0.7.1
+
 ## 0.5.1
 
 ### Patch Changes

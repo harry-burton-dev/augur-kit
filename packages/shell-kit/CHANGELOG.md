@@ -1,5 +1,11 @@
 # @augur/shell-kit
 
+## 0.7.0
+
+### Minor Changes
+
+- 5eae93a: A notification can arrive `quiet`: Aerie lands it in the stream like a muted app's, with no pulse, and leaves it out of the band's count. The shell sets it for the kinds of notification a person made quiet in Account.
+
 ## 0.6.0
 
 ### Minor Changes
