@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { cx, Icon, type IconName } from '@augur/kit-common';
-import { useRingTarget, type RingSubject } from './radial-menu.js';
+import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 
 /**
  * What a tile is. Each kind has its own physical shape, so you can tell a
@@ -37,31 +37,37 @@ const ICONS: Record<TileKind, IconName> = { collection: 'library', folder: 'fold
 /**
  * One thing in a place, as a tile you can walk into. Hover lifts it as a real
  * object would lift; pressing it presses it down. Right-click, the
- * context-menu key or a long press opens its radial menu.
+ * context-menu key or a long press opens its radial menu, and so does its
+ * "more" mark, which shows while the tile is hovered or holds focus (PDR-010,
+ * amendment 6). The mark sits beside the tile's button, not in it, so each
+ * stays one control.
  */
 export function KindTile({ kind, name, eyebrow, count, state, needs, needsLabel, owner, locked, note, onOpen, ring }: KindTileProps) {
   const menu = useRingTarget(() => ring?.());
   const described = [eyebrow, count, state, owner ? `from ${owner}` : '', needs ? (needsLabel ?? 'Needs you') : '', note, locked].filter(Boolean).join(', ');
   return (
-    <button type="button" className="quill-tile" data-kind={kind} data-locked={locked ? '' : undefined} aria-description={described} title={locked} onClick={onOpen} {...menu}>
-      {needs ? <span className="quill-tile-ribbon" aria-hidden="true" /> : null}
-      <span className="quill-tile-top" aria-hidden="true">
-        <span className="quill-tile-eyebrow">
-          {locked ? <Icon name="lock" size={12} /> : <Icon name={ICONS[kind]} size={12} />}
-          {eyebrow}
+    <span className="quill-tile-place" data-kind={kind}>
+      <button type="button" className="quill-tile" data-kind={kind} data-locked={locked ? '' : undefined} aria-description={described} title={locked} onClick={onOpen} {...menu}>
+        {needs ? <span className="quill-tile-ribbon" aria-hidden="true" /> : null}
+        <span className="quill-tile-top" aria-hidden="true">
+          <span className="quill-tile-eyebrow">
+            {locked ? <Icon name="lock" size={12} /> : <Icon name={ICONS[kind]} size={12} />}
+            {eyebrow}
+          </span>
+          {count ? <span className="quill-tile-count">{count}</span> : null}
         </span>
-        {count ? <span className="quill-tile-count">{count}</span> : null}
-      </span>
-      <span className="quill-tile-name">{name}</span>
-      {owner || note || state || locked ? (
-        <span className="quill-tile-foot">
-          {state ? <span className="quill-tile-state">{state}</span> : null}
-          {owner ? <span className="quill-tile-owner">{owner}</span> : null}
-          {note ? <span className="quill-tile-note">{note}</span> : null}
-          {locked ? <span className="quill-tile-why">{locked}</span> : null}
-        </span>
-      ) : null}
-    </button>
+        <span className="quill-tile-name">{name}</span>
+        {owner || note || state || locked ? (
+          <span className="quill-tile-foot">
+            {state ? <span className="quill-tile-state">{state}</span> : null}
+            {owner ? <span className="quill-tile-owner">{owner}</span> : null}
+            {note ? <span className="quill-tile-note">{note}</span> : null}
+            {locked ? <span className="quill-tile-why">{locked}</span> : null}
+          </span>
+        ) : null}
+      </button>
+      {ring ? <RingMore subject={ring} className="quill-tile-more" /> : null}
+    </span>
   );
 }
 
