@@ -147,3 +147,15 @@ describe('Shell floor gauge', () => {
     expect(document.querySelector('.aerie-gauge')).toBeNull();
   });
 });
+
+describe('quiet notifications', () => {
+  it('lands a quiet one in the stream without a pulse, and leaves it out of the count', () => {
+    const model = exampleShell();
+    const before = model.heard.length;
+    model.notify({ id: 'q1', app: 'docs', level: 'needs', title: 'A comment', time: Date.now(), quiet: true });
+    expect(model.notifications.some((n) => n.id === 'q1')).toBe(true);
+    expect(model.heard.length).toBe(before);
+    model.notify({ id: 'l1', app: 'docs', level: 'needs', title: 'An approval', time: Date.now() });
+    expect(model.heard.length).toBe(before + 1);
+  });
+});

@@ -496,7 +496,7 @@ function Stream({ model }: { model: ShellModel }) {
   }
   const groups = model.streamGroups();
   // The first thing that needs you pings; the rest are a still green. Muted apps never ping.
-  const pinging = groups.find((g) => !g.muted && g.needs)?.list.find((n) => n.level === 'needs')?.id;
+  const pinging = groups.find((g) => !g.muted && g.needs)?.list.find((n) => n.level === 'needs' && !n.quiet)?.id;
   const firstId = groups[0]?.list[0]?.id;
   return (
     <>
@@ -527,7 +527,7 @@ function Stream({ model }: { model: ShellModel }) {
             </div>
             <ul aria-label={name}>
               {g.map((n) => (
-                <Row key={n.id} model={model} n={n} muted={muted} first={n.id === firstId} pinging={n.id === pinging} />
+                <Row key={n.id} model={model} n={n} muted={muted || !!n.quiet} first={n.id === firstId} pinging={n.id === pinging} />
               ))}
             </ul>
           </div>
