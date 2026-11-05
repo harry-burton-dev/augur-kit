@@ -5,28 +5,29 @@ import { Editor, Prose, type MentionSource } from './editor.js';
 import { PeoplePicker, type Principal } from './people-picker.js';
 
 /**
- * A stand-in for identity's people and teams search, until the directory route
- * and the SDK's `searchPrincipals` land (PER-147, after PER-260). It answers as
- * the real one will: people by name, email or team, teams by name, after a
- * short wait.
+ * A stand-in for identity's people and teams search. In an app, hand the SDK's
+ * `searchPrincipals` to the picker instead: `search={(q) => searchPrincipals(ctx, q)}`.
+ * It answers as the real one does: people by name or email, with their email;
+ * teams by name, with where they sit; after a short wait.
  */
-const DIRECTORY: (Principal & { email?: string; signInOff?: boolean })[] = [
-  { kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'Ops', email: 'nora@example.org' },
-  { kind: 'person', id: 'u2', name: 'Ben Norris', detail: 'Finance', email: 'ben@example.org' },
-  { kind: 'person', id: 'u3', name: 'Ada Lee', detail: 'Ops', email: 'ada@example.org', meta: 'Can read' },
-  { kind: 'person', id: 'u4', name: 'Sam Okafor', detail: 'Planning', email: 'sam@example.org', signInOff: true },
-  { kind: 'person', id: 'u5', name: 'Kim Novak', detail: 'Finance', email: 'kim@example.org' },
-  { kind: 'team', id: 't1', name: 'Ops', detail: 'Organisation', size: 6 },
-  { kind: 'team', id: 't2', name: 'Finance', detail: 'Organisation', size: 4 },
-  { kind: 'team', id: 't3', name: 'Planning', detail: 'Ops', size: 1 },
+const DIRECTORY: (Principal & { farAway?: boolean })[] = [
+  { kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'nora@example.org' },
+  { kind: 'person', id: 'u2', name: 'Ben Norris', detail: 'ben@example.org' },
+  { kind: 'person', id: 'u3', name: 'Ada Lee', detail: 'ada@example.org', meta: 'Can read' },
+  { kind: 'person', id: 'u4', name: 'Sam Okafor', detail: 'sam@example.org', farAway: true },
+  { kind: 'person', id: 'u5', name: 'Kim Novak', detail: 'kim@example.org' },
+  { kind: 'team', id: 't1', name: 'Ops' },
+  { kind: 'team', id: 't2', name: 'Finance' },
+  { kind: 'team', id: 't3', name: 'Planning', detail: 'Ops' },
 ];
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const searchDirectory = async (query: string): Promise<Principal[]> => {
   await wait(250);
-  const q = query.toLowerCase();
-  return DIRECTORY.filter((p) => [p.name, p.email, p.detail].some((w) => w?.toLowerCase().includes(q))).map(({ email: _e, signInOff: _s, ...p }) => p);
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return DIRECTORY.filter((p) => [p.name, p.detail].some((w) => w?.toLowerCase().includes(q))).map(({ farAway: _f, ...p }) => p);
 };
 
 const directoryDown = async (): Promise<Principal[]> => {
@@ -34,7 +35,9 @@ const directoryDown = async (): Promise<Principal[]> => {
   throw new Error('Can’t search people right now. Try again in a minute.');
 };
 
-const signInOff = (p: Principal) => (DIRECTORY.find((d) => d.kind === p.kind && d.id === p.id)?.signInOff ? 'Their sign-in is turned off. An admin can turn it back on.' : undefined);
+/** The app's own reason one can't be chosen: here, someone who can't stand on the thing's floor. */
+const offFloor = (p: Principal) =>
+  DIRECTORY.find((d) => d.kind === p.kind && d.id === p.id)?.farAway ? 'Sam isn’t on this floor. A lead of Planning can add them.' : undefined;
 
 function Column({ children }: { children: ReactNode }) {
   return <div style={{ display: 'grid', gap: 'var(--space-6)', padding: 'var(--space-6)', maxWidth: 'var(--measure-card)' }}>{children}</div>;
@@ -50,7 +53,7 @@ export const PeopleOnTheDirectory: StoryObj = {
       const [chosen, setChosen] = useState<Principal[]>([]);
       return (
         <Column>
-          <PeoplePicker label="Share with" hint="People or teams, by name or email." multiple search={searchDirectory} check={signInOff} value={chosen} onChange={setChosen} />
+          <PeoplePicker label="Share with" hint="People or teams, by name or email." multiple search={searchDirectory} check={offFloor} value={chosen} onChange={setChosen} />
         </Column>
       );
     }
@@ -65,7 +68,7 @@ export const OnePerson: StoryObj = {
       const [who, setWho] = useState<string>();
       return (
         <Column>
-          <PeoplePicker label="Hand it on to" kinds="people" search={searchDirectory} check={signInOff} onPick={(p) => setWho(p.name)} />
+          <PeoplePicker label="Hand it on to" kinds="people" search={searchDirectory} check={offFloor} onPick={(p) => setWho(p.name)} />
           <p style={{ margin: 0, color: 'var(--ink-muted)' }}>{who ? `Chosen: ${who}` : 'Nobody chosen yet.'}</p>
         </Column>
       );
