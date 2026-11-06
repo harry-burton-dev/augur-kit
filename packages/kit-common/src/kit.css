@@ -915,6 +915,97 @@
   .augur-fold-why { margin: 0; padding: 0 var(--space-2) var(--space-2) calc(var(--space-2) * 2 + var(--space-4)); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
 }
 
+/* Run output (picked 6 Nov 2026). RunLog is Steps: one fold per step in a sunken tray, the open one a
+   key with its last lines under it in a Well. Diff is Sink and rise: what went sinks into a Well, what
+   came rises as a key, with no colour. Inspector is Columns: depth goes sideways in a tray. */
+@layer components {
+  .augur-runlog {
+    display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-1); min-width: 0;
+    background: var(--key-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control);
+  }
+  .augur-runlog-head {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-2); width: 100%;
+    min-height: calc(var(--target-md) - var(--space-1)); padding: 0 var(--space-2); cursor: pointer;
+    border: 1px solid transparent; border-bottom-width: var(--key-edge-sm); border-radius: var(--radius-key); color: var(--ink);
+    transition: background var(--motion-instant) var(--ease-standard);
+  }
+  .augur-runlog-head:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .augur-runlog-head:focus-visible, .augur-runlog-earlier:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .augur-runlog-step[data-open] .augur-runlog-head { background: var(--key); border-color: var(--key-side); border-bottom-color: var(--key-bottom); }
+  .augur-runlog-mark { flex: none; display: flex; color: var(--ink-muted); }
+  .augur-runlog-title { flex: 1; min-width: 0; font-size: var(--type-body); line-height: var(--leading-body); }
+  .augur-runlog-step[data-open] .augur-runlog-title { font-weight: 500; }
+  .augur-runlog-step[data-status='failed'] .augur-status-word, .augur-runlog-step[data-status='failed'] .augur-status-mark { color: var(--danger); }
+  .augur-runlog-at { flex: none; font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .augur-runlog-step[data-unavailable] .augur-runlog-head { cursor: default; color: var(--ink-muted); }
+  .augur-runlog-step[data-unavailable] .augur-runlog-head:hover { background: none; }
+  .augur-runlog-why, .augur-runlog-note, .augur-runlog-empty { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .augur-runlog-why { padding: 0 var(--space-2) var(--space-2) calc(var(--space-2) * 2 + var(--space-4)); }
+  .augur-runlog-body {
+    display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-2) var(--space-3);
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control);
+  }
+  .augur-runlog-earlier {
+    all: unset; align-self: flex-start; cursor: pointer; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted);
+  }
+  .augur-runlog-earlier:hover { color: var(--ink); }
+  .augur-runlog-line { display: flex; gap: var(--space-3); font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); }
+  .augur-runlog-text { min-width: 0; overflow-wrap: anywhere; }
+  .augur-runlog-line[data-level='debug'] { color: var(--ink-muted); }
+  .augur-runlog-line[data-level='error'] { color: var(--danger); }
+  .augur-runlog-level { margin-right: var(--space-2); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-size: var(--type-label); }
+  .augur-runlog-line[data-level='warn'] .augur-runlog-level { color: var(--warning); }
+  .augur-runlog-line[data-level='needs'] .augur-runlog-level { color: var(--needs-you); }
+  .augur-runlog-needs { display: inline-block; width: var(--space-2); height: var(--space-2); margin-right: var(--space-1); border-radius: 50%; background: var(--needs-you); }
+
+  .augur-diff { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .augur-diff-list { margin: 0; display: flex; flex-direction: column; border-top: 1px solid var(--hairline-strong); }
+  .augur-diff-change { display: grid; grid-template-columns: minmax(8ch, 1fr) minmax(0, 3fr); align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--hairline); }
+  .augur-diff-key { font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); overflow-wrap: anywhere; }
+  .augur-diff-values { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); color: var(--ink-muted); min-width: 0; }
+  .augur-diff-arrow { display: flex; }
+  .augur-diff-word { font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-diff-sink, .augur-diff-rise { padding: 0 var(--space-1); font-family: var(--font-mono); font-size: 0.875em; text-decoration: none; overflow-wrap: anywhere; }
+  .augur-diff-sink { background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key); color: var(--ink-muted); }
+  .augur-diff-rise { background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); }
+  .augur-diff-said { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .augur-diff-more {
+    all: unset; align-self: flex-start; cursor: pointer; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted);
+  }
+  .augur-diff-more:hover { color: var(--ink); }
+  .augur-diff-more:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .augur-diff-same, .augur-diff-why { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .augur-diff-text { margin: 0; font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink); }
+  .augur-diff-text .augur-diff-sink, .augur-diff-text .augur-diff-rise { position: relative; }
+
+  .augur-inspector { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .augur-inspector-path { display: flex; }
+  .augur-inspector-cols {
+    display: grid; grid-template-columns: repeat(var(--inspector-columns), minmax(0, 1fr)); gap: var(--space-1); padding: var(--space-1);
+    background: var(--key-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control);
+  }
+  .augur-inspector-cols[data-stepped] { box-shadow: inset var(--key-edge-sm) 0 0 var(--hairline-strong); }
+  .augur-inspector-col { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; min-width: 0; }
+  .augur-inspector-col + .augur-inspector-col { border-left: 1px solid var(--hairline); padding-left: var(--space-1); }
+  .augur-inspector-leaf { padding: var(--space-1); }
+  .augur-inspector-item {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); width: 100%;
+    min-height: var(--target-sm); padding: 0 var(--space-2); cursor: pointer; min-width: 0;
+    border: 1px solid transparent; border-bottom-width: var(--key-edge-sm); border-radius: var(--radius-key); color: var(--ink-muted);
+    transition: background var(--motion-instant) var(--ease-standard);
+  }
+  .augur-inspector-item:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .augur-inspector-item:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .augur-inspector-item[data-chosen] { background: var(--key); border-color: var(--key-side); border-bottom-color: var(--key-bottom); }
+  .augur-inspector-item[data-chosen] .augur-inspector-key { color: var(--ink); }
+  .augur-inspector-key, .augur-inspector-value { font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-inspector-key { flex: none; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .augur-inspector-value { min-width: 0; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .augur-inspector-kind { display: inline-flex; align-items: center; gap: var(--space-1); font-family: var(--font-mono); font-size: var(--type-label); color: var(--ink-muted); }
+  .augur-inspector-hidden { margin: 0; padding: 0 var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); font-style: italic; }
+  .augur-inspector-empty, .augur-inspector-why { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+}
+
 /* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
    loop stops. A spinner stays a still arc and a running bar a still one; each still says it's busy
    in words. reduced-motion.test.ts checks that every infinite animation is stopped here. */
