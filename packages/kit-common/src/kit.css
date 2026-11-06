@@ -698,22 +698,108 @@
   .augur-segment[data-hovered] { color: var(--ink); }
   .augur-segment[data-selected] { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
 
-  /* People: a round mark in their floor's colour, with initials, then the name. */
-  .augur-person { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); }
+  /* People (Disc, PDR-018): the one true circle left. A flat grey disc with Instrument Sans initials, ringed
+     in the floor's colour; you are ringed in plain ink, because green only means "needs you". Someone away
+     is dimmed back, mark and name: presence is the kit's one depth move, never a dot or a colour. */
+  .augur-person { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); transition: opacity var(--motion-base) var(--ease-standard); }
   .augur-person-text { display: flex; flex-direction: column; min-width: 0; }
   .augur-person-text small { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  :is(.augur-person, .augur-people-one)[data-away] { opacity: 0.42; }
   .augur-avatar {
-    position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 28px; overflow: hidden; border-radius: 50%;
-    border: 2px solid var(--slate-deep); background: var(--floor-team-high); color: var(--slate-deep);
-    font-family: var(--font-rounded); font-size: var(--type-label); font-weight: 600; line-height: 1;
+    --floor: transparent; --size: var(--space-5);
+    position: relative; flex: none; display: grid; place-items: center; width: var(--size); height: var(--size); box-sizing: border-box; overflow: hidden; border-radius: 50%;
+    background: color-mix(in srgb, var(--ink) 16%, var(--slate-deep)); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--floor);
+    font-family: var(--font-sans); font-size: var(--type-label); font-weight: 500; line-height: 1; letter-spacing: var(--tracking-soft);
   }
+  .augur-avatar[data-size='sm'] { --size: calc(var(--space-4) + var(--space-1)); font-size: 0.625rem; }
   .augur-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .augur-avatar[data-tone='you'] { background: var(--floor-you-high); }
-  .augur-avatar[data-tone='department'] { background: var(--floor-department-high); }
-  .augur-avatar[data-tone='org'] { background: var(--floor-org-high); }
-  .augur-avatar-more { background: var(--surface-raised); color: var(--ink); }
+  .augur-avatar[data-tone='you'] { --floor: var(--ink); }
+  .augur-avatar[data-tone='team'] { --floor: var(--floor-team-high); }
+  .augur-avatar[data-tone='department'] { --floor: var(--floor-department-high); }
+  .augur-avatar[data-tone='org'] { --floor: var(--floor-org-high); }
+  .augur-avatar-more { background: transparent; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
   .augur-people { display: inline-flex; }
-  .augur-people > .augur-avatar + .augur-avatar { margin-left: calc(var(--space-2) * -1); }
+  .augur-people-one { display: inline-flex; border-radius: 50%; transition: opacity var(--motion-base) var(--ease-standard); }
+  .augur-people > * + * { margin-left: calc(var(--space-1) * -1); }
+  .augur-people > * + * .augur-avatar, .augur-people > .augur-avatar-more { outline: 2px solid var(--slate-deep); }
+  :is(.augur-people-label, .augur-comments-head, .augur-activity-head, .augur-activity-asks-head, .augur-notes-head, .augur-point-label, .augur-since span, .augur-event-at, .augur-note-at, .augur-comment-by span, .augur-activity-pages > span) {
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  :is(.augur-people-label, .augur-comments-head, .augur-activity-head, .augur-notes-head) { margin: 0; }
+  .augur-presence { display: flex; flex-direction: column; gap: var(--space-3); }
+  .augur-presence ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+
+  /* Comments (Points, the snag list): open points take the room, the ones that ask you first with an edge in
+     the one colour; replies sit one step in on a hairline; settled points fold to one dim line. */
+  .augur-comments { display: flex; flex-direction: column; gap: var(--space-4); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .augur-comments-empty, .augur-activity-empty, .augur-notes-empty { margin: 0; color: var(--ink-muted); }
+  .augur-points, .augur-settled, .augur-point-replies, .augur-events, .augur-activity-asks ul { list-style: none; margin: 0; padding: 0; }
+  .augur-points { display: flex; flex-direction: column; gap: var(--space-4); }
+  .augur-point { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-3); border-left: var(--key-edge-sm) solid var(--hairline-strong); }
+  .augur-point[data-asks] { border-left-color: var(--needs-you); }
+  .augur-point .augur-point-label { margin: 0; color: var(--needs-you); }
+  .augur-comment { display: flex; gap: var(--space-2); align-items: flex-start; }
+  .augur-comment-body { min-width: 0; }
+  .augur-comment-by { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-comment-by b { font-weight: 500; }
+  .augur-comment-text { overflow-wrap: anywhere; }
+  .augur-comment-text p { margin: 0; }
+  .augur-point-replies { display: flex; flex-direction: column; gap: var(--space-2); margin-left: var(--space-3); padding-left: var(--space-3); border-left: 1px solid var(--hairline-strong); }
+  .augur-comment-keys { display: flex; gap: var(--space-2); }
+  .augur-comment-write { display: flex; flex-direction: column; gap: var(--space-2); }
+  .augur-settled { display: flex; flex-direction: column; gap: var(--space-1); }
+  .augur-settled-line {
+    display: flex; align-items: center; gap: var(--space-1); width: 100%; padding: var(--space-1) 0; border: 0; background: none; color: var(--ink);
+    font: inherit; font-size: var(--type-small); text-align: left; opacity: 0.42; cursor: pointer; transition: opacity var(--motion-quick) var(--ease-standard);
+  }
+  .augur-settled-line:hover, .augur-settled-line[aria-expanded='true'] { opacity: 0.72; }
+  .augur-settled-line:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); opacity: 1; }
+  .augur-settled-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-3); opacity: 0.72; }
+
+  /* Activity (Since you left): asks pulled above in the one colour; below, one line per event with a mono
+     time column; one ink line where you last looked, and what you had seen dimmed under it. */
+  .augur-activity { display: flex; flex-direction: column; gap: var(--space-3); color: var(--ink); }
+  .augur-activity-asks { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--needs-you); }
+  .augur-activity-asks .augur-activity-asks-head { margin: 0; color: var(--needs-you); }
+  .augur-events { display: flex; flex-direction: column; gap: var(--space-2); }
+  .augur-event { display: flex; align-items: center; gap: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); transition: opacity var(--motion-base) var(--ease-standard); }
+  .augur-event[data-seen] { opacity: 0.42; }
+  .augur-event-at { flex: none; width: 3.5em; }
+  .augur-event-text b { font-weight: 500; }
+  .augur-event-what { padding: 0; border: 0; border-bottom: 1px solid var(--hairline-strong); background: none; color: inherit; font: inherit; }
+  button.augur-event-what { cursor: pointer; }
+  button.augur-event-what:hover { border-bottom-color: var(--ink); }
+  button.augur-event-what:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .augur-since { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-2); }
+  .augur-since::before, .augur-since::after { content: ''; border-top: 1px solid var(--ink); }
+  .augur-since::before { flex: 0 0 var(--space-3); }
+  .augur-since::after { flex: 1; }
+  .augur-since span { color: var(--ink); }
+  .augur-activity-pages { display: flex; align-items: center; gap: var(--space-2); }
+
+  /* Notifications (Key row): rows in a well like the Key list; unread rows are raised as soft keys, read
+     ones sit flat and dimmed; what waits on you has an edge in the one colour. */
+  .augur-notes { display: flex; flex-direction: column; gap: var(--space-2); color: var(--ink); }
+  .augur-notes-well {
+    list-style: none; margin: 0; padding: var(--space-1); display: flex; flex-direction: column; gap: var(--space-1);
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control);
+  }
+  .augur-note-row {
+    display: flex; align-items: center; gap: var(--space-2); width: 100%; box-sizing: border-box; padding: var(--space-2); border: 0; border-bottom: 1px solid transparent;
+    background: none; color: inherit; font: inherit; font-size: var(--type-small); line-height: var(--leading-small); text-align: left; border-radius: var(--radius-key);
+    transition: background var(--motion-quick) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard);
+  }
+  button.augur-note-row { cursor: pointer; }
+  button.augur-note-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+  button.augur-note-row:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--focus-ring) var(--focus); }
+  .augur-note:not([data-unread]) .augur-note-row { opacity: 0.6; }
+  .augur-note[data-unread] .augur-note-row { background: color-mix(in srgb, var(--ink) 7%, var(--well)); border-bottom-color: color-mix(in srgb, var(--ink) 18%, transparent); }
+  .augur-note[data-needs] .augur-note-row { box-shadow: inset var(--key-edge-sm) 0 0 var(--needs-you); }
+  .augur-note[data-needs] .augur-note-row:focus-visible { box-shadow: inset var(--key-edge-sm) 0 0 var(--needs-you), inset 0 0 0 var(--focus-ring) var(--focus); }
+  .augur-note-text { flex: 1; min-width: 0; }
+  .augur-note-text b { font-weight: 500; }
+  .augur-note-at { flex: none; }
+  .augur-note-system { flex: none; width: calc(var(--space-4) + var(--space-1)); height: calc(var(--space-4) + var(--space-1)); border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hairline-strong); }
 
   /* Tips: Sheet, like menus. A short line on hover and focus, on a solid square sheet with one edge. */
   .augur-tip {
