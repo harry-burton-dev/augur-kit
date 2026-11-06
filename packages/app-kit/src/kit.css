@@ -168,7 +168,8 @@
   .quill-stage[data-depth='veil'] > .quill-rack { background: var(--focus-far-tint); backdrop-filter: blur(var(--plane-blur)) saturate(var(--plane-saturate)) brightness(var(--plane-dim)); transform: translateZ(0); will-change: opacity; }
   .quill-stage[data-depth='scrim'] > .quill-rack { background: var(--veil); }
   body:has(.quill-palette-veil) .quill-stage:not([data-depth='lens']) > .quill-rack { opacity: 1; visibility: visible; transition: opacity var(--motion-rack) var(--ease-out), visibility var(--motion-rack) step-start; }
-  body:has(.quill-palette-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: blur(var(--plane-blur)) saturate(var(--plane-saturate)) brightness(var(--plane-dim)); }
+  /* The palette dims what's behind it and never blurs it (round M, 6 Nov 2026: depth is dimming only). */
+  body:has(.quill-palette-veil) .quill-stage[data-depth='lens'] > .quill-plane { filter: saturate(var(--plane-saturate)) brightness(var(--plane-dim)); }
   .quill-rack[data-hole] {
     mask-image: linear-gradient(var(--shade) 0 0), linear-gradient(var(--shade) 0 0);
     mask-size: 100% 100%, var(--hole-w) var(--hole-h);
@@ -476,25 +477,33 @@
   .quill-tile-state { padding: 0 var(--space-1); border: 1px solid currentColor; font-family: var(--font-mono); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
   .quill-tile-owner, .quill-tile-note, .quill-tile-why { color: var(--ink-muted); }
 
-  /* The palette: find and go, over the racked app. */
+  /* The palette: find and go, over the racked app. Rail (picked 6 Nov 2026): a solid strip with an ink line at its
+     top, the field on one line with its lead word in mono, results ruled, each one's kind in mono capitals at the
+     end, and the row you're on marked by the ink line at its start. What's behind is dimmed, never blurred. */
   .quill-palette-veil { position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); display: flex; justify-content: center; align-items: flex-start; padding: 14vh var(--edge) 0; }
+  body:not(:has(.quill-stage)) .quill-palette-veil { background: var(--veil); }
   .quill-palette-veil[data-entering] { animation: quill-fade var(--motion-slow) var(--ease-out); }
   .quill-palette {
-    width: min(var(--measure-glance), 100%); max-height: 70vh; display: flex; flex-direction: column; overflow: hidden;
-    background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-overlay);
+    width: min(var(--measure-read), 100%); max-height: 70vh; display: flex; flex-direction: column; overflow: hidden;
+    background: color-mix(in srgb, var(--shade) 32%, var(--slate-deep)); border: 1px solid var(--sheet-edge); border-top: var(--key-edge-sm) solid var(--ink); border-radius: var(--radius-inset);
   }
-  .quill-palette-field { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--hairline); color: var(--ink-muted); }
+  .quill-palette-field { display: flex; align-items: baseline; gap: var(--space-3); padding: var(--space-3); border-bottom: 1px solid var(--ink); color: var(--ink-muted); }
+  .quill-palette-field > svg { align-self: center; }
+  .quill-palette-lead, .quill-palette-found { font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); color: var(--ink-muted); white-space: nowrap; }
+  .quill-palette-lead { letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .quill-palette-found { font-variant-numeric: tabular-nums; }
   .quill-palette-field input::-webkit-search-cancel-button { appearance: none; }
   .quill-palette-field input { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: var(--type-lead); line-height: var(--leading-lead); outline: none; }
-  .quill-palette-list { margin: 0; padding: var(--space-2); list-style: none; overflow-y: auto; }
-  .quill-palette-group { margin: var(--space-2) var(--space-3) var(--space-1); color: var(--ink-muted); font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
-  .quill-palette-item { display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-md); padding: var(--space-1) var(--space-3); border-radius: var(--radius-key); color: var(--ink); cursor: pointer; }
-  .quill-palette-item[aria-selected='true'] { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset var(--focus-ring) 0 0 var(--focus); }
+  .quill-palette-list { margin: 0; padding: 0; list-style: none; overflow-y: auto; }
+  .quill-palette-group { margin: 0; padding: var(--space-3) var(--space-3) var(--space-1); border-bottom: 1px solid var(--hairline); color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .quill-palette-item { display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-md); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--hairline); color: var(--ink); cursor: pointer; }
+  .quill-palette-item > svg { flex: none; color: var(--ink-muted); }
+  .quill-palette-item[aria-selected='true'] { background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); }
   .quill-palette-item[aria-disabled] { color: var(--ink-muted); cursor: not-allowed; }
   .quill-palette-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
   .quill-palette-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-palette-detail { color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-palette-meta { color: var(--ink-muted); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .quill-palette-detail { color: var(--ink-muted); font-size: var(--type-small); line-height: var(--leading-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quill-palette-meta { color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
   .quill-palette-none { padding: var(--space-4); }
 
   @media (prefers-reduced-transparency: reduce) {
@@ -609,8 +618,16 @@
   .quill-tag-word { overflow: hidden; text-overflow: ellipsis; }
   .quill-tag > svg { color: var(--ink-muted); }
   /* A tag picker: the chosen tags sit in the field, before what's typed. */
-  .quill-tag-picker-box { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); padding-block: var(--space-1); cursor: text; }
-  .quill-tag-picker-input { flex: 1 1 auto; min-width: calc(var(--space-8) * 2); }
+  /* Tag picker: Rail (picked 6 Nov 2026). The chosen tags are ruled words on the field's line, parted by
+     hairlines; each one's × shows when you point at it or reach it. Matches drop as a Sheet. */
+  .quill-tag-picker .quill-tag-picker-box { display: flex; flex-wrap: wrap; align-items: center; gap: 0; padding: var(--space-1) 0; cursor: text; background: none; border: 0; border-bottom: 1px solid var(--ink); }
+  .quill-tag-picker .quill-tag-picker-box:hover { border-bottom-color: var(--ink); }
+  .quill-tag-picker-word { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-2); border-right: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }
+  .quill-tag-picker-word button { all: unset; display: inline-grid; place-items: center; width: var(--space-4); height: var(--space-4); color: var(--ink-muted); cursor: pointer; opacity: 0; }
+  .quill-tag-picker-word:hover button, .quill-tag-picker-word button:focus-visible { opacity: 1; }
+  .quill-tag-picker-word button:hover { color: var(--ink); }
+  .quill-tag-picker-word button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-tag-picker-input { flex: 1 1 auto; min-width: calc(var(--space-8) * 2); padding: 0 var(--space-2); }
   /* A people picker: chosen ones as chips above the field, what's found under it. */
   .quill-people-picker { display: flex; flex-direction: column; gap: var(--space-1); }
   .quill-people-box { display: flex; align-items: center; gap: var(--space-2); }
@@ -625,28 +642,33 @@
   .quill-people-one > .augur-person { flex: 1; min-width: 0; }
   .quill-people-meta { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
 
-  /* Filter bar: a button per filter, the count and sort at the end, what's on as tags below. */
-  .quill-filter-bar { display: flex; flex-direction: column; gap: var(--space-3); }
-  .quill-filter-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-  .quill-filter-filters, .quill-filter-chips { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-  .quill-filter-end { display: flex; align-items: center; gap: var(--space-3); margin-left: auto; }
-  .quill-filter-count { font-size: var(--type-small); color: var(--ink-muted); white-space: nowrap; transition: opacity var(--motion-quick) var(--ease-standard); }
+  /* Filter bar: Rail (picked 6 Nov 2026). One ruled line: a hairline above, the ink line under it, each part
+     its name in small mono capitals and what it has on in words, parted by hairlines. Choices drop as a Sheet. */
+  .quill-filter-bar { display: flex; flex-direction: column; transition: opacity var(--motion-quick) var(--ease-standard); }
+  .quill-filter-row { display: flex; align-items: stretch; flex-wrap: wrap; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--ink); }
+  .quill-filter-end { display: flex; align-items: stretch; margin-left: auto; }
+  .quill-filter-count { display: inline-flex; align-items: center; padding: 0 var(--space-3); font-family: var(--font-mono); font-size: var(--type-label); color: var(--ink-muted); white-space: nowrap; font-variant-numeric: tabular-nums; transition: opacity var(--motion-quick) var(--ease-standard); }
   .quill-filter-bar[data-busy] .quill-filter-count { opacity: 0.5; }
-  .quill-filter-open { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--target-sm); padding: 0 var(--space-3); border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; white-space: nowrap; }
-  .quill-filter-open:hover, .quill-filter-open[aria-expanded='true'] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
-  .quill-filter-open[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-filter-open[data-on] { border-color: var(--ink); }
-  .quill-filter-open > svg { color: var(--ink-muted); }
-  .quill-filter-end .quill-filter-open { border-color: transparent; color: var(--ink-muted); }
-  .quill-filter-end .quill-filter-open strong { color: var(--ink); font-weight: 500; }
-  .quill-filter-n { min-width: 18px; padding: 0 5px; border-radius: var(--radius-pill); background: var(--ink); color: var(--surface-pane); font-size: var(--type-label); text-align: center; }
-  .quill-filter-panel { min-width: 220px; max-width: 320px; max-height: 320px; overflow-y: auto; }
+  .quill-filter-open {
+    all: unset; box-sizing: border-box; display: inline-flex; align-items: baseline; gap: var(--space-2); min-height: var(--target-md); padding: var(--space-2) var(--space-3);
+    border-right: 1px solid var(--hairline); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; white-space: nowrap;
+    transition: background var(--motion-instant) var(--ease-standard);
+  }
+  .quill-filter-end .quill-filter-open { border-right: 0; border-left: 1px solid var(--hairline); }
+  .quill-filter-open[data-hovered], .quill-filter-open[aria-expanded='true'] { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .quill-filter-open[aria-expanded='true'] { box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ink); }
+  .quill-filter-open[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .quill-filter-key { font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
+  .quill-filter-words { max-width: var(--measure-glance); overflow: hidden; text-overflow: ellipsis; }
+  .quill-filter-view { font-weight: 600; }
+  .quill-filter-any { color: var(--ink-muted); }
+  .quill-filter-panel { width: max-content; min-width: calc(var(--space-8) * 4); max-width: var(--measure-glance); }
   .quill-filter-find .augur-input { width: 100%; margin-bottom: var(--space-1); }
   .quill-filter-item[data-selected] .augur-option-mark { color: var(--ink); }
   .quill-filter-none { margin: 0; padding: var(--space-2) var(--space-3); font-size: var(--type-small); color: var(--ink-muted); }
-  .quill-filter-clear { all: unset; font-size: var(--type-small); color: var(--ink-muted); cursor: pointer; border-radius: var(--radius-key); }
-  .quill-filter-clear:hover { color: var(--ink); text-decoration: underline; }
-  .quill-filter-clear:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-filter-clear { all: unset; display: inline-flex; align-items: center; padding: 0 var(--space-3); font-size: var(--type-small); color: var(--ink-muted); cursor: pointer; }
+  .quill-filter-clear:hover { color: var(--ink); text-decoration: underline; text-underline-offset: var(--space-1); }
+  .quill-filter-clear:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
 
   /* Lifecycle */
   .quill-lifecycle { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -717,6 +739,19 @@
   .quill-list-row[data-hovered] { background: var(--row-point); }
   /* A row with a radial menu: its words and controls open it, and its "more" mark shows while the row is hovered or has focus. */
   .quill-list-ring { display: contents; }
+  /* Plain (6 Nov 2026): no well, a hairline under each row, for a short list inside a page. */
+  .quill-list[data-look='plain'] { padding: 0; background: none; border: 0; border-radius: 0; }
+  .quill-list[data-look='plain'] .quill-list-row { border-bottom: 1px solid var(--hairline); border-radius: 0; }
+  .quill-list[data-look='plain'] .quill-list-bar { padding-inline: 0; border-bottom: 1px solid var(--ink); }
+  /* An expanding row: the chevron at its end opens what's folded under it, in place. */
+  .quill-list-fold { all: unset; flex: none; display: inline-grid; place-items: center; width: var(--target-sm); height: var(--target-sm); color: var(--ink-muted); cursor: pointer; }
+  .quill-list-fold:hover { color: var(--ink); }
+  .quill-list-fold svg { transition: transform var(--motion-quick) var(--ease-standard); }
+  .quill-list-fold[aria-expanded='true'] svg { transform: rotate(180deg); }
+  .quill-list-fold:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-list-row:has(.quill-list-more) { flex-direction: column; align-items: stretch; gap: var(--space-2); }
+  .quill-list-line { display: flex; align-items: center; gap: var(--space-4); }
+  .quill-list-more { margin-left: calc(var(--space-4) + var(--space-2)); padding: var(--space-2) 0 var(--space-2) var(--space-3); border-left: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); cursor: default; }
   .quill-list-row[data-focus-visible] .quill-ring-more, .quill-list-row[data-focused] .quill-ring-more { opacity: 1; }
   .quill-list-row[data-focus-visible] { box-shadow: inset 0 0 0 1.5px var(--focus); }
   .quill-list-row[data-disabled] { cursor: default; }
@@ -867,22 +902,28 @@
   .quill-date-cal { all: unset; cursor: pointer; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-key); color: var(--ink-muted); }
   .quill-date-cal:hover { color: var(--ink); }
   .quill-date-cal:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-calendar-pop { min-width: 0; max-height: none; padding: var(--space-3); }
+  /* The calendar: Rail (picked 6 Nov 2026). A ruled month: the month in mono capitals over an ink line, the
+     weekdays in mono, a hairline between weeks and none between days; the chosen day underlined in ink (never
+     green, which means "needs you"), days gone by quieter, and today a small dot. It drops as a Sheet. */
+  .quill-calendar-pop { min-width: 0; max-height: none; padding: var(--space-3); background: color-mix(in srgb, var(--shade) 32%, var(--slate-deep)); border: 1px solid var(--sheet-edge); backdrop-filter: none; }
   .quill-calendar-dialog { outline: none; }
-  .quill-calendar-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
-  .quill-calendar-month { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); font-weight: 600; color: var(--ink); }
+  .quill-calendar-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-1); padding-bottom: var(--space-1); border-bottom: 1px solid var(--ink); }
+  .quill-calendar-month { margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-weight: 400; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink); }
   .quill-calendar-step { all: unset; cursor: pointer; display: grid; place-items: center; width: var(--target-sm); height: var(--target-sm); border-radius: var(--radius-key); color: var(--ink-muted); }
-  .quill-calendar-step[data-hovered] { color: var(--ink); background: var(--hairline); }
+  .quill-calendar-step[data-hovered] { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
   .quill-calendar-step[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-calendar-grid { border-collapse: collapse; }
-  .quill-calendar-grid th { padding-bottom: var(--space-1); font-size: var(--type-meta); line-height: var(--leading-meta); font-weight: 400; color: var(--ink-muted); }
-  .quill-calendar-grid td { padding: 1px; }
-  .quill-calendar-day { display: grid; place-items: center; width: var(--target-sm); height: var(--target-sm); border-radius: var(--radius-key); cursor: pointer; font-size: var(--type-small); color: var(--ink); outline: none; }
+  .quill-calendar-grid th { padding: var(--space-1) 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-weight: 400; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
+  .quill-calendar-grid td { padding: 0; }
+  .quill-calendar-grid tbody tr + tr td { border-top: 1px solid var(--hairline); }
+  .quill-calendar-day { position: relative; display: grid; place-items: center; width: var(--target-md); height: var(--target-md); border-radius: var(--radius-key); cursor: pointer; font-size: var(--type-meta); font-variant-numeric: tabular-nums; color: var(--ink); outline: none; }
   .quill-calendar-day[data-outside-month] { visibility: hidden; }
-  .quill-calendar-day[data-hovered] { background: var(--hairline); }
-  .quill-calendar-day[data-selected] { background: var(--green); color: var(--slate-deep); font-weight: 600; }
+  .quill-calendar-past { color: var(--ink-muted); }
+  .quill-calendar-today::after { content: ''; position: absolute; left: 50%; bottom: var(--space-1); width: var(--space-1); height: var(--space-1); margin-left: calc(var(--space-1) / -2); border-radius: 50%; background: var(--ink-muted); }
+  .quill-calendar-day[data-hovered] { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .quill-calendar-day[data-selected] { color: var(--ink); font-weight: 600; box-shadow: inset 0 calc(var(--key-edge) * -1) 0 var(--ink); }
   .quill-calendar-day[data-disabled], .quill-calendar-day[data-unavailable] { color: var(--ink-muted); cursor: default; text-decoration: line-through; }
-  .quill-calendar-day[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-calendar-day[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
   .quill-date-quick { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
   .quill-date-quick button { all: unset; cursor: pointer; padding: 2px var(--space-2); border-radius: var(--radius-pill); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); background: color-mix(in srgb, var(--ink) 6%, transparent); }
   .quill-date-quick button:hover { color: var(--ink); }
