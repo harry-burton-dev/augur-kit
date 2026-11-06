@@ -1,0 +1,157 @@
+/* Page frame directions (round L): scoped drawings only. Tokens for every colour and duration. */
+
+.pf-one { display: flex; flex-direction: column; gap: var(--space-4); color: var(--ink); font-family: var(--font-sans); }
+.pf-from { margin: 0; max-width: var(--measure-prose); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+.pf-from b { color: var(--ink); font-weight: 500; }
+.pf-letter { display: inline-block; min-width: var(--space-4); font-family: var(--font-mono); color: var(--ink-muted); }
+
+/* ---------- The frame: rail, main, drawer; drawn at one size and never scrolls ---------- */
+.pf-frame {
+  --pf-w: 1180px; --pf-h: 720px;
+  width: var(--pf-w); height: var(--pf-h); flex: none; overflow: hidden;
+  display: grid; grid-template-columns: var(--bar-tile) minmax(0, 1fr) var(--measure-drawer);
+  color: var(--ink); font-family: var(--font-sans); font-size: var(--type-body); line-height: var(--leading-body);
+  background: var(--slate-deep); border: 1px solid var(--hairline);
+}
+.pf-frame, .pf-frame * { box-sizing: border-box; }
+.pf-frame button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.pf-frame :is(ul, ol, dl, dd, p, h2, h3) { margin: 0; padding: 0; list-style: none; }
+.pf-frame a { color: inherit; }
+.pf-muted { color: var(--ink-muted); }
+.pf-mono { font-family: var(--font-mono); font-size: var(--type-small); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.pf-grow { flex: 1; min-width: 0; }
+.pf-kind { display: block; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-muted); }
+.pf-needs { display: inline-block; flex: none; width: var(--space-2); height: var(--space-2); margin-right: var(--space-2); border-radius: 50%; background: var(--needs-you); vertical-align: middle; }
+
+/* Keys: the Keycap look, kept small */
+.pf-key {
+  display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--target-md); padding: 0 var(--space-4) !important;
+  background: var(--key) !important; border: 1px solid var(--hairline-strong) !important; border-bottom: var(--key-edge) solid var(--hairline-strong) !important;
+  font-weight: 500; white-space: nowrap;
+}
+.pf-key:hover { background: color-mix(in srgb, var(--ink) 16%, var(--slate-deep)) !important; }
+.pf-key-quiet { background: transparent !important; }
+.pf-key-sm { min-height: var(--target-sm); padding: 0 var(--space-3) !important; border-bottom-width: var(--key-edge-sm) !important; font-size: var(--type-meta); }
+.pf-icon-key { display: inline-grid; place-items: center; width: var(--target-md); height: var(--target-md); color: var(--ink-muted) !important; }
+.pf-icon-key:hover { color: var(--ink) !important; background: color-mix(in srgb, var(--ink) 6%, transparent) !important; }
+.pf-frame :is(button, a):focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+/* ---------- Rail: the app bar's tiles, docked ---------- */
+.pf-rail { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--hairline); }
+.pf-rail-fixed { border-bottom: 1px solid var(--hairline-strong); }
+.pf-tile {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: var(--space-1);
+  min-height: var(--bar-rail-page); padding: var(--space-2); text-decoration: none; text-align: center;
+  font-size: var(--type-small); line-height: var(--leading-small); font-weight: 500; color: var(--ink-muted);
+}
+.pf-tile-app { min-height: var(--bar-rail-tile); color: var(--ink); }
+.pf-tile:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.pf-tile[aria-current] { color: var(--ink); }
+.pf-tile-count { position: absolute; top: var(--space-2); right: var(--space-4); font-family: var(--font-mono); font-size: var(--type-label); color: var(--needs-you); font-variant-numeric: tabular-nums; }
+
+/* ---------- Main ---------- */
+.pf-main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.pf-head { display: flex; align-items: flex-end; gap: var(--space-5); padding: var(--space-6) var(--space-6) var(--space-4); min-height: 184px; }
+.pf-head-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.pf-head h2 { font-size: var(--type-title); line-height: var(--leading-title); font-weight: var(--weight-title); letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); }
+.pf-head-slot { flex: none; padding-bottom: var(--space-1); display: flex; align-items: center; gap: var(--space-2); }
+.pf-arrival { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2) !important; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+.pf-arrival b { color: var(--ink); font-weight: 500; }
+.pf-arrival a { font-family: var(--font-mono); font-size: var(--type-label); text-transform: uppercase; letter-spacing: var(--tracking-caps); text-underline-offset: 3px; }
+.pf-back { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--target-md); padding: 0 var(--space-3) !important; font-size: var(--type-meta); color: var(--ink-muted) !important; }
+.pf-back:hover { color: var(--ink) !important; }
+
+.pf-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-5) var(--space-6); max-width: var(--measure-wide); }
+.pf-section { display: flex; flex-direction: column; gap: var(--space-3); }
+.pf-section-head { display: flex; align-items: baseline; gap: var(--space-2); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-weight: 400; text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-muted); }
+.pf-section-label { flex: 1; }
+.pf-section-no { display: none; }
+.pf-section-count { font-variant-numeric: tabular-nums; }
+
+.pf-rows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.pf-rows dt, .pf-about dt { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+.pf-rows dd { font-size: var(--type-body); }
+.pf-list { display: flex; flex-direction: column; }
+.pf-row { display: flex; align-items: center; gap: var(--space-4); min-height: var(--target-md); padding: 0 var(--space-3); }
+.pf-row-wait { min-height: calc(var(--target-md) + var(--space-4)); }
+.pf-sub { display: block; font-size: var(--type-small); line-height: var(--leading-small); }
+.pf-check { flex: none; width: var(--space-4); height: var(--space-4); border: 1px solid var(--hairline-strong); }
+.pf-check[data-on] { background: var(--ink); border-color: var(--ink); box-shadow: inset 0 0 0 3px var(--slate-deep); }
+.pf-more { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3) 0; font-size: var(--type-small); color: var(--ink-muted); }
+
+/* Selection bar */
+.pf-selection { display: flex; align-items: center; gap: var(--space-2); }
+.pf-selection-count { margin-right: var(--space-3); font-size: var(--type-meta); white-space: nowrap; }
+.pf-selection-count b { font-family: var(--font-mono); font-weight: 400; font-variant-numeric: tabular-nums; }
+.pf-selection[data-at='foot'] { position: absolute; left: var(--space-6); right: var(--space-6); bottom: var(--space-5); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4); background: var(--surface-bar); border: 1px solid var(--hairline-strong); }
+
+/* ---------- Drawer ---------- */
+.pf-drawer { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-left: 1px solid var(--hairline); }
+.pf-drawer-bar { display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-3) 0; }
+.pf-drawer-inner { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3) var(--space-5) var(--space-5); }
+.pf-drawer-title { font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: var(--weight-heading); }
+.pf-about { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2) !important; }
+.pf-about dd { font-size: var(--type-meta); line-height: var(--leading-meta); }
+.pf-why { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); }
+.pf-drawer-actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ============ A · Line: one horizon across everything; nothing boxed ============ */
+.pf-frame[data-dir='line'] { --pf-horizon: 196px; background-image: linear-gradient(var(--hairline-strong), var(--hairline-strong)); background-size: 100% 1px; background-position: 0 var(--pf-horizon); background-repeat: no-repeat; }
+.pf-frame[data-dir='line'] .pf-rail-fixed { height: var(--pf-horizon); display: grid; align-content: end; border-bottom: 0; }
+.pf-frame[data-dir='line'] .pf-rail, .pf-frame[data-dir='line'] .pf-drawer { border-color: var(--hairline); }
+.pf-frame[data-dir='line'] .pf-tile[aria-current]::after { content: ''; position: absolute; right: -1px; top: var(--bar-inset); bottom: var(--bar-inset); width: var(--bar-mark); background: var(--ink); }
+.pf-frame[data-dir='line'] .pf-head { height: var(--pf-horizon); min-height: 0; padding-bottom: var(--space-4); }
+.pf-frame[data-dir='line'] .pf-drawer-bar { height: var(--pf-horizon); align-items: flex-end; padding-bottom: var(--space-3); }
+.pf-frame[data-dir='line'] .pf-section-head { padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
+.pf-frame[data-dir='line'] .pf-row { border-bottom: 1px solid var(--hairline); }
+.pf-frame[data-dir='line'] .pf-row[data-picked] { box-shadow: inset var(--bar-mark) 0 0 var(--ink); }
+.pf-frame[data-dir='line'] .pf-selection[data-at='foot'] { background: var(--slate-deep); border: 0; border-top: 1px solid var(--ink); padding-left: 0; }
+.pf-frame[data-dir='line'] .pf-selection[data-at='head'] { padding-bottom: var(--space-1); border-bottom: 1px solid var(--ink); }
+.pf-frame[data-dir='line'] .pf-why { padding-left: var(--space-3); border-left: 1px solid var(--hairline-strong); }
+.pf-frame[data-dir='line'] .pf-arrival { padding-left: var(--space-3); border-left: 1px solid var(--hairline-strong); }
+
+/* ============ B · Bench: rail and drawer are wells, what you're on is a raised key ============ */
+.pf-frame[data-dir='bench'] .pf-rail, .pf-frame[data-dir='bench'] .pf-drawer {
+  background: var(--well); border: 0; border-top: var(--well-depth) solid var(--well-edge);
+}
+.pf-frame[data-dir='bench'] .pf-rail { margin: var(--space-2) 0 var(--space-2) var(--space-2); border-right: 1px solid var(--hairline); }
+.pf-frame[data-dir='bench'] .pf-drawer { margin: var(--space-2) var(--space-2) var(--space-2) 0; border-left: 1px solid var(--hairline); }
+.pf-frame[data-dir='bench'] .pf-rail-fixed { border-bottom: 1px solid var(--hairline); }
+.pf-frame[data-dir='bench'] .pf-rail-pages { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-1); }
+.pf-frame[data-dir='bench'] .pf-tile[aria-current] { background: var(--key); box-shadow: inset 0 calc(var(--key-edge) * -1) 0 var(--hairline-strong); }
+.pf-frame[data-dir='bench'] .pf-section-head { padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
+.pf-frame[data-dir='bench'] .pf-list { padding: var(--space-1); background: var(--well); border: 1px solid var(--hairline); border-top: var(--well-depth) solid var(--well-edge); }
+.pf-frame[data-dir='bench'] .pf-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.pf-frame[data-dir='bench'] .pf-row[data-picked] { background: var(--key); box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--hairline-strong); }
+.pf-frame[data-dir='bench'] .pf-arrival { align-self: flex-start; padding: var(--space-1) var(--space-3); background: var(--well); border-top: var(--well-depth) solid var(--well-edge); }
+.pf-frame[data-dir='bench'] .pf-selection[data-at='foot'] { background: var(--well); border: 1px solid var(--hairline); border-top: var(--well-depth) solid var(--well-edge); }
+.pf-frame[data-dir='bench'] .pf-selection[data-at='head'] { padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); background: var(--well); border-top: var(--well-depth) solid var(--well-edge); }
+.pf-frame[data-dir='bench'] .pf-why { padding: var(--space-3); background: var(--slate-deep); border: 1px solid var(--hairline); }
+
+/* ============ C · Folio: the record is a sheet, the drawer the next sheet beside it ============ */
+.pf-frame[data-dir='folio'] .pf-rail-fixed { border-bottom: 1px solid var(--hairline-strong); }
+.pf-frame[data-dir='folio'] .pf-tile[aria-current] { outline: 1px solid var(--ink); outline-offset: calc(var(--space-1) * -1); }
+.pf-frame[data-dir='folio'] .pf-main { margin: var(--space-4) 0 var(--space-4) var(--space-4); border: 1px solid var(--sheet-edge); }
+.pf-frame[data-dir='folio'] .pf-drawer { margin: var(--space-4) var(--space-4) var(--space-4) 0; border: 1px solid var(--sheet-edge); border-left: 0; background: color-mix(in srgb, var(--ink) 3%, var(--slate-deep)); }
+.pf-frame[data-dir='folio'] .pf-head { border-bottom: 1px solid var(--sheet-edge); min-height: 144px; }
+.pf-frame[data-dir='folio'] .pf-head .pf-kind { align-self: flex-start; padding: 0 var(--space-2); border: 1px solid var(--ink-muted); }
+.pf-frame[data-dir='folio'] .pf-section-no { display: inline; color: var(--ink); }
+.pf-frame[data-dir='folio'] .pf-section-head { padding-top: var(--space-2); border-top: 1px solid var(--hairline-strong); }
+.pf-frame[data-dir='folio'] .pf-row { border-bottom: 1px dashed var(--hairline); }
+.pf-frame[data-dir='folio'] .pf-row[data-picked] { outline: 1px solid var(--ink); outline-offset: -1px; border-bottom-color: transparent; }
+.pf-frame[data-dir='folio'] .pf-arrival { font-family: var(--font-mono); font-size: var(--type-small); }
+.pf-frame[data-dir='folio'] .pf-arrival b { font-family: var(--font-sans); }
+.pf-frame[data-dir='folio'] .pf-selection[data-at='foot'] { left: 0; right: 0; bottom: 0; background: var(--slate-deep); border: 0; border-top: 1px solid var(--sheet-edge); }
+.pf-frame[data-dir='folio'] .pf-selection[data-at='head'] { padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border: 1px solid var(--ink-muted); }
+.pf-frame[data-dir='folio'] .pf-why { padding-top: var(--space-2); border-top: 1px dashed var(--hairline-strong); }
+.pf-frame[data-dir='folio'] .pf-drawer-inner > .pf-kind:first-child { align-self: flex-start; padding: 0 var(--space-2); border: 1px solid var(--ink-muted); }
+
+/* ---------- Compare pages: each direction in two states, drawn at a scale ---------- */
+.pf-compare { --pf-scale: 0.46; display: flex; flex-direction: column; gap: var(--space-5); color: var(--ink); font-family: var(--font-sans); }
+.pf-compare-row { display: grid; grid-template-columns: var(--space-8) repeat(2, calc(1180px * var(--pf-scale))); gap: var(--space-4); align-items: start; }
+.pf-compare-cols { align-items: end; }
+.pf-compare-col, .pf-compare-dir { font-family: var(--font-mono); font-size: var(--type-label); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-muted); }
+.pf-compare-dir { padding-top: var(--space-2); color: var(--ink); }
+.pf-mini { width: calc(1180px * var(--pf-scale)); height: calc(720px * var(--pf-scale)); overflow: hidden; }
+.pf-mini-inner { transform: scale(var(--pf-scale)); transform-origin: 0 0; }
