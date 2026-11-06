@@ -85,5 +85,6 @@
 .cud-app[data-look='c'] .cud-word { align-self: flex-start; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cud-band, .cud-band *, .cud-horizon { animation: none !important; }
+  .cud-band[data-look='a'][data-state='reconnecting'] .cud-connection, .cud-band[data-look='c'][data-state='reconnecting'] .cud-line, .cud-app[data-look='c'][data-state='loading'] .cud-horizon { animation: none; }
 }
+:root[data-motion='reduce'] .cud-band[data-look='a'][data-state='reconnecting'] .cud-connection, :root[data-motion='reduce'] .cud-band[data-look='c'][data-state='reconnecting'] .cud-line, :root[data-motion='reduce'] .cud-app[data-look='c'][data-state='loading'] .cud-horizon { animation: none; }
