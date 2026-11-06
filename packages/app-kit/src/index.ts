@@ -33,3 +33,4 @@ export { placeRoutes, place, readSearch, mountedAt, type Place, type PlaceSpec, 
 export { createAppClient, AppError, isAppError, type AppClient, type AppClientOptions, type AppFetcher, type AnyPaths, type Answer, type CallOptions, type HttpMethod, type PathsFor, type Problem, type ErrorWords } from './client.js';
 export { useData, useChange, useRefresh, DataView, DataProvider, newDataClient, type AppBus, type DataKey, type DataState, type DataOptions, type DataClient, type ChangeState, type ChangeOptions, type DataViewProps } from './query.js';
 export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';
+export { EditInPlace, type EditInPlaceProps } from './edit-in-place.js';
