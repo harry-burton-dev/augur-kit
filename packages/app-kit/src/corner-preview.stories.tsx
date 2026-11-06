@@ -1,18 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { CSSProperties } from "react";
-import {
-  Button,
-  Checkbox,
-  Choice,
-  Icon,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-  TextField,
-  Toggle,
-} from "@augur/kit-common";
-import { Card, Cards } from "./things.js";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { CSSProperties } from 'react';
+import { Button, Checkbox, Choice, Icon, Tab, TabList, TabPanel, Tabs, TextField, Toggle } from '@augur/kit-common';
+import { Card, Cards } from './things.js';
 
 /**
  * A preview, not a decision: the Keycap buttons and the Well fields with less corner, beside a Sheet menu
@@ -22,21 +11,21 @@ import { Card, Cards } from "./things.js";
  * If one is picked, the change is the token values in `common.tokens.json`.
  */
 const meta = {
-  title: "Common/Corner preview",
-  parameters: { layout: "padded", chromatic: { viewports: [1280] } },
+  title: 'Common/Corner preview',
+  parameters: { layout: 'padded', chromatic: { viewports: [1280] } },
 } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 const options = {
   today: {
-    name: "Today",
-    note: "radius-control 6px, radius-key 4px",
-    control: "6px",
-    key: "4px",
+    name: 'Today',
+    note: 'radius-control 6px, radius-key 4px',
+    control: '6px',
+    key: '4px',
   },
-  middle: { name: "Middle", note: "both 2px", control: "2px", key: "2px" },
-  square: { name: "Square", note: "both 0", control: "0px", key: "0px" },
+  middle: { name: 'Middle', note: 'both 2px', control: '2px', key: '2px' },
+  square: { name: 'Square', note: 'both 0', control: '0px', key: '0px' },
 } as const;
 type Option = keyof typeof options;
 
@@ -45,22 +34,15 @@ const noop = () => {};
 /** A Sheet menu drawn in place (an open Menu would open outside the column, so it wouldn't take its corners). */
 function SheetMenu() {
   const rows = [
-    { id: "open", label: "Open", icon: "arrow" as const, hovered: true },
-    { id: "rename", label: "Rename", icon: "rename" as const, key: "R" },
-    { id: "move", label: "Move", icon: "folder" as const },
+    { id: 'open', label: 'Open', icon: 'arrow' as const, hovered: true },
+    { id: 'rename', label: 'Rename', icon: 'rename' as const, key: 'R' },
+    { id: 'move', label: 'Move', icon: 'folder' as const },
   ];
   return (
-    <div
-      className="augur-popover augur-menu"
-      style={{ position: "static", minWidth: 0 }}
-    >
+    <div className="augur-popover augur-menu" style={{ position: 'static', minWidth: 0 }}>
       <p className="augur-menu-heading">Q3 plan</p>
       {rows.map((r) => (
-        <div
-          key={r.id}
-          className="augur-menu-item"
-          data-hovered={r.hovered || undefined}
-        >
+        <div key={r.id} className="augur-menu-item" data-hovered={r.hovered || undefined}>
           <Icon name={r.icon} size={16} className="augur-menu-icon" />
           <span className="augur-menu-name">
             <span className="augur-menu-label">{r.label}</span>
@@ -83,37 +65,35 @@ function SheetMenu() {
 function Column({ option, wide }: { option: Option; wide?: boolean }) {
   const o = options[option];
   const stack = {
-    display: "grid",
-    gap: "var(--space-5)",
-    alignContent: "start",
+    display: 'grid',
+    gap: 'var(--space-5)',
+    alignContent: 'start',
     minWidth: 0,
   } as CSSProperties;
   const style = {
-    "--radius-control": o.control,
-    "--radius-key": o.key,
-    display: "grid",
-    gap: "var(--space-5)",
-    alignContent: "start",
+    '--radius-control': o.control,
+    '--radius-key': o.key,
+    display: 'grid',
+    gap: 'var(--space-5)',
+    alignContent: 'start',
     minWidth: 0,
   } as CSSProperties;
   return (
     <section style={style} data-option={option}>
       <header
         style={{
-          display: "grid",
-          gap: "var(--space-1)",
-          paddingBottom: "var(--space-2)",
-          borderBottom: "1px solid var(--hairline)",
+          display: 'grid',
+          gap: 'var(--space-1)',
+          paddingBottom: 'var(--space-2)',
+          borderBottom: '1px solid var(--hairline)',
         }}
       >
-        <span style={{ fontSize: "var(--type-body)", fontWeight: 500 }}>
-          {o.name}
-        </span>
+        <span style={{ fontSize: 'var(--type-body)', fontWeight: 500 }}>{o.name}</span>
         <span
           style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "var(--type-label)",
-            color: "var(--ink-muted)",
+            fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--type-label)',
+            color: 'var(--ink-muted)',
           }}
         >
           {o.note}
@@ -123,22 +103,20 @@ function Column({ option, wide }: { option: Option; wide?: boolean }) {
         style={
           wide
             ? {
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: "var(--space-6)",
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: 'var(--space-6)',
               }
             : stack
         }
       >
         <div style={stack}>
-          <div
-            style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)" }}
-          >
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
             <Button kind="primary">Publish</Button>
             <Button kind="secondary">Save draft</Button>
           </div>
           <TextField label="Name" defaultValue="Q3 plan" />
-          <div style={{ display: "grid", gap: "var(--space-2)" }}>
+          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
             <Checkbox defaultChecked>Tell the team</Checkbox>
             <Checkbox>Pin to the floor</Checkbox>
           </div>
@@ -149,11 +127,11 @@ function Column({ option, wide }: { option: Option; wide?: boolean }) {
             label="Who sees it"
             defaultValue="team"
             options={[
-              { value: "team", label: "This team", detail: "Ops only." },
+              { value: 'team', label: 'This team', detail: 'Ops only.' },
               {
-                value: "floor",
-                label: "The floor",
-                detail: "Everyone on Ops and below.",
+                value: 'floor',
+                label: 'The floor',
+                detail: 'Everyone on Ops and below.',
               },
             ]}
           />
@@ -176,14 +154,7 @@ function Column({ option, wide }: { option: Option; wide?: boolean }) {
             </TabPanel>
           </Tabs>
           <Cards>
-            <Card
-              heading="Keep the coast watched"
-              status="needs"
-              floorKind="team"
-              floorName="Ops"
-              meta={["By 13 Nov"]}
-              onOpen={noop}
-            />
+            <Card heading="Keep the coast watched" status="needs" floorKind="team" floorName="Ops" meta={['By 13 Nov']} onOpen={noop} />
           </Cards>
           <SheetMenu />
         </div>
@@ -197,10 +168,10 @@ function Compare({ only, wide }: { only?: Option[]; wide?: boolean }) {
   return (
     <div
       style={{
-        display: "grid",
+        display: 'grid',
         gridTemplateColumns: `repeat(${shown.length}, minmax(0, 1fr))`,
-        gap: "var(--space-7)",
-        maxWidth: "var(--measure-wide)",
+        gap: 'var(--space-7)',
+        maxWidth: wide ? undefined : 'var(--measure-wide)',
       }}
     >
       {shown.map((o) => (
@@ -215,5 +186,5 @@ export const SideBySide: Story = { render: () => <Compare /> };
 
 /** Today beside square only, each in two columns so it fits without scrolling. */
 export const TodayAndSquare: Story = {
-  render: () => <Compare only={["today", "square"]} wide />,
+  render: () => <Compare only={['today', 'square']} wide />,
 };
