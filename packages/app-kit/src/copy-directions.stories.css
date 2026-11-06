@@ -1,0 +1,223 @@
+/*
+ * The copy, code and folds round's three directions (6 Nov 2026), for the story page only. The parts are
+ * drawn here, scoped to `[data-look]`, with the Keycap, Well, Sheet and Key looks named from the tokens as
+ * Common's kit.css names them. Corners come from the radius tokens (all square, PDR-017). `[data-pointed]`
+ * draws hover and `[data-focus-drawn]` draws keyboard focus, so both show in a snapshot. Once a direction
+ * is picked it moves into a real part and this file goes.
+ */
+@layer components {
+  .cd-stage {
+    --cd-key: color-mix(in srgb, var(--ink) 10%, var(--slate-deep));
+    --cd-key-side: color-mix(in srgb, var(--ink) 16%, transparent);
+    --cd-key-bottom: color-mix(in srgb, var(--ink) 34%, transparent);
+    --cd-tray: color-mix(in srgb, var(--shade) 25%, var(--slate-deep));
+    --cd-sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --cd-sheet-edge: color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    --cd-point: color-mix(in srgb, var(--ink) 5%, transparent);
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: var(--space-5) var(--edge);
+    background: var(--slate-deep);
+    color: var(--ink);
+    font-family: var(--font-sans);
+  }
+  .cd-head { display: flex; align-items: baseline; gap: var(--space-4); margin-bottom: var(--space-5); padding-bottom: var(--space-3); border-bottom: 1px solid var(--hairline); }
+  .cd-part { margin: 0; font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: 400; white-space: nowrap; }
+  .cd-summary { margin: 0; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); max-width: var(--measure-wide); }
+  .cd-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+  .cd-column { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .cd-name {
+    margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label);
+    letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 400; color: var(--ink);
+  }
+  .cd-note { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-prior { margin: 0 0 var(--space-3); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-prior-label { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink); margin-right: var(--space-1); }
+  .cd-specimens { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+  .cd-caption {
+    margin: var(--space-2) 0 calc(var(--space-2) * -1); padding-top: var(--space-3); border-top: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .cd-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .cd-needs { display: inline-block; width: var(--space-2); height: var(--space-2); border-radius: 50%; background: var(--needs-you); margin-right: var(--space-2); vertical-align: middle; }
+
+  /* ---------------------------------------------------------------- Code, shared */
+  .cd-snippet { position: relative; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .cd-code { margin: 0; font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .cd-line { display: flex; gap: var(--space-3); }
+  .cd-line > code { font: inherit; min-width: 0; }
+  .cd-num { flex: none; min-width: 2ch; text-align: right; color: var(--ink-muted); font-variant-numeric: tabular-nums; user-select: none; }
+  .cd-more {
+    all: unset; align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-1); cursor: pointer;
+    font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted);
+  }
+  .cd-more:hover { color: var(--ink); }
+  .cd-more:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .cd-blocked { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-sentence { margin: 0; font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink); }
+
+  /* A · Slot and key: a Well with a Keycap joined flush to its end. */
+  [data-look='a'] .cd-slot { display: flex; align-items: stretch; min-width: 0; }
+  [data-look='a'] .cd-slot-well {
+    flex: 1; min-width: 0; padding: var(--space-2) var(--space-3); background: var(--well);
+    border: 1px solid var(--hairline-strong); border-right: 0; border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control) 0 0 var(--radius-control);
+  }
+  [data-look='a'][data-single] .cd-slot-well { display: flex; align-items: center; min-height: calc(var(--target-sm) - var(--well-depth)); padding-block: 0; }
+  [data-look='a'] .cd-slot > .augur-control, [data-look='a'] .cd-slot > .cd-slot-key { flex: none; }
+  [data-look='a'] .cd-slot .augur-button { height: 100%; min-height: var(--target-sm); border-radius: 0 var(--radius-control) var(--radius-control) 0; align-self: stretch; }
+  [data-look='a']:not([data-single]) .cd-slot { align-items: flex-start; }
+  [data-look='a']:not([data-single]) .cd-slot .augur-button { height: auto; }
+  [data-look='a'][data-state='copied'] .cd-slot .augur-button { --key-depth: 1px; transform: translateY(calc(var(--key-edge-sm) - 1px)); }
+  [data-look='a'][data-state='blocked'] .cd-slot-well { border-color: color-mix(in srgb, var(--ink) 40%, transparent); border-top-color: var(--well-edge); }
+  .cd-inline[data-look='a'] {
+    all: unset; display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-1); cursor: pointer; vertical-align: baseline;
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: 0.875em; color: var(--ink);
+  }
+  .cd-inline[data-look='a'] code { font: inherit; }
+
+  /* B · Listing: a mono head on a hairline, a line down the start, copy as a word. */
+  [data-look='b'] .cd-listing-head {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-1); border-bottom: 1px solid var(--hairline-strong);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  [data-look='b'] .cd-listing-copy {
+    all: unset; display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--space-5); padding: 0 var(--space-1); cursor: pointer; color: var(--ink);
+    border-bottom: 1px solid transparent; letter-spacing: var(--tracking-caps);
+  }
+  [data-look='b'] .cd-listing-copy:hover, [data-look='b'] .cd-listing-copy[data-pointed] { border-bottom-color: var(--ink); }
+  [data-look='b'] .cd-listing-copy:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  [data-look='b'] .cd-listing-body { padding: var(--space-2) 0 var(--space-1) var(--space-3); box-shadow: inset 1px 0 0 var(--hairline-strong); transition: box-shadow var(--motion-base) var(--ease-standard); }
+  [data-look='b'][data-single] .cd-listing-body { padding-block: var(--space-1); }
+  [data-look='b'][data-state='copied'] .cd-listing-body { box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); }
+  .cd-inline[data-look='b'] {
+    all: unset; display: inline-flex; align-items: center; gap: var(--space-1); cursor: pointer; font-family: var(--font-mono); font-size: 0.875em; color: var(--ink);
+    border-bottom: 1px dotted var(--ink-muted);
+  }
+  .cd-inline[data-look='b']:hover { border-bottom-style: solid; border-bottom-color: var(--ink); }
+  .cd-inline[data-look='b'] code { font: inherit; }
+
+  /* C · Press to take: the snippet is one key. */
+  [data-look='c'] .cd-take {
+    position: relative; display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-2) var(--space-3); cursor: pointer; outline: none;
+    background: var(--cd-key); border: 1px solid var(--cd-key-side); border-bottom: var(--key-edge-sm) solid var(--cd-key-bottom); border-radius: var(--radius-control);
+    transition: transform var(--motion-instant) var(--ease-standard), background var(--motion-instant) var(--ease-standard);
+  }
+  [data-look='c'] .cd-take .cd-code { flex: 1; min-width: 0; }
+  [data-look='c'] .cd-take:hover, [data-look='c'] .cd-take[data-pointed] { background: color-mix(in srgb, var(--ink) 14%, var(--slate-deep)); }
+  [data-look='c'] .cd-take:active, [data-look='c'][data-state='copied'] .cd-take { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge-sm) - 1px)); }
+  [data-look='c'] .cd-take:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  [data-look='c'] .cd-take-tag {
+    flex: none; display: inline-flex; align-items: center; gap: var(--space-1); padding-top: var(--space-1);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  [data-look='c'][data-state='copied'] .cd-take-tag { color: var(--ink); }
+  .cd-inline[data-look='c'] {
+    all: unset; display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-1); cursor: pointer; vertical-align: baseline;
+    background: var(--cd-key); border: 1px solid var(--cd-key-side); border-bottom: var(--key-edge-sm) solid var(--cd-key-bottom); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: 0.875em; color: var(--ink);
+  }
+  .cd-inline[data-look='c'][data-state='copied'] { border-bottom-width: 1px; }
+  .cd-inline[data-look='c'] code { font: inherit; }
+  .cd-inline:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+  /* ---------------------------------------------------------------- Folds, shared */
+  .cd-folds { display: flex; flex-direction: column; min-width: 0; }
+  .cd-fold-h { margin: 0; font: inherit; }
+  .cd-fold-head {
+    all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: var(--target-md); padding: 0 var(--space-2); cursor: pointer;
+    font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink);
+  }
+  .cd-fold-head:focus-visible, .cd-fold-head[data-focus-drawn] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .cd-fold-mark { flex: none; display: flex; color: var(--ink-muted); transition: transform var(--motion-base) var(--ease-standard); }
+  .cd-fold[data-open] .cd-fold-mark { transform: rotate(90deg); }
+  .cd-fold-title { flex: 1; min-width: 0; }
+  .cd-fold-sum { flex: none; display: inline-flex; align-items: center; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-fold-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3) var(--space-4) calc(var(--space-2) + var(--space-4) + var(--space-2)); }
+  .cd-fold-body[hidden] { display: none; }
+  .cd-fold-why { margin: 0; padding: 0 var(--space-2) var(--space-3) calc(var(--space-2) + var(--space-4) + var(--space-2)); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-fold[data-unavailable] .cd-fold-head { cursor: default; color: var(--ink-muted); }
+  .cd-setting { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .cd-setting-value { color: var(--ink-muted); }
+
+  /* A · Outline: hairlines, muted when shut; open is full ink with a line down the start of its body. */
+  [data-look='a'] .cd-fold { border-bottom: 1px solid var(--hairline); }
+  [data-look='a'] .cd-fold:first-child { border-top: 1px solid var(--hairline); }
+  [data-look='a'] .cd-fold-head { color: var(--ink-muted); }
+  [data-look='a'] .cd-fold-head:hover, [data-look='a'] .cd-fold-head[data-pointed] { color: var(--ink); background: var(--cd-point); }
+  [data-look='a'] .cd-fold[data-open] .cd-fold-head { color: var(--ink); }
+  [data-look='a'] .cd-fold[data-open] .cd-fold-mark { color: var(--ink); }
+  [data-look='a'] .cd-fold-body { margin-left: calc(var(--space-2) + var(--space-2)); padding-left: calc(var(--space-4) + var(--space-2) - var(--key-edge-sm)); box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); margin-bottom: var(--space-3); padding-bottom: var(--space-1); }
+
+  /* B · Drawer: in a tray; the open one rises as a key and its body is a Well. */
+  [data-look='b'].cd-folds { gap: var(--space-1); padding: var(--space-1); background: var(--cd-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); }
+  [data-look='b'] .cd-fold-head { border: 1px solid transparent; border-bottom-width: var(--key-edge-sm); border-radius: var(--radius-key); min-height: calc(var(--target-md) - var(--space-1)); }
+  [data-look='b'] .cd-fold-head:hover, [data-look='b'] .cd-fold-head[data-pointed] { background: var(--cd-point); }
+  [data-look='b'] .cd-fold[data-open] .cd-fold-head { background: var(--cd-key); border-color: var(--cd-key-side); border-bottom-color: var(--cd-key-bottom); font-weight: 500; }
+  [data-look='b'] .cd-fold-body {
+    margin-top: var(--space-1); padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-2) + var(--space-4) + var(--space-2));
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control);
+  }
+  [data-look='b'] .cd-fold[data-unavailable] .cd-fold-head { background: none; }
+
+  /* C · Ledger: no lines; a mono tally on each heading; opening one steps the rest back. */
+  [data-look='c'].cd-folds { gap: var(--space-1); }
+  [data-look='c'] .cd-fold { transition: filter var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard); }
+  [data-look='c'][data-some-open] .cd-fold:not([data-open]) { filter: brightness(var(--focus-far-dim)); }
+  [data-look='c'][data-some-open] .cd-fold:not([data-open]) .cd-fold-head { color: var(--ink-muted); }
+  [data-look='c'][data-some-open] .cd-fold:not([data-open]):hover, [data-look='c'][data-some-open] .cd-fold:not([data-open]):has([data-pointed]), [data-look='c'][data-some-open] .cd-fold:has(:focus-visible) { filter: none; }
+  [data-look='c'] .cd-fold-head:hover, [data-look='c'] .cd-fold-head[data-pointed] { background: var(--cd-point); }
+  [data-look='c'] .cd-fold-sum { font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  [data-look='c'] .cd-fold[data-open] .cd-fold-title { font-weight: 500; }
+  [data-look='c'] .cd-fold-body { padding-top: var(--space-1); }
+
+  /* ---------------------------------------------------------------- Edit in place, shared */
+  .cd-edit-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+  .cd-edit-stack[data-look='c'] { gap: var(--space-5); }
+  .cd-inplace { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+  .cd-inplace-label { font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
+  .cd-inplace-row { display: flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); min-width: 0; }
+  .cd-inplace-line { margin: 0; min-height: var(--leading-small); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .cd-inplace-line[data-tone='danger'] { color: var(--danger); }
+  .cd-value {
+    all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--space-2); max-width: 100%; min-height: var(--target-sm); cursor: text;
+    font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink);
+  }
+  .cd-value-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cd-value:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .cd-value[aria-disabled] { cursor: default; color: var(--ink-muted); }
+  .cd-value-pen { display: flex; color: var(--ink-muted); }
+  .cd-edit-box { flex: 1; min-width: 0; height: var(--target-sm); box-sizing: border-box; display: flex; align-items: center; }
+  .cd-edit-box[data-refused] { border-color: var(--danger); border-top-color: var(--well-edge); }
+  .cd-edit-keys { flex: none; display: inline-flex; gap: var(--space-2); }
+
+  /* A · Cell: a dotted line under the value; the pen shows on pointing. */
+  .cd-inplace[data-look='a'] .cd-value-text { border-bottom: 1px dotted var(--ink-muted); }
+  .cd-inplace[data-look='a'] .cd-value:hover .cd-value-text, .cd-inplace[data-look='a'] .cd-value[data-pointed] .cd-value-text { border-bottom-style: solid; border-bottom-color: var(--ink); }
+  .cd-inplace[data-look='a'] .cd-value .cd-value-pen { opacity: 0; transition: opacity var(--motion-instant) var(--ease-standard); }
+  .cd-inplace[data-look='a'] .cd-value:is(:hover, :focus-visible, [data-pointed], [aria-disabled]) .cd-value-pen { opacity: 1; }
+  .cd-inplace[data-look='a'] .cd-value[aria-disabled] .cd-value-text { border-bottom: 0; }
+
+  /* B · Key beside: the value plain, the Rename key always there. */
+  .cd-inplace[data-look='b'] .cd-value { cursor: default; }
+  .cd-inplace[data-look='b'] .cd-value[data-pointed] .cd-value-text { text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: var(--space-1); }
+
+  /* C · Slip: a Sheet under the value, which stays where it is. */
+  .cd-slip-anchor { position: relative; }
+  .cd-inplace[data-look='c'] .cd-value-text { border-bottom: 1px solid transparent; }
+  .cd-inplace[data-look='c'] .cd-value:hover .cd-value-text, .cd-inplace[data-look='c'] .cd-value[data-pointed] .cd-value-text { border-bottom-color: var(--ink); }
+  .cd-inplace[data-look='c'][data-state='editing'] .cd-value-text, .cd-inplace[data-look='c'][data-state='saving'] .cd-value-text, .cd-inplace[data-look='c'][data-state='refused'] .cd-value-text { border-bottom-color: var(--ink); }
+  .cd-inplace[data-look='c'][data-state='editing'], .cd-inplace[data-look='c'][data-state='saving'], .cd-inplace[data-look='c'][data-state='refused'] { flex-direction: column; }
+  .cd-inplace[data-look='c'] .cd-slip-anchor { flex-wrap: wrap; }
+  .cd-slip {
+    flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding: var(--space-3);
+    background: var(--cd-sheet); border: 1px solid var(--cd-sheet-edge); border-radius: var(--radius-inset);
+    box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
+  .cd-slip[data-float] { position: absolute; top: calc(100% + var(--space-1)); left: 0; right: 0; z-index: 2; }
+  .cd-slip { flex-wrap: nowrap; padding: var(--space-2); }
+  .cd-slip-head {
+    flex-basis: 100%; padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+}
