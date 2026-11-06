@@ -30,8 +30,10 @@
    the words carry the meaning, so nothing here is the only cue. Loops stop under reduced motion. */
 @layer components {
   .augur-signal { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); }
-  .augur-signal-light { position: relative; flex: none; width: var(--space-2); height: var(--space-2); border-radius: var(--radius-pill); background: var(--signal-light, var(--ink)); }
-  .augur-signal-count { font-weight: var(--weight-display); font-variant-numeric: tabular-nums; }
+  /* Key (round N): the light sits in a small well, like a lamp in its socket. */
+  .augur-signal-socket { flex: none; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-width: var(--space-6); height: var(--space-5); padding: 0 var(--space-2); background: var(--well); border: 1px solid var(--hairline); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control); }
+  .augur-signal-light { position: relative; flex: none; width: var(--space-2); height: var(--space-2); border-radius: 50%; background: var(--signal-light, var(--ink)); }
+  .augur-signal-count { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .augur-signal-more { color: var(--ink-muted); }
   .augur-signal[data-kind='streak'] { --signal-light: var(--ink); }
   .augur-signal[data-kind='streak'] .augur-signal-light {
@@ -209,7 +211,9 @@
   .augur-icon-button[data-hovered] { background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .augur-icon-button[data-pressed] { transform: scale(0.94); }
 
-  /* A reason, or an icon button's name: under the control, on hover and focus. */
+  /* A reason, or an icon button's name: under the control, on hover and focus. Reasons: Mark (picked 6 Nov 2026).
+     A solid Sheet tip with one edge, never a blur (PDR-015); an unavailable control also carries a small lock
+     mark on its corner all the time, so you can see it is off before you ask why. */
   .augur-reason {
     position: absolute;
     top: calc(100% + var(--space-1));
@@ -219,10 +223,9 @@
     max-width: 34ch;
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-key);
-    background: var(--surface-overlay);
-    backdrop-filter: blur(var(--surface-blur));
-    border: 1px solid var(--hairline);
-    box-shadow: var(--shadow-raised);
+    background: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    border: 1px solid color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    box-shadow: 0 var(--space-2) var(--space-4) color-mix(in srgb, var(--shade) 45%, transparent);
     font-size: var(--type-small);
     line-height: var(--leading-small);
     color: var(--ink);
@@ -233,6 +236,11 @@
     transition: opacity var(--motion-quick) var(--ease-out), transform var(--motion-quick) var(--ease-out);
   }
   .augur-name { left: 50%; transform: translate(-50%, -2px); white-space: nowrap; }
+  .augur-reason-mark {
+    position: absolute; top: calc(-1 * var(--space-2)); right: calc(-1 * var(--space-2)); z-index: 1; display: flex; padding: var(--space-1);
+    background: var(--slate-deep); border: 1px solid var(--hairline-strong); color: var(--ink-muted); pointer-events: none;
+  }
+  .augur-control:hover > .augur-reason-mark, .augur-control:focus-within > .augur-reason-mark { color: var(--ink); }
   .augur-control:hover > .augur-reason, .augur-control:focus-within > .augur-reason { opacity: 1; transform: none; }
   .augur-control:hover > .augur-name, .augur-control:focus-within > .augur-name { transform: translate(-50%, 0); }
   /* Fields: Well (picked 6 Nov 2026 from four directions). The Keycap button's counterpart: a key sits up, a
@@ -240,8 +248,8 @@
      line, never an inner shadow. Green means "needs you", red means wrong; focus is the kit's one ring. */
   .augur-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
   /* Unavailable: dimmed, but its reason stays at full strength. */
-  .augur-field[data-unavailable] > :not(.augur-reason), .augur-toggle[data-unavailable] > :not(.augur-reason),
-  .augur-check-wrap[data-unavailable] > :not(.augur-reason) { opacity: 0.4; }
+  .augur-field[data-unavailable] > :not(.augur-reason, .augur-reason-mark), .augur-toggle[data-unavailable] > :not(.augur-reason, .augur-reason-mark),
+  .augur-check-wrap[data-unavailable] > :not(.augur-reason, .augur-reason-mark) { opacity: 0.4; }
   .augur-field-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
   .augur-field-label { color: var(--ink); font-weight: 500; }
   .augur-flag {
@@ -734,12 +742,15 @@
   .augur-step[data-state='now'] { color: var(--ink); font-weight: 500; }
   .augur-step[data-state='now'] .augur-step-mark { background: color-mix(in srgb, var(--ink) 20%, transparent); }
 
-  /* The letterbox: urgent things in a 2.39:1 frame; above and below step back behind the scrim. */
+  /* The letterbox: Iris (picked 6 Nov 2026). Urgent things in a 2.39:1 frame; above and below, solid masks close in
+     from the screen's top and bottom edges, as a cinema's masking closes down to a wide picture. Nothing of the work
+     shows above or below, and nothing is blurred (PDR-015). The bars carry their words on the masks. */
   .augur-letterbox { position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); }
-  .augur-letterbox::before, .augur-letterbox::after { content: ''; position: fixed; left: 0; right: 0; height: 50%; backdrop-filter: blur(var(--focus-far-blur)); pointer-events: none; }
-  .augur-letterbox::before { top: 0; background: linear-gradient(to bottom, var(--slate-deep), var(--scrim)); }
-  .augur-letterbox::after { bottom: 0; background: linear-gradient(to top, var(--slate-deep), var(--scrim)); }
-  .augur-letterbox[data-entering] { animation: augur-fade var(--motion-slow) var(--ease-out); }
+  .augur-letterbox::before, .augur-letterbox::after { content: ''; position: fixed; left: 0; right: 0; height: 50%; background: var(--shade); pointer-events: none; }
+  .augur-letterbox::before { top: 0; transform-origin: top; }
+  .augur-letterbox::after { bottom: 0; transform-origin: bottom; }
+  .augur-letterbox[data-entering]::before, .augur-letterbox[data-entering]::after { animation: augur-iris-in var(--motion-calm) var(--ease-out); }
+  .augur-letterbox[data-passive]::before, .augur-letterbox[data-passive]::after { animation: none; }
   /* Drawn only (a held decision): in front of the active surfaces such as the radial menu, and the pointer passes through to what is held. */
   .augur-letterbox[data-passive] { z-index: calc(var(--layer-chrome) + 3); pointer-events: none; animation: augur-fade var(--motion-quick) var(--ease-out); }
   /* Bar, frame, bar: the bars sit in the scrim right against the frame and carry what the item is and where it stands. */
@@ -772,7 +783,7 @@
   .augur-letterbox[data-look='see-through'] .augur-letterbox-bar[data-edge='top'] { align-items: flex-end; }
   .augur-letterbox[data-look='see-through'] .augur-letterbox-bar[data-edge='bottom'] { align-items: flex-start; }
   .augur-letterbox[data-look='see-through'] .augur-letterbox-frame {
-    background: var(--focus-far-tint); backdrop-filter: blur(var(--focus-deep-blur)) saturate(var(--focus-deep-saturate)) brightness(var(--focus-deep-dim));
+    background: var(--focus-far-tint); backdrop-filter: saturate(var(--focus-deep-saturate)) brightness(var(--focus-deep-dim));
     border-block-color: var(--danger);
   }
   .augur-letterbox[data-look='see-through'] .augur-letterbox-modal[data-entering] .augur-letterbox-bar[data-edge='top'] { animation: augur-bar-in-top var(--motion-calm) var(--ease-out); }
@@ -784,25 +795,28 @@
   }
   .augur-ack[data-state='not-acknowledged'] { border-color: var(--warning); }
   .augur-ack .augur-button { min-height: var(--target-sm); }
-  /* Explain: what happened, why it matters, what you can do, who else can act. */
-  .augur-explain { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-5); }
-  .augur-explain-part { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-  .augur-explain-label { font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-muted); }
+  /* Explain: Rule (picked 6 Nov 2026). What happened, why it matters, what you can do, who else can act, as one
+     column read top to bottom, each label in mono on its own hairline: the line as structure. Made to stand beside
+     the item it explains, or in the letterbox's frame. All four always show. */
+  .augur-explain { margin: 0; display: flex; flex-direction: column; gap: var(--space-3); max-width: var(--measure-read); }
+  .augur-explain-part { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; padding-top: var(--space-1); border-top: 1px solid var(--hairline-strong); }
+  .augur-explain-label { font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
   .augur-explain-text { margin: 0; color: var(--ink); }
   /* UrgentEdge: a stepped-back urgent item on the edge rule at the top; it stays until it is resolved. */
-  .augur-urgent-edge { display: flex; min-height: var(--edge-rule); border-bottom: 1px solid var(--danger); background: var(--surface-bar); }
+  /* Key (round N): allowed to be loud. A raised strip with a red lip, and Open as a key. */
+  .augur-urgent-edge { display: flex; min-height: var(--edge-rule); border: 1px solid var(--hairline-strong); border-bottom: var(--key-edge) solid var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface-bar)); }
   .augur-urgent-edge-button {
     display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--edge-rule); margin: 0; padding: 0 var(--edge);
     border: 0; background: transparent; color: var(--ink); font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); text-align: start; cursor: pointer;
   }
-  .augur-urgent-edge-button[data-hovered] { background: var(--light); }
+  .augur-urgent-edge-button[data-hovered] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
   .augur-urgent-edge-button[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
   .augur-urgent-edge-button > svg, .augur-urgent-edge-kind { color: var(--danger); flex: none; }
-  .augur-urgent-edge-kind { font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+  .augur-urgent-edge-kind { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
   .augur-urgent-edge-headline { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .augur-urgent-edge-state, .augur-urgent-edge-queue { flex: none; color: var(--ink-muted); white-space: nowrap; }
+  .augur-urgent-edge-state, .augur-urgent-edge-queue { flex: none; color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); white-space: nowrap; }
   .augur-urgent-edge-button[data-state='not-acknowledged'] .augur-urgent-edge-state { color: var(--warning); }
-  .augur-urgent-edge-open { flex: none; font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
+  .augur-urgent-edge-open { flex: none; padding: var(--space-1) var(--space-2); border: 1px solid var(--hairline-strong); border-bottom: var(--key-edge-sm) solid var(--key-bottom); font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
   .augur-letterbox-body { display: flex; flex-direction: column; gap: var(--space-5); width: 100%; max-width: var(--measure-read); }
   .augur-letterbox-text { display: flex; flex-direction: column; gap: var(--space-3); color: var(--ink-muted); }
   .augur-letterbox-text p { margin: 0; }
@@ -833,6 +847,7 @@
 @keyframes augur-run { 0% { left: 0; width: 0; } 50% { width: 30%; } 100% { left: 100%; width: 0; } }
 @keyframes augur-open-frame { from { clip-path: inset(50% 0); } to { clip-path: inset(0 0); } }
 @keyframes augur-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes augur-iris-in { from { transform: scaleY(0); } to { transform: none; } }
 /* The see-through letterbox's bars close in from the screen's edges, as the edge rules becoming the bars. */
 @keyframes augur-bar-in-top { from { transform: translateY(-100%); } to { transform: none; } }
 @keyframes augur-bar-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
@@ -1017,6 +1032,7 @@
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
+    .augur-letterbox::before, .augur-letterbox::after { animation: none; }
   }
   :root[data-motion='reduce'] {
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
@@ -1025,6 +1041,7 @@
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
+    .augur-letterbox::before, .augur-letterbox::after { animation: none; }
   }
 }
 
@@ -1094,7 +1111,7 @@
   /* Slider. A fader: a narrow well, the chosen part in ink, a small key standing in it. Steps: a row of
      wells, each up to the value raised as a key. The value in mono beside the label. */
   .augur-slider { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-  .augur-slider[data-unavailable] > :not(.augur-reason) { opacity: 0.4; }
+  .augur-slider[data-unavailable] > :not(.augur-reason, .augur-reason-mark) { opacity: 0.4; }
   .augur-slider-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
   .augur-slider-value { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-soft); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .augur-slider-track { position: relative; width: 100%; cursor: pointer; }
