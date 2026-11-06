@@ -1,30 +1,5 @@
-/* The app bar and the still horizon (Navigation brief, Harry's app bar mockup of 6 November 2026).
+/* The app bar (Navigation brief, Harry's app bar mockup of 6 November 2026).
    Greys, hairlines and one colour of light; no blur. Every value is a token. */
-
-/* ── The still horizon: a line at exactly half height that nothing moves ── */
-.aerie-horizon {
-  --horizon-low: var(--floor-you-low); --horizon-mark: var(--floor-you-high);
-  --horizon-ground: color-mix(in srgb, var(--grey-3), var(--horizon-low) 16%);
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, var(--grey-0), var(--horizon-ground) 50%, var(--grey-0));
-  transition: opacity var(--motion-calm) var(--ease-standard), background var(--motion-calm) var(--ease-standard);
-}
-.aerie-horizon[data-floor='department'] { --horizon-low: var(--floor-department-low); --horizon-mark: var(--floor-department-high); }
-.aerie-horizon[data-floor='team'] { --horizon-low: var(--floor-team-low); --horizon-mark: var(--floor-team-high); }
-.aerie-horizon[data-floor='org'] { --horizon-low: var(--floor-org-low); --horizon-mark: var(--floor-org-high); }
-.aerie-horizon[data-away] { opacity: 0; }
-/* bands become rules: two above the line for intent, two below for knowledge, all level */
-.aerie-horizon i { position: absolute; left: 0; right: 0; height: 1px; }
-.aerie-horizon-a2 { top: 18%; background: color-mix(in srgb, var(--grey-7) 10%, transparent); }
-.aerie-horizon-a1 { top: 24%; background: color-mix(in srgb, var(--grey-7) 16%, transparent); }
-.aerie-horizon-b1 { top: 74%; background: color-mix(in srgb, var(--grey-5) 55%, transparent); }
-.aerie-horizon-b2 { top: 82%; background: color-mix(in srgb, var(--grey-5) 35%, transparent); }
-.aerie-horizon-line { top: 50%; background: color-mix(in srgb, var(--grey-9) 62%, transparent); }
-/* floors change the light around the line, never the line */
-.aerie-horizon .aerie-horizon-glow {
-  top: calc(50% - var(--space-7)); height: calc(var(--space-7) * 2);
-  background: radial-gradient(60% 50% at 50% 50%, color-mix(in srgb, var(--horizon-mark) 9%, transparent), transparent);
-}
 
 /* ── The bar: full width on the desktop, at one of four places ── */
 .aerie-bar {
