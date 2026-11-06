@@ -1,0 +1,89 @@
+/* Connection and AppUnavailable directions page only (goes away after the pick). Tokens only, like the parts. */
+
+.cud-label, .cud-stamp {
+  margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label);
+  letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 500; color: var(--ink-muted); white-space: nowrap;
+}
+.cud-word { margin: 0; padding: var(--space-1) 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 500; font-size: var(--type-small); cursor: pointer; white-space: nowrap; }
+.cud-word:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+/* ---- pages ---- */
+.cud-page { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); padding: var(--space-6); box-sizing: border-box; min-height: 100vh; background: var(--slate-deep); color: var(--ink); }
+.cud-col { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.cud-head { display: flex; flex-direction: column; gap: var(--space-1); padding-bottom: var(--space-3); border-bottom: 1px solid var(--groove); box-shadow: 0 1px 0 var(--groove-lit); }
+.cud-head .cud-label { color: var(--ink); }
+.cud-from { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+.cud-part { display: flex; flex-direction: column; gap: var(--space-2); }
+.cud-part-name { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); font-weight: 400; color: var(--ink-muted); }
+
+.cud-stage { position: relative; height: 100vh; min-height: var(--measure-read); overflow: hidden; background: var(--slate-deep); color: var(--ink); display: flex; flex-direction: column; }
+.cud-stage-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-6) var(--edge); }
+.cud-stage-main .cud-app { width: min(var(--measure-decision), 100%); }
+.cud-tag { position: absolute; left: var(--space-4); bottom: var(--space-4); margin: 0; max-width: var(--measure-glance); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+.cud-tag b { display: block; color: var(--ink); font-family: var(--font-mono); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-size: var(--type-label); }
+
+/* ---- the band, with Connection under or on it ---- */
+.cud-band { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-4); font-size: var(--type-small); line-height: var(--leading-small); }
+.cud-band-name { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); font-size: var(--type-label); color: var(--ink-muted); }
+.cud-band-fill { flex: 1; }
+.cud-connection { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.cud-words { color: var(--ink); }
+
+/* A · Notice: a solid strip hung under the band, the state stamped in mono, no coloured edge. */
+.cud-band[data-look='a'] { border-bottom: 1px solid var(--hairline); }
+.cud-band[data-look='a'] .cud-connection { flex-basis: 100%; background: var(--sheet); border: 1px solid var(--sheet-line); padding: var(--space-2) var(--space-3); }
+.cud-band[data-look='a'] .cud-stamp { padding: 0 var(--space-2); border: 1px solid var(--ink-muted); color: var(--ink); }
+.cud-band[data-look='a'][data-state='reconnecting'] .cud-connection { background-image: linear-gradient(90deg, var(--ink-muted), var(--ink-muted)); background-size: 30% 1px; background-repeat: no-repeat; background-position: 0 100%; animation: cud-run var(--motion-run) var(--ease-standard) infinite; }
+.cud-band[data-look='a'] .cud-words { flex: 1; }
+
+/* B · Key: a key on the band naming the state, the sentence in a well beside it. */
+.cud-band[data-look='b'] { border-bottom: 1px solid var(--hairline); }
+.cud-band[data-look='b'] .cud-connection { flex-basis: 100%; }
+.cud-key { display: inline-flex; align-items: center; gap: var(--space-2); flex: none; min-height: var(--target-sm); padding: 0 var(--space-3); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); font-weight: 500; }
+.cud-key[data-held] { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge-sm) - 1px)); }
+.cud-band[data-look='b'] .cud-words { flex: 1; background: var(--well); border-top: var(--well-depth) solid var(--well-edge); padding: var(--space-2) var(--space-3); color: var(--ink-muted); }
+
+/* C · Line: the band's own line breaks; the words sit on it in mono. */
+.cud-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--hairline-strong); }
+.cud-band[data-look='c'][data-state='offline'] .cud-line { background: repeating-linear-gradient(90deg, var(--ink-muted) 0 var(--space-2), transparent var(--space-2) var(--space-3)); }
+.cud-band[data-look='c'][data-state='reconnecting'] .cud-line { background: linear-gradient(90deg, var(--ink), var(--ink)) no-repeat 0 0 / 25% 100%, var(--hairline); animation: cud-run var(--motion-run) var(--ease-standard) infinite; }
+.cud-band[data-look='c'][data-state='expired'] .cud-line { right: 50%; }
+.cud-band[data-look='c'] .cud-connection { flex-basis: 100%; }
+.cud-band[data-look='c'] .cud-words { font-family: var(--font-mono); color: var(--ink-muted); }
+.cud-band[data-look='c'] .cud-stamp { color: var(--ink); }
+@keyframes cud-run { from { background-position: -30% 100%, 0 0; } to { background-position: 130% 100%, 0 0; } }
+
+/* ---- an app that can't open ---- */
+.cud-app { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+.cud-name { margin: 0; font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: 500; }
+.cud-reason { margin: 0; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+.cud-app .augur-progress { width: 100%; }
+.cud-who { margin-top: var(--space-2); }
+.cud-mark { display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+
+/* A · Notice: a sheet, the state stamped over the name. */
+.cud-app[data-look='a'] { background: var(--sheet); border: 1px solid var(--sheet-line); padding: var(--space-5); }
+.cud-app[data-look='a'] .cud-mark { width: var(--target-md); height: var(--target-md); border: 1px solid var(--sheet-line); margin-bottom: var(--space-2); }
+.cud-app[data-look='a'] .cud-stamp { padding: 0 var(--space-2); border: 1px solid var(--ink-muted); color: var(--ink); }
+.cud-app[data-look='a'][data-state='failed'] .cud-stamp { border-color: var(--danger); color: var(--danger); }
+
+/* B · Key: the app is its own key; held down while it opens, hollow when it can't. */
+.cud-app[data-look='b'] .cud-mark { width: calc(var(--space-8) * 0.8); height: calc(var(--space-8) * 0.8); margin-bottom: var(--space-3); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge) solid var(--key-bottom); color: var(--ink); }
+.cud-app[data-look='b'][data-state='loading'] .cud-mark { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge) - 1px)); }
+.cud-app[data-look='b']:not([data-state='loading']) .cud-mark { background: none; border-style: dashed; border-bottom-width: 1px; border-color: var(--ink-muted); color: var(--ink-muted); }
+.cud-app[data-look='b'] .cud-reason { align-self: stretch; background: var(--well); border-top: var(--well-depth) solid var(--well-edge); padding: var(--space-3); }
+.cud-app[data-look='b'][data-state='failed'] .cud-stamp { color: var(--danger); }
+
+/* C · Line: the name stands on the horizon; the reason is written under it in mono. */
+.cud-app[data-look='c'] { align-items: stretch; }
+.cud-app[data-look='c'] .cud-name { font-size: var(--type-title); line-height: var(--leading-title); }
+.cud-horizon { height: 1px; background: var(--hairline-strong); margin: var(--space-1) 0 var(--space-2); }
+.cud-app[data-look='c'][data-state='failed'] .cud-horizon { background: var(--danger); }
+.cud-app[data-look='c'][data-state='loading'] .cud-horizon { background: linear-gradient(90deg, var(--ink), var(--ink)) no-repeat 0 0 / 25% 100%, var(--hairline); animation: cud-run var(--motion-run) var(--ease-standard) infinite; }
+.cud-app[data-look='c'][data-state='loading'] .augur-progress { display: none; }
+.cud-app[data-look='c'] .cud-reason { font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); }
+.cud-app[data-look='c'] .cud-word { align-self: flex-start; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cud-band, .cud-band *, .cud-horizon { animation: none !important; }
+}
