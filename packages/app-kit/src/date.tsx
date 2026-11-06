@@ -241,7 +241,12 @@ export function DateField({ label, hint, required, optional, disabled, state, me
                     <Icon name="arrow" size={14} />
                   </AriaButton>
                 </header>
-                <CalendarGrid className="quill-calendar-grid">{(d) => <CalendarCell date={d} className="quill-calendar-day" />}</CalendarGrid>
+                <CalendarGrid className="quill-calendar-grid">
+                  {(d) => {
+                    const from = d.compare(dayOf(now));
+                    return <CalendarCell date={d} className={`quill-calendar-day${from === 0 ? ' quill-calendar-today' : from < 0 ? ' quill-calendar-past' : ''}`} />;
+                  }}
+                </CalendarGrid>
               </Calendar>
             </Dialog>
           </Popover>

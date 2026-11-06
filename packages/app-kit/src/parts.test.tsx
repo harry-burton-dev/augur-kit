@@ -285,10 +285,10 @@ describe('picking tags', () => {
     expect(tagChoices(people, [], 'ada lee', true).some((c) => c.add)).toBe(false);
   });
 
-  it('shows the chosen as tags, takes one off with its ×, and says when it’s full', () => {
+  it('shows the chosen as ruled words, takes one off with its ×, and says when it’s full', () => {
     const change = vi.fn();
     draw(<TagPicker label="Developers" options={people} defaultValue={['u1', 'u2']} max={2} onChange={change} />);
-    expect([...document.querySelectorAll('.quill-tag-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
+    expect([...document.querySelectorAll('.quill-tag-picker-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
     expect(document.querySelector('input')!.placeholder).toContain('most it takes: 2');
     act(() => button('Remove Nora Briggs').click());
     expect(change).toHaveBeenLastCalledWith(['u2']);
@@ -329,7 +329,7 @@ describe('lifecycles and people', () => {
     expect(rows[1]).toMatchObject({ disabled: true, reason: 'Already chosen.' });
   });
 
-  it('looks after typing, and gathers what’s picked as chips', async () => {
+  it('looks after typing, and gathers what’s picked in a list under it', async () => {
     const search = vi.fn(async () => [
       { kind: 'person' as const, id: 'u1', name: 'Nora Briggs', detail: 'Ops' },
       { kind: 'team' as const, id: 't1', name: 'Ops', size: 4 },
@@ -347,7 +347,9 @@ describe('lifecycles and people', () => {
     expect(rows).toHaveLength(1);
     await act(async () => rows[0]!.click());
     expect(change).toHaveBeenLastCalledWith([{ kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'Ops' }]);
-    expect(document.querySelector('.quill-ref-name')!.textContent).toBe('Nora Briggs');
+    expect(document.querySelector('.quill-people-one .augur-person-text')!.textContent).toContain('Nora Briggs');
+    await act(async () => document.querySelector<HTMLElement>('[aria-label="Take off Nora Briggs"]')!.click());
+    expect(change).toHaveBeenLastCalledWith([]);
     expect(document.querySelector('input')!.value).toBe('');
   });
 });
@@ -362,17 +364,25 @@ describe('filtering', () => {
     expect(filterValue(filters, { tag: ['t1', 'gone'], since: [], other: ['x'] })).toEqual({ tag: ['t1'] });
   });
 
-  it('counts, shows what’s on as tags, takes one off, and clears them all', () => {
+  it('counts, says what’s on in words on its ruled line, and clears it all', () => {
     const change = vi.fn();
     draw(<FilterBar label="Filter documents" filters={filters} value={{ tag: ['t1', 't2'] }} sorts={[{ value: 'title', label: 'Title' }]} sort="title" count={3} noun={['document', 'documents']} onChange={change} />);
     expect(text()).toContain('3 documents');
-    expect(text()).toContain('Sort: Title');
     expect(button('Tags, 2 chosen')).toBeDefined();
-    expect([...document.querySelectorAll('.quill-filter-chips .quill-tag-word')].map((t) => t.textContent)).toEqual(['Travel', 'Leave']);
-    act(() => button('Remove Tags: Travel').click());
-    expect(change).toHaveBeenLastCalledWith({ tag: ['t2'] }, 'title');
+    expect([...document.querySelectorAll('.quill-filter-words')].map((t) => t.textContent)).toEqual(['Travel, Leave', 'any', 'Title']);
     act(() => button('Clear all').click());
     expect(change).toHaveBeenLastCalledWith({}, 'title');
+  });
+
+  it('starts with the saved views and says which is on', async () => {
+    const view = vi.fn();
+    draw(<FilterBar label="Filter documents" filters={filters} value={{}} views={[{ value: 'mine', label: 'Mine' }, { value: 'all', label: 'Everything' }]} view="mine" onView={view} onChange={() => {}} />);
+    expect(document.querySelector('.quill-filter-view')!.textContent).toBe('Mine');
+    expect(document.querySelector('.quill-filter-clear')).toBeNull();
+    await act(async () => (document.querySelector('.quill-filter-open') as HTMLElement).click());
+    const all = [...document.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].find((i) => i.textContent?.includes('Everything'))!;
+    await act(async () => all.click());
+    expect(view).toHaveBeenLastCalledWith('all');
   });
 
   it('adds a choice from a filter’s menu, and replaces it for a single one', async () => {
