@@ -18,6 +18,7 @@ const meta = {
     floor: { control: 'inline-radio', options: FLOORS },
     away: { control: 'boolean' },
     preset: { control: 'select', options: Object.keys(wavePresets) },
+    onWater: { control: false },
     className: { control: false },
   },
   args: { floor: 'you', away: false, preset: DEFAULT_WAVE },
