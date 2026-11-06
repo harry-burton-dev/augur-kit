@@ -2,8 +2,11 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Checkbox, CheckboxGroup } from './checkbox.js';
 import { Dialog } from './dialog.js';
+import { Select } from './select.js';
 import { TextField } from './text-field.js';
+import { Toggle } from './toggle.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -44,5 +47,96 @@ describe('Dialog', () => {
     await act(async () => primary().click());
     expect(onClose).not.toHaveBeenCalled();
     expect(document.querySelector('[role="alert"]')?.textContent).toBe('The library is read-only now.');
+  });
+
+  describe('Enter in a field', () => {
+    const enter = (el: HTMLElement) => act(async () => void el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+
+    it('presses the primary from a one-line TextField', async () => {
+      const onClose = vi.fn();
+      draw(<Dialog open heading="New collection" actionLabel="Create" onClose={onClose} fields={<TextField label="Name" name="name" required />} />);
+      const input = document.querySelector('input')!;
+      type(input, 'Plans');
+      await enter(input);
+      expect(onClose).toHaveBeenCalledWith({ name: 'Plans' });
+    });
+
+    it('stops at the gap when the field is empty', async () => {
+      const onClose = vi.fn();
+      draw(<Dialog open heading="New collection" actionLabel="Create" onClose={onClose} fields={<TextField label="Name" name="name" required />} />);
+      await enter(document.querySelector('input')!);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('what its fields report', () => {
+    const fields = (
+      <>
+        <Checkbox name="notify" defaultChecked>
+          Tell the team
+        </Checkbox>
+        <Checkbox name="pin">Pin it</Checkbox>
+        <Toggle label="Public" name="public" />
+        <CheckboxGroup label="Kinds" name="kinds" defaultValue={['a', 'c']}>
+          <Checkbox value="a">A</Checkbox>
+          <Checkbox value="b">B</Checkbox>
+          <Checkbox value="c">C</Checkbox>
+        </CheckboxGroup>
+      </>
+    );
+
+    it('carries a Checkbox, a Toggle and a CheckboxGroup in the values', async () => {
+      const onSubmit = vi.fn();
+      draw(<Dialog open heading="Share" actionLabel="Create" onClose={() => {}} onSubmit={onSubmit} fields={fields} />);
+      await act(async () => primary().click());
+      expect(onSubmit).toHaveBeenCalledWith({ notify: 'true', pin: 'false', public: 'false', kinds: 'a,c' });
+    });
+
+    it('reads a Checkbox as it stands now', async () => {
+      const onSubmit = vi.fn();
+      draw(<Dialog open heading="Share" actionLabel="Create" onClose={() => {}} onSubmit={onSubmit} fields={<Checkbox name="pin">Pin it</Checkbox>} />);
+      await act(async () => document.querySelector('input')!.click());
+      await act(async () => primary().click());
+      expect(onSubmit).toHaveBeenCalledWith({ pin: 'true' });
+    });
+
+    it('holds the primary until a required CheckboxGroup has a tick', async () => {
+      const onSubmit = vi.fn();
+      draw(
+        <Dialog
+          open
+          heading="Share"
+          actionLabel="Create"
+          onClose={() => {}}
+          onSubmit={onSubmit}
+          fields={
+            <CheckboxGroup label="Kinds" name="kinds" required>
+              <Checkbox value="a">A</Checkbox>
+            </CheckboxGroup>
+          }
+        />,
+      );
+      await act(async () => primary().click());
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(document.querySelector<HTMLElement>('.augur-field')!.dataset.state).toBe('attention');
+      expect(document.body.textContent).toContain('Needs you.');
+      await act(async () => document.querySelector('input')!.click());
+      expect(document.body.textContent).not.toContain('Needs you.');
+      await act(async () => primary().click());
+      expect(onSubmit).toHaveBeenCalledWith({ kinds: 'a' });
+    });
+  });
+
+  describe('a field that can’t be used', () => {
+    it.each([
+      ['TextField', <TextField key="f" label="Name" name="f" required disabled />],
+      ['Select', <Select key="f" label="Floor" name="f" options={['One']} required disabled />],
+      ['CheckboxGroup', <CheckboxGroup key="f" label="Kinds" name="f" required disabled><Checkbox value="a">A</Checkbox></CheckboxGroup>],
+    ])('a required, disabled, empty %s doesn’t hold the primary', async (_name, field) => {
+      const onSubmit = vi.fn();
+      draw(<Dialog open heading="Share" actionLabel="Create" onClose={() => {}} onSubmit={onSubmit} fields={field} />);
+      await act(async () => primary().click());
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
   });
 });

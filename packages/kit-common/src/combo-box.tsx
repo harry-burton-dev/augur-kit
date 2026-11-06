@@ -62,7 +62,7 @@ export function ComboBox({
   warnNoReason(key.current, `ComboBox "${label}"`, disabled, reason);
   useFieldCheck({
     check: () => {
-      if (!required || picked != null || reasoned || readOnly) return true;
+      if (!required || picked != null || disabled || readOnly) return true;
       setOwn({ state: 'attention', message: NEEDS_YOU });
       return false;
     },

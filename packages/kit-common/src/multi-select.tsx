@@ -46,7 +46,7 @@ export function MultiSelect({
   warnNoReason(key.current, `MultiSelect "${label}"`, disabled, reason);
   useFieldCheck({
     check: () => {
-      if (!required || chosen.length > 0 || reasoned || readOnly) return true;
+      if (!required || chosen.length > 0 || disabled || readOnly) return true;
       setOwn({ state: 'attention', message: NEEDS_YOU });
       return false;
     },

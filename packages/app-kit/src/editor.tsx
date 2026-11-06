@@ -1,7 +1,8 @@
-import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Token } from 'markdown-it';
-import { FieldHead, FieldHint, cx, type FieldProps } from '@augur/kit-common';
+import { FieldHead, FieldHint, cx, useFieldCheck, type FieldProps } from '@augur/kit-common';
 import { loadMarkdown, loadedMarkdown } from './markdown.js';
+import { State, StateBoundary } from './states.js';
 import { Ref, type RefKind, type RefShown } from './things.js';
 
 /** One thing named in the text: how it reads there ("@Nora Briggs") and what it points at. */
@@ -84,6 +85,28 @@ function Loading({ label, hint, required, optional, rows = 3, className }: Edito
 }
 
 /**
+ * In the engine's place when it couldn't load. Only a reload can help: Chromium keeps a failed import
+ * until the page reloads. It stands in for the engine's check, so a Dialog still holds for a required one.
+ */
+function Unloaded({ label, hint, required, optional, disabled, name, value, defaultValue, className }: EditorProps) {
+  const box = useRef<HTMLDivElement>(null);
+  const text = value ?? defaultValue ?? '';
+  useFieldCheck({
+    check: () => !required || Boolean(disabled) || Boolean(text.trim()),
+    focus: () => box.current?.querySelector('button')?.focus(),
+    name,
+    value: () => text,
+  });
+  return (
+    <div ref={box} className={cx('augur-field quill-editor', className)}>
+      <FieldHead label={label} required={required} optional={optional} />
+      <FieldHint hint={hint} />
+      <State kind="error" size="line" heading={`${label} didn’t load`} body="Anything not saved on this page is lost when it reloads." action="Reload the page" onAction={() => location.reload()} />
+    </div>
+  );
+}
+
+/**
  * A field for writing more than a line (ADR 0058). It writes Markdown and
  * stays quiet while you write: selecting text brings a small bar (bold,
  * italic, list, numbered, quote); Ctrl B, Ctrl I and Markdown's own `- `,
@@ -94,10 +117,14 @@ function Loading({ label, hint, required, optional, rows = 3, className }: Edito
  * first time a page shows one.
  */
 export function Editor(props: EditorProps) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <Unloaded {...props} />;
   return (
-    <Suspense fallback={<Loading {...props} />}>
-      <Engine {...props} />
-    </Suspense>
+    <StateBoundary heading={`${props.label} didn’t load`} size="line" onError={() => setFailed(true)}>
+      <Suspense fallback={<Loading {...props} />}>
+        <Engine {...props} />
+      </Suspense>
+    </StateBoundary>
   );
 }
 

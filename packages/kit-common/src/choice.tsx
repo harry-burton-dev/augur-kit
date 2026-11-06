@@ -56,7 +56,7 @@ export function Choice({
   for (const o of options) warnNoReason(o, `Choice option "${o.label}"`, o.disabled, o.reason);
   useFieldCheck({
     check: () => {
-      const ok = !required || picked != null || reasoned;
+      const ok = !required || picked != null || Boolean(disabled);
       setAsked(!ok);
       return ok;
     },

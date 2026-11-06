@@ -249,6 +249,8 @@ export default function EditorEngine({
           onKeyDown: ({ event }: SuggestionKeyDownProps) => {
             const l = list.current;
             if (event.key === 'Escape') {
+              // Returning true only prevents the default: a Dialog around it would still close.
+              event.stopPropagation();
               l.close();
               return true;
             }
@@ -323,7 +325,7 @@ export default function EditorEngine({
 
   useFieldCheck({
     check: () => {
-      if (required && editor?.isEmpty) {
+      if (required && !disabled && editor?.isEmpty) {
         setCheck({ state: 'attention', message: NEEDS_YOU });
         return false;
       }

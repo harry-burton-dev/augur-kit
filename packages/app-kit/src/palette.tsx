@@ -53,11 +53,19 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
   }, [open]);
   useRack(open, { returnTo: opener });
   useEffect(() => setAt(0), [query, open]);
-  const chosen = items[Math.min(at, items.length - 1)];
+  const active = Math.max(Math.min(at, items.length - 1), 0);
+  const chosen = items[active];
+  const row = chosen ? `${id}-${chosen.id}` : undefined;
+  // Keys and typing keep the chosen row in sight; a row under the pointer already is.
+  const pointing = useRef(false);
+  useEffect(() => {
+    if (open && row && !pointing.current) document.getElementById(row)?.parentElement?.scrollIntoView?.({ block: 'nearest' });
+  }, [open, query, row]);
 
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowDown') setAt((at + 1) % Math.max(items.length, 1));
-    else if (e.key === 'ArrowUp') setAt((at - 1 + items.length) % Math.max(items.length, 1));
+    pointing.current = false;
+    if (e.key === 'ArrowDown') setAt((active + 1) % Math.max(items.length, 1));
+    else if (e.key === 'ArrowUp') setAt((active - 1 + items.length) % Math.max(items.length, 1));
     else if (e.key === 'Enter') {
       if (chosen && !chosen.locked) onPick(chosen);
     } else return;
@@ -77,7 +85,7 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
               role="combobox"
               aria-expanded
               aria-controls={`${id}-list`}
-              aria-activedescendant={chosen ? `${id}-${chosen.id}` : undefined}
+              aria-activedescendant={row}
               aria-autocomplete="list"
               placeholder={placeholder}
               value={query}
@@ -97,10 +105,13 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
                 <div
                   id={`${id}-${item.id}`}
                   role="option"
-                  aria-selected={i === at}
+                  aria-selected={i === active}
                   aria-disabled={item.locked ? true : undefined}
                   className="quill-palette-item"
-                  onPointerMove={() => setAt(i)}
+                  onPointerMove={() => {
+                    pointing.current = true;
+                    setAt(i);
+                  }}
                   onClick={() => !item.locked && onPick(item)}
                 >
                   <Icon name={item.locked ? 'lock' : (item.icon ?? 'document')} size={16} />

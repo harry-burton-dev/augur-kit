@@ -63,26 +63,32 @@ export function TimeField({ label, hint, required, optional, disabled, state, me
   const input = useRef<HTMLInputElement>(null);
   const typing = draft !== undefined;
   const reading = typing ? parseTime(draft) : null;
+  // Enter commits and a Dialog checks in the same tick, before `value` has moved.
+  const latest = useRef(value);
+  latest.current = value;
 
   const choose = (time: string) => {
     setDraft(undefined);
     setCheck({ state: 'idle' });
-    if (time === value) return;
+    if (time === latest.current) return;
+    latest.current = time;
     if (given === undefined) setOwn(time);
     onChange?.(time);
   };
+  /** Takes what was typed. Gives the time, empty for none, or null when it can't be read. */
   const commit = () => {
     const text = draft ?? '';
-    if (!text.trim()) return choose('');
-    const time = parseTime(text);
-    if (time) return choose(time);
-    setCheck({ state: 'error', message: 'Try “9am”, “half 2” or “17:30”.' });
+    const time = text.trim() ? parseTime(text) : '';
+    if (time === null) setCheck({ state: 'error', message: 'Try “9am”, “half 2” or “17:30”.' });
+    else choose(time);
+    return time;
   };
   useFieldCheck({
     check: () => {
-      if (typing) commit();
-      if (check.state === 'error') return false;
-      if (required && !value && !reading) {
+      if (disabled) return true;
+      const time = typing ? commit() : latest.current;
+      if (time === null) return false;
+      if (required && !time) {
         setCheck({ state: 'attention', message: NEEDS_YOU });
         return false;
       }
@@ -90,7 +96,7 @@ export function TimeField({ label, hint, required, optional, disabled, state, me
     },
     focus: () => input.current?.focus(),
     name,
-    value: () => value,
+    value: () => latest.current,
   });
   return (
     <AriaTextField
@@ -105,8 +111,9 @@ export function TimeField({ label, hint, required, optional, disabled, state, me
       onFocus={() => setDraft(value)}
       onBlur={() => typing && commit()}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit();
-        else e.continuePropagation();
+        if (e.key === 'Enter' && typing) commit();
+        // A Dialog around it takes Enter too: it presses the primary.
+        e.continuePropagation();
       }}
       isDisabled={disabled}
       isRequired={required}

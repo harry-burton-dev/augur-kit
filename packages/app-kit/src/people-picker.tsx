@@ -136,6 +136,8 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
                 setQuery('');
                 void find('');
               } else if (e.key === 'Enter') {
+                // Enter looks: a Dialog around it must not take it as its primary.
+                e.stopPropagation();
                 e.preventDefault();
                 void find(query);
               }

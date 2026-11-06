@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Switch } from 'react-aria-components';
 import { cx } from './cx.js';
-import { useValue } from './field.js';
+import { useFieldCheck, useValue } from './field.js';
 import { Icon } from './icon.js';
 import { useReason, warnNoReason } from './reason.js';
 
@@ -30,7 +30,8 @@ export interface ToggleProps {
  * On or off, and you can always tell which: the switch is a well and its knob a
  * small key that moves across and comes up light, its mark turns from a dash to
  * a tick, and the word changes. A toggle
- * acts at once; a choice that waits for a form's primary is a Checkbox.
+ * acts at once; a choice that waits for a form's primary is a Checkbox. A Dialog
+ * collects it as `true` or `false`.
  */
 export function Toggle({ label, hint, checked, defaultChecked = false, onChange, disabled, reason, onWord = 'On', offWord = 'Off', name, className }: ToggleProps) {
   const [on, setOn] = useValue(checked, defaultChecked);
@@ -39,6 +40,8 @@ export function Toggle({ label, hint, checked, defaultChecked = false, onChange,
   const { reasoned, describe, caption } = useReason(disabled, reason);
   const key = useRef({});
   warnNoReason(key.current, `Toggle "${label}"`, disabled, reason);
+  const box = useRef<HTMLInputElement>(null);
+  useFieldCheck({ check: () => true, focus: () => box.current?.focus(), name, value: () => String(on) });
 
   const flip = async (next: boolean) => {
     if (disabled || busy) return;
@@ -68,6 +71,7 @@ export function Toggle({ label, hint, checked, defaultChecked = false, onChange,
         isDisabled={disabled && !reasoned}
         isReadOnly={reasoned || busy}
         name={name}
+        inputRef={box}
         aria-busy={busy || undefined}
         data-busy={busy || undefined}
         className="augur-toggle-row"

@@ -58,7 +58,7 @@ export function TextField({
     return result?.state !== 'error';
   };
   const input = useRef<HTMLInputElement>(null);
-  useFieldCheck({ check: () => reasoned || readOnly || check(text), focus: () => (area.current ?? input.current)?.focus(), name, value: () => text });
+  useFieldCheck({ check: () => disabled || readOnly || check(text), focus: () => (area.current ?? input.current)?.focus(), name, value: () => text });
 
   const grow = () => {
     const el = area.current;
@@ -88,7 +88,9 @@ export function TextField({
         if (e.key === 'Enter' && !multiline) {
           check(text);
           onCommit?.(text);
-        } else e.continuePropagation();
+        }
+        // A Dialog around it takes Enter too: it presses the primary.
+        e.continuePropagation();
       }}
       name={name}
       type={type}
