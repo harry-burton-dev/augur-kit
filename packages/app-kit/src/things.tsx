@@ -1,6 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Icon, cx, type IconName } from '@augur/kit-common';
-import { Status, type StatusName } from './states.js';
+import { Icon, Status, cx, type IconName, type StatusName } from '@augur/kit-common';
 import { dayKey, writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';
 
