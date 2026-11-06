@@ -30,7 +30,7 @@ const meta = {
   decorators: [(Story) => <div style={{ width: 'var(--measure-rail)' }}><Story /></div>],
   render: (args) => <Following {...args} />,
   args: { items: OUTLINE, current: 'what-changes', heading: 'Contents' },
-  argTypes: { items: { control: 'object' }, current: { control: 'select', options: OUTLINE.map((o) => o.id) }, heading: { control: 'text' }, onSelect: { action: 'select' }, className: { control: false } },
+  argTypes: { items: { control: 'object' }, current: { control: 'select', options: OUTLINE.map((o) => o.id) }, heading: { control: 'text' }, leaves: { control: 'object' }, onSelect: { action: 'select' }, className: { control: false } },
 } satisfies Meta<typeof Contents>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -39,3 +39,5 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {};
 /** Without a title heading, the second level starts at the left. */
 export const NoTitle: Story = { args: { items: OUTLINE.slice(1) } };
+/** Beside leaves: each heading with the page it starts on. */
+export const Ledger: Story = { args: { leaves: { 'winter-works': 1, 'what-changes': 1, deliveries: 2, 'the-crane': 2, 'who-to-ask': 3 } } };

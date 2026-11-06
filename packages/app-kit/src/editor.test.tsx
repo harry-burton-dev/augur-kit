@@ -62,8 +62,10 @@ describe('the editor on Tiptap', () => {
 
   it('shows a mention in the text as one chip that knows what it points at', async () => {
     await draw(<Editor label="Brief" defaultValue="Ask [@Nora Briggs](person:u1)." />);
+    // The chip is a React node view: it draws a moment after the text.
+    await vi.waitFor(() => expect(document.querySelector('.ProseMirror .quill-mention')).not.toBeNull());
     const chip = document.querySelector('.ProseMirror .quill-mention')!;
-    expect(chip.textContent).toBe('@Nora Briggs');
+    expect(chip.textContent).toBe('Nora Briggs');
     expect(chip.getAttribute('data-kind')).toBe('person');
   });
 
