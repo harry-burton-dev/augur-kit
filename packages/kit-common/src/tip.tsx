@@ -7,6 +7,8 @@ export interface TipProps {
   /** One focusable DOM element (a link, a span with tabIndex): the tip shows on hover and on keyboard focus. */
   children: ComponentProps<typeof Focusable>['children'];
   placement?: 'top' | 'bottom' | 'start' | 'end';
+  /** Shown from the start, until the pointer or focus leaves: for a first-run hint, or a still of it. */
+  defaultOpen?: boolean;
 }
 
 /**
@@ -15,9 +17,9 @@ export interface TipProps {
  * something in a tip. A disabled control explains itself with its own
  * `reason`, not a Tip.
  */
-export function Tip({ content, children, placement = 'top' }: TipProps) {
+export function Tip({ content, children, placement = 'top', defaultOpen }: TipProps) {
   return (
-    <TooltipTrigger delay={600} closeDelay={100}>
+    <TooltipTrigger delay={600} closeDelay={100} defaultOpen={defaultOpen}>
       <Focusable>{children}</Focusable>
       <Tooltip placement={placement} offset={6} className="augur-tip">
         {content}

@@ -606,8 +606,9 @@
   .quill-note-why { margin-top: var(--space-2) !important; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-inset); color: var(--ink); }
 
   /* Tag */
-  .quill-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; min-height: 24px; padding: 0 var(--space-2); border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
-  .quill-tag[data-quiet] { border-color: transparent; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-muted); }
+  /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
+  .quill-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: 24px; padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
+  .quill-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
   .quill-tag[data-removable] { padding-right: 2px; }
   .quill-tag-word { overflow: hidden; text-overflow: ellipsis; }
   .quill-tag > svg { color: var(--ink-muted); }
@@ -655,7 +656,7 @@
   .quill-lifecycle li[data-at='here'] .quill-lifecycle-disc { width: 10px; height: 10px; border-color: var(--ink); background: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 15%, transparent); }
   .quill-lifecycle-moves { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .quill-lifecycle-why { margin: 0; font-size: var(--type-small); color: var(--ink-muted); }
-  .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; color: var(--ink-muted); cursor: pointer; }
+  .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
   .quill-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
   .quill-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
 
@@ -777,10 +778,13 @@
 
   /* Cards, tally, timeline, path, refs */
   .quill-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: var(--space-3); }
-  .quill-card { all: unset; box-sizing: border-box; width: 100%; height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--hairline); border-radius: var(--radius-inset); background: var(--surface-pane); cursor: pointer; transition: border-color var(--motion-instant) var(--ease-standard); }
-  button.quill-card:hover { border-color: var(--hairline-strong); }
+  /* Cards: Key (picked 6 Nov 2026). A card that opens is a key: a small corner, a grey face and a thicker
+     bottom line; pressed, it sinks. One that can't be opened is flat and dashed. */
+  .quill-card { all: unset; box-sizing: border-box; width: 100%; height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge) solid var(--key-bottom); border-radius: var(--radius-control); cursor: pointer; transition: background var(--motion-instant) var(--ease-standard), transform var(--motion-instant) var(--ease-standard); }
+  button.quill-card:hover { background: color-mix(in srgb, var(--ink) 14%, var(--slate-deep)); }
+  button.quill-card:active { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge) - 1px)); }
   button.quill-card:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-card[data-unavailable] { cursor: default; border-style: dashed; background: none; }
+  .quill-card[data-unavailable] { cursor: default; border-style: dashed; border-color: var(--hairline-strong); border-bottom-width: 1px; background: none; }
   .quill-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
   .quill-card-title { font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink); min-width: 0; }
   .quill-card[data-unavailable] .quill-card-title, .quill-card-top > svg { color: var(--ink-muted); }
