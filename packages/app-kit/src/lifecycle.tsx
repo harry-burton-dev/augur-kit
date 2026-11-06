@@ -26,7 +26,7 @@ export interface LifecycleProps {
 
 /**
  * Where one record is in its lifecycle: every state in order, the ones it has
- * passed filled, the one it's in ringed and named, the rest hollow. Under the
+ * passed marked, the one it's in raised as a key, the rest dim. Under the
  * track, a button for each state the person may move it to; with none, `why`
  * says what would let them. Take states from `@augur/records` so every app's
  * lifecycle reads the same (App patterns, in the AUGUR handbook).
