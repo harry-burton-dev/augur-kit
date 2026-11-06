@@ -10,10 +10,7 @@ const packages = join(dirname(fileURLToPath(import.meta.url)), '../packages');
 const kits = ['kit-common', 'app-kit', 'shell-kit'];
 
 /** Parts with no story yet. Remove a name when its story lands; never add one. */
-const waiting = new Set([
-  'FilterBar',
-  'DataView',
-]);
+const waiting = new Set<string>([]);
 
 /** Parts being replaced: no stories. Title and Orbit (CentreMenu) have gone to the archive. */
 const replaced = new Set<string>([]);
@@ -56,7 +53,8 @@ describe('every exported part has a story', () => {
     expect(hasStory(name)).toBe(true);
   });
 
-  it.each([...waiting])('%s is still waiting for a story (take it off the list once it has one)', (name) => {
+  // Empty now: every part has a story. Kept so a part can wait here again only by going through review.
+  it.skipIf(waiting.size === 0).each([...waiting])('%s is still waiting for a story (take it off the list once it has one)', (name) => {
     expect(parts.some(([, n]) => n === name)).toBe(true);
     expect(hasStory(name)).toBe(false);
   });
