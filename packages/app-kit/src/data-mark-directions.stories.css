@@ -179,7 +179,6 @@
 .dm-sig[data-kind='beacon'] .dm-sig-light { box-shadow: 0 0 var(--space-3) var(--danger); }
 .dm-sig[data-kind='shadow'] { color: var(--ink-muted); }
 .dm-sig[data-kind='shadow'] .dm-sig-light { background: none; border: 1px dashed var(--hairline-strong); }
-@media (prefers-reduced-motion: reduce) { .dm-sig-light, .dm-sig-light::after, .dm-status-mark { animation: none !important; } }
 /* A: the light sits on a line that runs to the words */
 .dm-col[data-dir='line'] .dm-sig-socket { width: var(--space-7); border-bottom: 1px solid var(--hairline); padding-bottom: var(--space-1); }
 .dm-col[data-dir='line'] .dm-sig[data-kind='streak'] .dm-sig-socket { border-bottom: 0; }
@@ -259,3 +258,7 @@
 /* C: a red stamp leads, the bar inked solid */
 .dm-col[data-dir='stamp'] .dm-urgent { border: 1px solid var(--danger) !important; }
 .dm-col[data-dir='stamp'] .dm-urgent-kind { background: var(--danger); color: var(--slate-deep); padding: var(--space-1) var(--space-2); margin-left: calc(var(--space-3) * -1); align-self: stretch; }
+
+/* Reduced motion: every loop stops, by the system setting and by AUGUR's own switch. */
+@media (prefers-reduced-motion: reduce) { .dm-status[data-status='running'] .dm-status-mark, .dm-sig[data-kind='bloom'] .dm-sig-light::after, .dm-sig[data-kind='beacon'] .dm-sig-light::after, .dm-sig[data-kind='flicker'] .dm-sig-light, .dm-sig[data-kind='ember'] .dm-sig-light, .dm-reel-light::after { animation: none; } }
+:root[data-motion='reduce'] .dm-status[data-status='running'] .dm-status-mark, :root[data-motion='reduce'] .dm-sig[data-kind='bloom'] .dm-sig-light::after, :root[data-motion='reduce'] .dm-sig[data-kind='beacon'] .dm-sig-light::after, :root[data-motion='reduce'] .dm-sig[data-kind='flicker'] .dm-sig-light, :root[data-motion='reduce'] .dm-sig[data-kind='ember'] .dm-sig-light, :root[data-motion='reduce'] .dm-reel-light::after { animation: none; }
