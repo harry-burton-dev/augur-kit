@@ -1,0 +1,183 @@
+/* The app bar and the still horizon (Navigation brief, Harry's app bar mockup of 6 November 2026).
+   Greys, hairlines and one colour of light; no blur. Every value is a token. */
+
+/* ── The still horizon: a line at exactly half height that nothing moves ── */
+.aerie-horizon {
+  --horizon-low: var(--floor-you-low); --horizon-mark: var(--floor-you-high);
+  --horizon-ground: color-mix(in srgb, var(--grey-3), var(--horizon-low) 16%);
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, var(--grey-0), var(--horizon-ground) 50%, var(--grey-0));
+  transition: opacity var(--motion-calm) var(--ease-standard), background var(--motion-calm) var(--ease-standard);
+}
+.aerie-horizon[data-floor='department'] { --horizon-low: var(--floor-department-low); --horizon-mark: var(--floor-department-high); }
+.aerie-horizon[data-floor='team'] { --horizon-low: var(--floor-team-low); --horizon-mark: var(--floor-team-high); }
+.aerie-horizon[data-floor='org'] { --horizon-low: var(--floor-org-low); --horizon-mark: var(--floor-org-high); }
+.aerie-horizon[data-away] { opacity: 0; }
+/* bands become rules: two above the line for intent, two below for knowledge, all level */
+.aerie-horizon i { position: absolute; left: 0; right: 0; height: 1px; }
+.aerie-horizon-a2 { top: 18%; background: color-mix(in srgb, var(--grey-7) 10%, transparent); }
+.aerie-horizon-a1 { top: 24%; background: color-mix(in srgb, var(--grey-7) 16%, transparent); }
+.aerie-horizon-b1 { top: 74%; background: color-mix(in srgb, var(--grey-5) 55%, transparent); }
+.aerie-horizon-b2 { top: 82%; background: color-mix(in srgb, var(--grey-5) 35%, transparent); }
+.aerie-horizon-line { top: 50%; background: color-mix(in srgb, var(--grey-9) 62%, transparent); }
+/* floors change the light around the line, never the line */
+.aerie-horizon .aerie-horizon-glow {
+  top: calc(50% - var(--space-7)); height: calc(var(--space-7) * 2);
+  background: radial-gradient(60% 50% at 50% 50%, color-mix(in srgb, var(--horizon-mark) 9%, transparent), transparent);
+}
+
+/* ── The bar: full width on the desktop, at one of four places ── */
+.aerie-bar {
+  --bar-rail: var(--bar-tile);
+  position: absolute; z-index: 2; left: 0; top: var(--bar-y, auto); width: 100%; height: var(--bar-height);
+  display: flex; align-items: stretch; color: var(--grey-9); font-family: var(--font-sans);
+  background: color-mix(in srgb, var(--grey-2) 86%, transparent);
+  border-top: 1px solid var(--grey-hairline); border-bottom: 1px solid var(--grey-hairline);
+  transition: top var(--motion-bar) var(--ease-out), width var(--motion-bar) var(--ease-out), height var(--motion-bar) var(--ease-out);
+}
+.aerie-bar[data-narrow] { --bar-rail: var(--bar-rail-narrow); }
+.aerie-bar[data-dragging] { transition: none; cursor: grabbing; }
+.aerie-bar button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.aerie-bar-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* docked: the bar stands up along the left edge, under the band */
+.aerie-bar[data-mode='app'] {
+  top: calc(var(--band-top) - 1px); width: var(--bar-rail); height: calc(100% - var(--band-top) + 1px);
+  flex-direction: column; border-bottom: 0; border-right: 1px solid var(--grey-hairline);
+}
+
+.aerie-bar .aerie-bar-grip {
+  flex: none; width: var(--bar-grip); display: grid; place-items: center; color: var(--grey-6);
+  cursor: grab; border-right: 1px solid var(--grey-hairline); touch-action: none;
+}
+.aerie-bar .aerie-bar-grip:hover, .aerie-bar .aerie-bar-grip:focus-visible { color: var(--grey-9); }
+.aerie-bar .aerie-bar-grip:focus-visible { outline: 2px solid var(--grey-9); outline-offset: -2px; }
+
+.aerie-bar-tiles {
+  flex: 1; min-width: 0; display: flex; align-items: stretch; overflow: auto; scrollbar-width: none;
+  transition: opacity var(--motion-quick) var(--ease-standard);
+}
+.aerie-bar[data-mode='app'] .aerie-bar-tiles { flex-direction: column; overflow: hidden; }
+.aerie-bar[data-swapping] .aerie-bar-tiles { opacity: 0; }
+.aerie-bar-tiles > hr { flex: none; margin: 0; border: 0; background: var(--grey-hairline); width: 1px; align-self: stretch; }
+
+/* a tile: one large icon with its name under it, filling the bar's height */
+.aerie-bar .aerie-bar-tile {
+  position: relative; isolation: isolate; flex: none; width: var(--bar-tile);
+  display: grid; justify-items: center; align-content: center; gap: calc(var(--space-1) * 1.5);
+  padding: var(--space-2); text-align: center; color: var(--grey-8);
+  font-size: var(--type-meta); line-height: var(--leading-small); font-weight: 500;
+  animation: aerie-tile-in var(--motion-slow) var(--ease-out) both; animation-delay: calc(var(--n, 0) * var(--motion-instant) * 0.6);
+}
+.aerie-bar[data-narrow] .aerie-bar-tile { width: var(--bar-tile-narrow); font-size: var(--type-small); }
+.aerie-bar .aerie-bar-tile svg { width: var(--bar-icon); height: var(--bar-icon); }
+.aerie-bar[data-narrow] .aerie-bar-tile svg { width: var(--bar-icon-narrow); height: var(--bar-icon-narrow); }
+.aerie-bar .aerie-bar-tile:hover { background: color-mix(in srgb, var(--grey-9) 6%, transparent); color: var(--grey-9); }
+.aerie-bar .aerie-bar-tile[aria-expanded='true'] { background: color-mix(in srgb, var(--grey-9) 10%, transparent); color: var(--grey-9); }
+.aerie-bar .aerie-bar-tile:focus-visible { outline: 2px solid var(--grey-9); outline-offset: -2px; }
+.aerie-bar-start svg { color: var(--grey-9); }
+/* the screen you're on, and an open app on the desktop, carry a hard line on the bar's inner edge */
+.aerie-bar-tile[aria-current]::after, .aerie-bar-running::after {
+  content: ''; position: absolute; background: var(--grey-9); left: var(--bar-inset); right: var(--bar-inset); top: 0; height: var(--bar-mark);
+}
+
+/* the side rail: a fixed block that never changes, then the pages of whatever is open */
+.aerie-bar[data-mode='app'] .aerie-bar-tile { width: auto; min-height: var(--bar-rail-tile); animation-name: aerie-tile-in-side; }
+.aerie-bar[data-mode='app'] .aerie-bar-tile[aria-current]::after { left: auto; right: 0; top: var(--bar-inset); bottom: var(--bar-inset); width: var(--bar-mark); height: auto; }
+.aerie-bar-fixed { flex: none; border-bottom: 1px solid var(--grey-5); }
+.aerie-bar-pair { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--grey-hairline); }
+.aerie-bar-pair[data-solo] { grid-template-columns: 1fr; }
+.aerie-bar[data-mode='app'] .aerie-bar-half { min-height: var(--bar-rail-pair); gap: var(--space-1); padding: var(--space-2) var(--space-1); font-size: var(--type-small); }
+.aerie-bar .aerie-bar-half svg { width: var(--bar-icon-small); height: var(--bar-icon-small); }
+.aerie-bar .aerie-bar-half + .aerie-bar-half { border-left: 1px solid var(--grey-hairline); }
+.aerie-bar[data-mode='app'] .aerie-bar-side {
+  width: 100%; min-height: var(--bar-rail-app); grid-template-columns: var(--bar-icon-rail) minmax(0, 1fr); justify-items: start; align-items: center;
+  gap: var(--space-2); padding: var(--space-1) var(--space-3); font-size: var(--type-small); text-align: left;
+}
+.aerie-bar .aerie-bar-side svg { width: var(--bar-icon-rail); height: var(--bar-icon-rail); }
+.aerie-bar[data-mode='app'][data-narrow] .aerie-bar-side { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--space-1); padding: var(--space-1); text-align: center; }
+.aerie-bar-pages { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--grey-4) transparent; display: flex; flex-direction: column; }
+.aerie-bar[data-mode='app'] .aerie-bar-pages .aerie-bar-tile { min-height: var(--bar-rail-page); }
+
+/* moving the bar: the four places it can rest, shown only while it moves */
+.aerie-bar-rails { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+.aerie-bar-rails i { position: absolute; left: var(--bar-grip); right: 0; height: 0; border-top: 1px dashed color-mix(in srgb, var(--grey-9) 28%, transparent); }
+.aerie-bar-rails b {
+  position: absolute; left: var(--space-2); bottom: var(--space-1); font-size: var(--type-label); font-weight: 500;
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--grey-6);
+}
+
+/* first run: one line by the bar, once */
+.aerie-bar-hint {
+  position: absolute; z-index: 4; left: var(--bar-grip); width: min(var(--bar-hint), calc(100% - var(--space-8)));
+  padding: var(--space-3); display: grid; gap: var(--space-2); color: var(--grey-9);
+  background: var(--grey-2); border: 1px solid var(--grey-4);
+}
+.aerie-bar-hint p { margin: 0; }
+.aerie-bar-hint button {
+  justify-self: start; min-height: var(--space-6); padding: 0 var(--space-3); border: 0; cursor: pointer;
+  background: var(--grey-9); color: var(--grey-1); font: inherit; font-weight: 500;
+}
+.aerie-bar-hint button:focus-visible { outline: 2px solid var(--grey-9); outline-offset: 2px; }
+
+/* ── The start menu each tile opens: solid, hairline-edged, words on every row; folders roll out to the side ── */
+.aerie-bar-menu {
+  position: absolute; z-index: 5; width: var(--bar-menu); max-height: calc(100% - var(--band-top) - var(--space-4)); overflow: auto;
+  padding: calc(var(--space-1) * 1.5) 0; color: var(--grey-9); font-family: var(--font-sans);
+  background: var(--grey-2); border: 1px solid var(--grey-4);
+  box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  transform-origin: var(--from, bottom left); animation: aerie-menu-in var(--motion-base) var(--ease-out) both;
+}
+.aerie-bar[data-narrow] ~ .aerie-bar-menus .aerie-bar-menu { width: min(var(--bar-menu), calc(100% - var(--space-8))); }
+.aerie-bar-sub { animation-name: aerie-menu-roll; }
+.aerie-bar-menu h4 {
+  margin: 0 0 var(--space-1); padding: var(--space-2) var(--bar-inset); border-bottom: 1px solid var(--grey-hairline);
+  font-size: var(--type-label); line-height: var(--leading-label); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--grey-6);
+}
+.aerie-bar-menu [role='menuitem'] {
+  position: relative; isolation: isolate; width: 100%; display: grid; grid-template-columns: var(--space-5) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3);
+  min-height: var(--bar-row); padding: calc(var(--space-1) * 1.5) var(--bar-inset); text-align: left; color: var(--grey-8);
+  font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); background: none; border: 0; cursor: pointer;
+}
+.aerie-bar-menu [role='menuitem'] > svg:first-child { width: var(--bar-icon-small); height: var(--bar-icon-small); color: var(--grey-7); }
+.aerie-bar-row { min-width: 0; }
+.aerie-bar-row small { display: block; font-size: var(--type-small); line-height: var(--leading-small); color: var(--grey-6); }
+.aerie-bar-chev { color: var(--grey-6); }
+.aerie-bar-menu [role='menuitem']:hover, .aerie-bar-menu [role='menuitem']:focus-visible, .aerie-bar-menu [role='menuitem'][aria-expanded='true'] {
+  background: color-mix(in srgb, var(--grey-9) 8%, transparent); color: var(--grey-9); outline: 0;
+}
+.aerie-bar-menu [role='menuitem']:focus-visible, .aerie-bar-menu [role='menuitem'][aria-current] { box-shadow: inset var(--bar-mark) 0 0 var(--grey-9); color: var(--grey-9); }
+.aerie-bar-menu [role='menuitem'][aria-disabled='true'] { color: var(--grey-6); cursor: not-allowed; }
+.aerie-bar-menu [role='menuitem'][aria-disabled='true'] > svg:first-child { opacity: 0.6; }
+.aerie-bar-menu hr { margin: var(--space-1) 0; border: 0; border-top: 1px solid var(--grey-hairline); }
+
+/* ── Attention is light. It rises from the edge of whatever leads to it: tile, menu row, page, document ── */
+.aerie-bar-lit { position: relative; isolation: isolate; }
+.aerie-bar-lit::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to right, color-mix(in srgb, var(--needs-light) 34%, transparent), transparent 62%);
+}
+/* on the desktop's bar it rises from the bar's bottom edge */
+.aerie-bar[data-mode='desk'] .aerie-bar-lit::before {
+  background: radial-gradient(85% 90% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent 72%);
+}
+.aerie-bar-lit, .aerie-bar .aerie-bar-lit, .aerie-bar-menu .aerie-bar-lit { color: var(--grey-9); }
+.aerie-bar-lit > svg:first-child { color: var(--needs-light); }
+.aerie-bar-lit.aerie-bar-lead::before { animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
+@media (forced-colors: active) { .aerie-bar-lit { outline: 2px solid Highlight; outline-offset: -2px; } }
+
+/* Reduced motion, from the system or AUGUR's own switch: the light holds still, and nothing slides in. */
+@media (prefers-reduced-motion: reduce) {
+  .aerie-bar-lit.aerie-bar-lead::before { animation: none; }
+  .aerie-bar .aerie-bar-tile, .aerie-bar-menu { animation: none; }
+}
+:root[data-motion='reduce'] {
+  .aerie-bar-lit.aerie-bar-lead::before { animation: none; }
+  .aerie-bar .aerie-bar-tile, .aerie-bar-menu { animation: none; }
+  .aerie-bar { transition: none; }
+}
+
+@keyframes aerie-tile-in { from { opacity: 0; transform: translateY(var(--space-1)); } }
+@keyframes aerie-tile-in-side { from { opacity: 0; transform: translateX(calc(var(--space-1) * -1)); } }
+@keyframes aerie-menu-in { from { opacity: 0; transform: scale(0.97) translateY(var(--rise, var(--space-1))); } }
+@keyframes aerie-menu-roll { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes aerie-light-breathe { from { opacity: 0.55; } to { opacity: 1; } }
