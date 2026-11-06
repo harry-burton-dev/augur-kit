@@ -660,6 +660,102 @@
   }
 }
 
+/* Inputs (picked 6 Nov 2026 from three directions each): combo box, multi select, number field and slider,
+   on the Well fields. What drops from them is a Sheet: solid, one edge, small capitals in mono for a heading,
+   a hard ink line on the row you're on, and a drop that darkens what's under it, never a blur. Small keys at
+   a well's end are drawn like the Keycap button: depth as a thicker bottom line. */
+@layer components {
+  .augur-end-key, .augur-count-key {
+    display: inline-flex; align-items: center; justify-content: center; flex: none; box-sizing: border-box; margin: 0; padding: 0;
+    background: color-mix(in srgb, var(--ink) 10%, var(--slate-deep)); color: var(--ink-muted); font: inherit;
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-bottom: var(--key-edge-sm) solid color-mix(in srgb, var(--ink) 34%, transparent);
+    border-radius: var(--radius-key);
+  }
+  .augur-end-key {
+    width: calc(var(--target-sm) - var(--space-2)); height: calc(var(--target-sm) - var(--space-2)); cursor: pointer; outline: none;
+    transition: transform var(--motion-instant) var(--ease-standard), color var(--motion-instant) var(--ease-standard);
+  }
+  .augur-end-key[data-hovered] { color: var(--ink); }
+  .augur-end-key[data-pressed] { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge-sm) - 1px)); }
+  .augur-end-key[data-disabled] { opacity: 0.4; cursor: default; }
+  .augur-end-key[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .augur-field[data-open] .augur-end-key, .augur-field:has([data-open]) .augur-combo-box .augur-end-key { color: var(--ink); }
+  .augur-field:has([aria-expanded='true']) .augur-combo-box .augur-end-key svg { transform: rotate(180deg); }
+  .augur-count-key {
+    min-width: calc(var(--space-5) + var(--space-1)); height: calc(var(--space-5) + var(--space-1)); padding: 0 var(--space-1);
+    color: var(--ink); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-variant-numeric: tabular-nums;
+  }
+  .augur-combo-box, .augur-number-box { padding-right: var(--space-2); }
+
+  /* The Sheet a list drops as. */
+  .augur-sheet-list {
+    max-height: none; padding: calc(var(--space-1) * 1.5) 0; backdrop-filter: none; border-radius: var(--radius-inset);
+    background: color-mix(in srgb, var(--shade) 32%, var(--slate-deep)); border: 1px solid color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
+  .augur-sheet-heading, .augur-sheet-foot {
+    margin: 0; padding: var(--space-1) var(--space-3) var(--space-2); font-family: var(--font-mono); font-size: var(--type-label);
+    line-height: var(--leading-label); color: var(--ink-muted); font-weight: 400;
+  }
+  .augur-sheet-heading { margin-bottom: var(--space-1); border-bottom: 1px solid var(--hairline); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .augur-sheet-foot { margin-top: var(--space-1); padding-top: var(--space-2); border-top: 1px solid var(--hairline); letter-spacing: var(--tracking-soft); font-variant-numeric: tabular-nums; }
+  .augur-sheet-empty { margin: 0; padding: var(--space-2) var(--space-3); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .augur-sheet-list .augur-option { padding: calc(var(--space-1) * 1.5) var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .augur-sheet-list .augur-option[data-focused], .augur-sheet-list .augur-option[data-hovered] {
+    background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: inset var(--key-edge-sm) 0 0 var(--ink);
+  }
+  .augur-sheet-list .augur-option[data-focus-visible] { box-shadow: inset var(--key-edge-sm) 0 0 var(--ink), inset 0 0 0 var(--focus-ring) var(--focus); }
+  /* While you type, a row is quiet but for the letters that match. */
+  .augur-option[data-matching] .augur-option-label { color: var(--ink-muted); }
+  .augur-match { color: var(--ink); font-weight: 600; }
+  /* A multi select's rows: a check well that comes up as a light key when ticked. */
+  .augur-option-check {
+    display: inline-flex; align-items: center; justify-content: center; flex: none; box-sizing: border-box; width: var(--space-4); height: var(--space-4);
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key); color: var(--slate-deep);
+  }
+  .augur-option-check[data-selected] { background: var(--ink); border-color: var(--ink); border-top-width: 1px; border-bottom: var(--well-depth) solid color-mix(in srgb, var(--ink) 62%, var(--shade)); }
+
+  /* Number field: the number in mono, its unit in small capitals, two small keys at the end. */
+  .augur-number-input { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .augur-unit {
+    flex: none; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label);
+    letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .augur-step-keys { display: inline-flex; flex: none; gap: var(--space-1); }
+
+  /* Slider. A fader: a narrow well, the chosen part in ink, a small key standing in it. Steps: a row of
+     wells, each up to the value raised as a key. The value in mono beside the label. */
+  .augur-slider { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .augur-slider[data-unavailable] > :not(.augur-reason) { opacity: 0.4; }
+  .augur-slider-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .augur-slider-value { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-soft); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .augur-slider-track { position: relative; width: 100%; cursor: pointer; }
+  .augur-slider[data-look='fader'] .augur-slider-track {
+    box-sizing: border-box; height: var(--space-2); margin: var(--space-3) 0;
+    background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key);
+  }
+  .augur-slider-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); border-radius: var(--radius-key) 0 0 var(--radius-key); }
+  .augur-slider-thumb { outline: none; }
+  .augur-slider[data-look='fader'] .augur-slider-thumb {
+    top: calc(50% - var(--space-5) / 2); box-sizing: border-box; width: var(--space-3); height: var(--space-5);
+    background: color-mix(in srgb, var(--ink) 10%, var(--slate-deep)); border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+    border-bottom: var(--key-edge) solid color-mix(in srgb, var(--ink) 34%, transparent); border-radius: var(--radius-key);
+    transition: border-bottom-width var(--motion-instant) var(--ease-standard);
+  }
+  .augur-slider[data-look='fader'] .augur-slider-thumb[data-hovered] { background: color-mix(in srgb, var(--ink) 16%, var(--slate-deep)); }
+  .augur-slider[data-look='fader'] .augur-slider-thumb[data-dragging] { border-bottom-width: 1px; }
+  .augur-slider[data-look='fader'] .augur-slider-thumb[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .augur-slider[data-look='steps'] .augur-slider-track { height: var(--space-5); }
+  .augur-slider-steps { position: absolute; inset: 0; display: flex; gap: var(--space-1); }
+  .augur-slider-step {
+    flex: 1; box-sizing: border-box; background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key);
+    transition: background var(--motion-instant) var(--ease-standard);
+  }
+  .augur-slider-step[data-on] { background: var(--ink); border-color: var(--ink); border-top-width: 1px; border-bottom: var(--key-edge-sm) solid color-mix(in srgb, var(--ink) 62%, var(--shade)); }
+  .augur-slider[data-look='steps'] .augur-slider-thumb { top: 0; width: var(--space-2); height: 100%; opacity: 0; }
+  .augur-slider[data-look='steps']:has(.augur-slider-thumb[data-focus-visible]) .augur-slider-steps { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+}
+
 /* A deployment whose desktops have no GPU (FOCUS_DEPTH=scrim, which the web container writes into the
    page's augur-depth meta; PDR-010, amendment 2): nothing blurs what's behind it, and the see-through
    surfaces turn solid so what's on them stays readable without the blur. Outside any layer, so it wins. */

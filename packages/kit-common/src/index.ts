@@ -32,3 +32,7 @@ export { Explain, type ExplainProps } from './explain.js';
 export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
 export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
+export { ComboBox, type ComboBoxProps } from './combo-box.js';
+export { MultiSelect, type MultiSelectProps } from './multi-select.js';
+export { NumberField, type NumberFieldProps } from './number-field.js';
+export { Slider, type SliderProps } from './slider.js';

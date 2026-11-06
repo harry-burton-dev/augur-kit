@@ -850,6 +850,18 @@
   .quill-date-quick button { all: unset; cursor: pointer; padding: 2px var(--space-2); border-radius: var(--radius-pill); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); background: color-mix(in srgb, var(--ink) 6%, transparent); }
   .quill-date-quick button:hover { color: var(--ink); }
   .quill-date-quick button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+  /* Time and range (picked 6 Nov 2026: Written, like the date field). The well echoes in mono the time it
+     reads while you write; a range is two date fields joined by a line, with its length under them. */
+  .quill-time-input { font-variant-numeric: tabular-nums; }
+  .quill-echo {
+    flex: none; padding: var(--space-1) 0 var(--space-1) var(--space-2); border-left: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-soft); color: var(--ink-muted); font-variant-numeric: tabular-nums;
+  }
+  .quill-range { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .quill-range-pair { display: grid; grid-template-columns: minmax(0, 1fr) var(--space-4) minmax(0, 1fr); align-items: start; }
+  .quill-range-join { margin-top: calc(var(--leading-meta) + var(--space-2) + var(--target-md) / 2); border-top: 1px solid var(--ink-muted); }
+  .quill-range-total { margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-soft); color: var(--ink-muted); }
   .quill-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); min-height: 128px; padding: var(--space-5); text-align: center; border: 1.5px dashed var(--hairline-strong); border-radius: var(--radius-card); transition: border-color var(--motion-quick) var(--ease-standard), background var(--motion-quick) var(--ease-standard); }
   .quill-drop[data-compact] { flex-direction: row; justify-content: flex-start; gap: var(--space-3); min-height: 56px; padding: var(--space-2) var(--space-4); text-align: left; }
   .quill-drop[data-compact] .quill-drop-heading { flex: 1; color: var(--ink-muted); font-size: var(--type-meta); }

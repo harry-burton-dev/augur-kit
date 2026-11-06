@@ -20,6 +20,7 @@ export { State, Facts, Rows, Notice, Note, Tag, Details, type StateKind, type St
 export { PageHead, Section, type TrailStep, type PageAction, type PageHeadProps, type SectionProps } from './page.js';
 export { List, Table, compareBy, relativeTime, type ListAction, type ListItem, type ListProps, type TableColumn, type TableRow, type TableSort, type TableProps } from './list.js';
 export { Card, Cards, Tally, Timeline, Path, Ref, Refs, floorMark, floorIcon, dayWords, refIcon, refName, type FloorKind, type CardProps, type TallyCount, type TallyProps, type TimelineItem, type TimelineProps, type PathStep, type PathProps, type RefKind, type RefShown, type RefProps, type RefsProps } from './things.js';
+export { TimeField, DateRangeField, parseTime, type TimeFieldProps, type DateRangeFieldProps, type DateRange } from './time.js';
 export { DateField, DropZone, Surface, parseDay, dayName, dayDistance, isoDay, accepts, DEFAULT_QUICK, type DateQuick, type DateFieldProps, type DropZoneProps, type SurfaceKind, type SurfaceProps } from './date.js';
 export { Editor, Prose, readMentions, writeMentions, plainText, type Mention, type MentionResult, type MentionSource, type EditorProps, type ProseProps } from './editor.js';
 export { Tree, treePath, type TreeNode, type TreeProps } from './tree.js';
