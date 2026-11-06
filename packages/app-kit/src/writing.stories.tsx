@@ -61,6 +61,24 @@ export const PeopleOnTheDirectory: StoryObj = {
   },
 };
 
+/** Chosen people and teams gather under the field as a list in a well: who they are, what they can do, and a key to take each off. */
+export const PeopleChosen: StoryObj = {
+  render: () => (
+    <Column>
+      <PeoplePicker
+        label="Share with"
+        multiple
+        search={searchDirectory}
+        defaultValue={[
+          { kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'nora@example.org', meta: 'Can edit' },
+          { kind: 'person', id: 'u3', name: 'Ada Lee', detail: 'ada@example.org', meta: 'Can read' },
+          { kind: 'team', id: 't3', name: 'Planning', detail: 'Ops', size: 6, meta: 'Can read' },
+        ]}
+      />
+    </Column>
+  ),
+};
+
 /** One person, handed over as soon as they're chosen. */
 export const OnePerson: StoryObj = {
   render: () => {
