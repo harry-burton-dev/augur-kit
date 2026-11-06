@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { onlineManager } from '@tanstack/react-query';
+import { AppError } from './client.js';
 import { DataProvider, DataView, newDataClient, useChange, useData } from './query.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -23,14 +24,15 @@ afterEach(() => {
   vi.resetModules();
 });
 
+// The chunk never comes back in these: Chromium keeps a failed import until the page reloads, so
+// nothing here may pass by loading it a second time.
 describe('a chunk that fails to load', () => {
   beforeEach(() => vi.resetModules());
+  const reload = () => vi.spyOn(window.location, 'reload').mockImplementation(() => {});
 
-  it('Reader shows the words, says so, and can try again', async () => {
-    let down = true;
-    vi.doMock('markdown-it', async () => {
-      if (down) throw new Error('Failed to fetch');
-      return vi.importActual('markdown-it');
+  it('Reader shows the words, says so, and offers only a reload', async () => {
+    vi.doMock('markdown-it', () => {
+      throw new Error('Failed to fetch');
     });
     const { Reader } = await import('./reader.js');
     await draw(<Reader markdown={'# Title\n\nSome words.'} />);
@@ -38,50 +40,110 @@ describe('a chunk that fails to load', () => {
     expect(document.querySelector('article')!.hasAttribute('aria-busy')).toBe(false);
     expect(text()).toContain('Some words.');
     expect(text()).toContain('formatting didn’t load');
-    down = false;
-    vi.resetModules();
-    await act(async () => button('Try again').click());
-    await settle();
-    expect(document.querySelector('article h1')?.textContent).toBe('Title');
-    expect(text()).not.toContain('formatting didn’t load');
+    expect(text()).not.toContain('Try again');
+    const reloaded = reload();
+    await act(async () => button('Reload the page').click());
+    expect(reloaded).toHaveBeenCalledOnce();
+    reloaded.mockRestore();
   });
 
-  it('loadReader doesn’t keep a failure', async () => {
-    let down = true;
-    vi.doMock('markdown-it', async () => {
-      if (down) throw new Error('Failed to fetch');
-      return vi.importActual('markdown-it');
-    });
-    const { loadReader } = await import('./reader.js');
-    await expect(loadReader()).rejects.toThrow();
-    down = false;
-    vi.resetModules();
-    await expect(loadReader()).resolves.toBeDefined();
-  });
+  describe('the Editor', () => {
+    const failing = () =>
+      vi.doMock('./editor-engine.js', () => {
+        throw new Error('Failed to fetch');
+      });
+    const silent = () => vi.spyOn(console, 'error').mockImplementation(() => {});
 
-  it('Editor says what happened in its own place, and can try again', async () => {
-    let down = true;
-    vi.doMock('./editor-engine.js', () => {
-      if (down) throw new Error('Failed to fetch');
-      return { default: () => <p>Engine here</p> };
+    it('says what happened in its own place and offers only a reload', async () => {
+      failing();
+      const { Editor } = await import('./editor.js');
+      const error = silent();
+      await draw(
+        <main>
+          <p>The rest of the page</p>
+          <Editor label="Brief" />
+        </main>,
+      );
+      await settle();
+      expect(text()).toContain('The rest of the page');
+      expect(text()).toContain('Brief didn’t load');
+      expect(text()).not.toContain('Try again');
+      const reloaded = reload();
+      await act(async () => button('Reload the page').click());
+      expect(reloaded).toHaveBeenCalledOnce();
+      reloaded.mockRestore();
+      error.mockRestore();
     });
-    const { Editor } = await import('./editor.js');
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    await draw(
-      <main>
-        <p>The rest of the page</p>
-        <Editor label="Brief" />
-      </main>,
-    );
-    await settle();
-    expect(text()).toContain('The rest of the page');
-    expect(text()).toContain('Brief didn’t load');
-    down = false;
-    vi.resetModules();
-    await act(async () => button('Try again').click());
-    await settle();
-    expect(text()).toContain('Engine here');
-    error.mockRestore();
+
+    it('leaves another Editor alone when one fails', async () => {
+      const mounted: string[] = [];
+      vi.doMock('./editor-engine.js', async () => {
+        const { useEffect } = await import('react');
+        return {
+          default: ({ label }: { label: string }) => {
+            useEffect(() => void mounted.push(label), [label]);
+            if (label === 'Bad') throw new Error('Broke');
+            return <p>Writing in {label}</p>;
+          },
+        };
+      });
+      const { Editor } = await import('./editor.js');
+      const error = silent();
+      const reloaded = reload();
+      await draw(
+        <main>
+          <Editor label="Good" />
+          <Editor label="Bad" />
+        </main>,
+      );
+      await settle();
+      await act(async () => button('Reload the page').click());
+      await settle();
+      expect(text()).toContain('Writing in Good');
+      expect(mounted).toEqual(['Good']);
+      reloaded.mockRestore();
+      error.mockRestore();
+    });
+
+    it('still holds a Dialog’s primary when it is required and empty', async () => {
+      failing();
+      const { Editor } = await import('./editor.js');
+      const { Dialog } = await import('@augur/kit-common');
+      const error = silent();
+      const onSubmit = vi.fn();
+      await draw(<Dialog open heading="Note" actionLabel="Save" onClose={() => {}} onSubmit={onSubmit} fields={<Editor label="Brief" name="brief" required />} />);
+      await settle();
+      await act(async () => button('Save').click());
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(button('Reload the page'));
+      error.mockRestore();
+    });
+
+    it('keeps what it was given in a Dialog’s values', async () => {
+      failing();
+      const { Editor } = await import('./editor.js');
+      const { Dialog } = await import('@augur/kit-common');
+      const error = silent();
+      const onSubmit = vi.fn();
+      await draw(<Dialog open heading="Note" actionLabel="Save" onClose={() => {}} onSubmit={onSubmit} fields={<Editor label="Brief" name="brief" required defaultValue="Words" />} />);
+      await settle();
+      await act(async () => button('Save').click());
+      expect(onSubmit).toHaveBeenCalledWith({ brief: 'Words' });
+      error.mockRestore();
+    });
+
+    it('doesn’t hold the primary when it is disabled', async () => {
+      failing();
+      const { Editor } = await import('./editor.js');
+      const { Dialog } = await import('@augur/kit-common');
+      const error = silent();
+      const onSubmit = vi.fn();
+      await draw(<Dialog open heading="Note" actionLabel="Save" onClose={() => {}} onSubmit={onSubmit} fields={<Editor label="Brief" name="brief" required disabled />} />);
+      await settle();
+      await act(async () => button('Save').click());
+      expect(onSubmit).toHaveBeenCalledOnce();
+      error.mockRestore();
+    });
   });
 });
 
@@ -115,7 +177,8 @@ describe('with the browser offline', () => {
     let down = true;
     const Load = () => {
       const state = useData(['back'], async () => {
-        if (down) throw Object.assign(new Error('refused'), { status: 403 });
+        // A refusal isn't retried, so only the reconnect can load this again.
+        if (down) throw new AppError('Refused.', 403);
         return 'Here';
       });
       return (
@@ -130,10 +193,12 @@ describe('with the browser offline', () => {
       </DataProvider>,
     );
     await settle();
+    expect(text()).toContain('Refused.');
     down = false;
     await act(async () => onlineManager.setOnline(true));
-    await vi.waitFor(() => expect(text()).toContain('Here'), { timeout: 6000 });
-  }, 8000);
+    await settle();
+    expect(text()).toContain('Here');
+  });
 
   it('useChange fails instead of waiting without end', async () => {
     onlineManager.setOnline(false);

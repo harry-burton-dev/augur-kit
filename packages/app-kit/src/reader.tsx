@@ -116,7 +116,7 @@ export const loadReader = () =>
   (loading ??= import('markdown-it').then(
     ({ default: Md }) => (shared = markdown(Md)),
     (err: unknown) => {
-      // One failed fetch mustn't blank every reader until a reload: the next one asks again.
+      // Firefox and Safari can fetch it for the next reader. Chromium keeps the failure until the page reloads.
       loading = undefined;
       throw err;
     },
@@ -157,7 +157,6 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
   const atTop = useRef('');
   const [html, setHtml] = useState(() => (shared ? shared.render(source) : undefined));
   const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
   const plain = failed && html === undefined;
   const latest = useRef({ onOutline, onPosition, onLeaf });
   latest.current = { onOutline, onPosition, onLeaf };
@@ -178,7 +177,7 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
         gone = true;
       };
     }
-  }, [source, attempt]);
+  }, [source]);
 
   const blocks = () => [...(article.current?.querySelectorAll<HTMLElement>('[data-block]') ?? [])];
   const outline = (): OutlineItem[] =>
@@ -385,7 +384,7 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
         ? {
             children: (
               <>
-                <State kind="error" size="line" heading="Showing plain text: the formatting didn’t load." action="Try again" onAction={() => setAttempt((n) => n + 1)} />
+                <State kind="error" size="line" heading="Showing plain text: the formatting didn’t load." body="Anything not saved on this page is lost when it reloads." action="Reload the page" onAction={() => location.reload()} />
                 {source
                   .split(/\n{2,}/)
                   .filter((p) => p.trim())

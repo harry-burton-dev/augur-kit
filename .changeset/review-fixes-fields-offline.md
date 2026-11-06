@@ -15,6 +15,8 @@ A Dialog now collects `Checkbox` and `Toggle` as `'true'` or `'false'`, and `Che
 
 With the browser offline, `useData` and `useChange` now try and fail in words, with `AppError` status 0, instead of pausing. `DataView` shows the offline state rather than loading for ever, and a Dialog waiting on a change is let go. A change made offline is not held for later. Loads run again when the connection returns. `DataView` no longer says it is loading while `enabled` is false: it shows `empty` if it has one, otherwise nothing.
 
-A failed load of Markdown no longer blanks `Reader` for good: it shows the plain text, says so and offers Try again, and `loadReader` doesn't keep the failure. A failed load of the Editor stays in the Editor's place, with Try again, instead of taking the app with it.
+A failed load of Markdown no longer blanks `Reader`: it shows the plain text, says so and offers a reload, the only thing that helps in Chromium. A failed load of the Editor stays in the Editor's place, with the same offer, instead of taking the app with it, and a required Editor still holds a Dialog's primary.
+
+A disabled field no longer holds a Dialog's primary, with or without a reason, even when it is required and empty.
 
 `Palette` keeps the chosen row in sight as the keys move it, and marks the row Enter will open when the list shrinks. A `Table` date in the future reads "in 3 d", not "just now" (`relativeTime`).
