@@ -14,6 +14,16 @@
    that needs a different bar can still say so. */
 @layer base {
   :where(*) { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+  /* The Sheet and Key looks (picked 6 Nov 2026), named once from the tokens so every part draws them alike. */
+  :root {
+    --sheet-edge: color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    --key: color-mix(in srgb, var(--ink) 10%, var(--slate-deep));
+    --key-side: color-mix(in srgb, var(--ink) 16%, transparent);
+    --key-bottom: color-mix(in srgb, var(--ink) 34%, transparent);
+    --key-tray: color-mix(in srgb, var(--shade) 25%, var(--slate-deep));
+    --groove: color-mix(in srgb, var(--shade) 50%, transparent);
+    --groove-lit: color-mix(in srgb, var(--ink) 9%, transparent);
+  }
 }
 
 /* Signal: the light language (streak, bloom, flicker, ember, beacon, shadow). The light is decoration and
@@ -293,11 +303,11 @@
   .augur-select-value[data-placeholder] { color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
   .augur-chevron { flex: none; display: flex; color: var(--ink-muted); transition: transform var(--motion-base) var(--ease-standard); }
   .augur-field[data-open] .augur-chevron { transform: rotate(180deg); color: var(--ink); }
-  /* Lists, menus and tips open over the shell's band, and over a dialog they open from. */
+  /* Lists, menus and tips open over the shell's band, and over a dialog they open from. Depth is dimming only, never a blur (PDR-015). */
   .augur-popover, .augur-tip { z-index: calc(var(--layer-chrome) + 2); }
   .augur-popover {
     min-width: var(--trigger-width); max-height: 280px; overflow: auto; padding: var(--space-2) 0;
-    background: color-mix(in srgb, var(--slate) 94%, transparent); backdrop-filter: blur(var(--surface-blur)) saturate(1.25);
+    background: color-mix(in srgb, var(--slate) 94%, transparent);
     border: 1px solid var(--hairline); border-radius: var(--radius-inset); box-shadow: var(--shadow-raised); color: var(--ink); font-family: var(--font-sans);
   }
   .augur-popover[data-entering] { animation: augur-rise var(--motion-quick) var(--ease-out); }
@@ -382,34 +392,52 @@
   .augur-heading[data-size='l'] .augur-title { font-size: var(--type-display); line-height: var(--leading-display); font-weight: 200; }
   .augur-summary { margin: var(--space-3) 0 0; max-width: var(--measure-prose); font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink-muted); }
 
-  /* Dialogs: one decision or one small task, over everything, on the veil. */
+  /* Dialogs: Sheet (picked 6 Nov 2026). One decision or one small task, over everything, on the veil. The
+     page behind is dimmed, never blurred (PDR-015). The dialog is a solid square sheet with one edge: the
+     heading on its own strip with the eyebrow in mono, and the actions on a ruled footer, primary last. */
   .augur-veil {
     position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); display: flex; justify-content: center; align-items: flex-start; overflow: auto;
-    background: radial-gradient(ellipse 60% 60% at 50% 46%, color-mix(in srgb, var(--slate-deep) 45%, transparent), var(--veil));
-    backdrop-filter: blur(var(--focus-far-blur));
+    background: color-mix(in srgb, var(--shade) 55%, transparent);
   }
   .augur-veil[data-entering] { animation: augur-fade var(--motion-slow) var(--ease-out); }
   .augur-veil[data-exiting] { animation: augur-fade var(--motion-quick) var(--ease-out) reverse; }
+  .augur-dialog, .augur-notice, .augur-toast {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --sheet-line: color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    --sheet-drop: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
   .augur-dialog {
     width: min(var(--measure-decision), calc(100% - 2 * var(--edge)));
     margin: max(var(--space-6), calc(46vh - 180px)) auto var(--space-6);
-    padding: var(--space-5); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: var(--radius-card);
-    background: var(--surface-overlay); backdrop-filter: blur(22px) saturate(1.25);
-    box-shadow: var(--shadow-overlay), inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent);
-    color: var(--ink); font-family: var(--font-sans);
+    border: 1px solid var(--sheet-line); border-radius: var(--radius-control); background: var(--sheet); box-shadow: var(--sheet-drop);
+    color: var(--ink); font-family: var(--font-sans); overflow: hidden;
   }
   .augur-dialog[data-entering] { animation: augur-rise-far var(--motion-slow) var(--ease-out); }
   .augur-dialog[data-size='glance'] { width: min(var(--measure-glance), calc(100% - 2 * var(--edge))); }
   .augur-dialog[data-size='read'] { width: min(var(--measure-read), calc(100% - 2 * var(--edge))); }
-  .augur-dialog-body { display: flex; flex-direction: column; gap: var(--space-4); }
-  .augur-dialog-error {
-    margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset);
-    background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); font-size: var(--type-meta); line-height: var(--leading-meta);
+  .augur-dialog-body { display: flex; flex-direction: column; }
+  .augur-dialog-body > * { padding-inline: var(--space-5); }
+  .augur-dialog-body > .augur-heading { padding-block: var(--space-4); border-bottom: 1px solid var(--hairline); }
+  .augur-dialog .augur-eyebrow {
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
   }
-  .augur-dialog-text { display: flex; flex-direction: column; gap: var(--space-4); color: var(--ink-muted); }
+  /* What went wrong, stamped like a notice: the word in mono, printed solid in red. */
+  .augur-dialog-error {
+    display: flex; align-items: baseline; gap: var(--space-3); margin: var(--space-4) 0 0;
+    color: var(--danger); font-size: var(--type-meta); line-height: var(--leading-meta);
+  }
+  .augur-dialog-error::before {
+    content: 'Not done'; flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--danger); color: var(--slate-deep);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  }
+  .augur-dialog-text { display: flex; flex-direction: column; gap: var(--space-4); padding-block: var(--space-5); color: var(--ink-muted); }
   .augur-dialog-text p { margin: 0; }
-  .augur-dialog-fields { display: flex; flex-direction: column; gap: var(--space-5); }
-  .augur-dialog-actions { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; padding-top: var(--space-2); }
+  .augur-dialog-fields { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-5); }
+  .augur-dialog-text + .augur-dialog-fields { padding-top: 0; }
+  .augur-dialog-actions {
+    display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: var(--space-5); flex-wrap: wrap;
+    padding-block: var(--space-3); border-top: 1px solid var(--hairline); background: color-mix(in srgb, var(--shade) 18%, transparent);
+  }
   .augur-dialog-cancel {
     display: inline-flex; align-items: center; gap: var(--space-2); border: 0; background: none; color: var(--ink-muted);
     font: inherit; font-size: var(--type-body); cursor: pointer; padding: var(--space-2) 2px; border-radius: var(--radius-key);
@@ -418,17 +446,71 @@
   .augur-dialog-cancel:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-dialog-cancel:disabled { opacity: 0.4; cursor: default; }
   .augur-dialog-cancel kbd {
-    font: inherit; font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
   }
 
-  /* Menus: a short list of actions from a button, on a near-opaque surface. */
-  .augur-menu { min-width: 200px; max-width: 320px; padding: var(--space-1); background: var(--surface-overlay); border-color: var(--hairline-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-overlay); }
-  .augur-menu-item {
-    display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-sm); padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; outline: none;
+  /* Notices: Sheet. One sentence in a page that needs attention, on a solid square strip. The tone is a word
+     in mono stamped at the start, printed solid in the tone (green only for needs you); a note is outlined. */
+  .augur-notice {
+    --tone: var(--ink-muted);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    background: var(--sheet); border: 1px solid var(--hairline); border-radius: var(--radius-control); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
   }
-  .augur-menu-item[data-focused], .augur-menu-item[data-hovered] { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .augur-menu-item[data-focus-visible] { box-shadow: inset 0 0 0 var(--focus-ring) var(--focus); }
+  .augur-notice[data-tone='needs'] { --tone: var(--needs-you); }
+  .augur-notice[data-tone='warning'] { --tone: var(--warning); }
+  .augur-notice[data-tone='refused'] { --tone: var(--danger); }
+  .augur-notice[data-tone='info'] { background: none; }
+  .augur-notice-tone {
+    flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--tone); color: var(--slate-deep); white-space: nowrap;
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  }
+  .augur-notice[data-tone='info'] .augur-notice-tone { background: none; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+  .augur-notice-text { flex: 1 1 220px; min-width: 0; margin: 0; }
+  .augur-notice-text b { font-weight: 500; }
+  .augur-notice-more { color: var(--ink-muted); }
+
+  /* Toasts: Sheet. A small square sheet at the bottom, the kind of news in mono, and its time left as a line
+     draining along the bottom edge; the line stops while the toast is held. */
+  .augur-toasts {
+    position: fixed; left: 50%; bottom: var(--anchor-ask); z-index: var(--layer-toast); transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-2); margin: 0; padding: 0; list-style: none;
+  }
+  .augur-toast {
+    position: relative; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+    background: var(--sheet); border: 1px solid var(--sheet-line); border-radius: var(--radius-control); overflow: hidden; box-shadow: var(--sheet-drop); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+  }
+  .augur-toast { animation: augur-rise-far var(--motion-base) var(--ease-out); }
+  .augur-toast-kind {
+    padding-right: var(--space-3); border-right: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .augur-toast-text { white-space: nowrap; }
+  .augur-toast-time {
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--key-edge-sm); background: var(--ink-muted); transform-origin: left;
+    animation: augur-count var(--motion-toast) linear forwards;
+  }
+  .augur-toast[data-held] .augur-toast-time { animation-play-state: paused; }
+
+  /* Menus: Sheet (picked 6 Nov 2026), drawn like the shell's start menu. A solid sheet, square, with one
+     edge; small capitals in mono for a heading; and a hard ink line on the row you're on. It sits over the
+     page with a drop that darkens what's under it, never a blur. */
+  .augur-menu {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    min-width: 200px; max-width: 320px; padding: calc(var(--space-1) * 1.5) 0;
+    background: var(--sheet); backdrop-filter: none; border: 1px solid var(--sheet-edge); border-radius: 0;
+    box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
+  .augur-menu-heading {
+    margin: 0 0 var(--space-1); padding: var(--space-1) var(--space-3) var(--space-2); border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps);
+    text-transform: uppercase; font-weight: 400; color: var(--ink-muted);
+  }
+  .augur-menu-item {
+    display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-sm); padding: calc(var(--space-1) * 1.5) var(--space-3);
+    color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; outline: none;
+  }
+  .augur-menu-item[data-focused], .augur-menu-item[data-hovered] { background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); }
+  .augur-menu-item[data-focus-visible] { box-shadow: inset var(--key-edge-sm) 0 0 var(--ink), inset 0 0 0 var(--focus-ring) var(--focus); }
   .augur-menu-item[data-disabled] { cursor: default; }
   .augur-menu-item[data-disabled] .augur-menu-icon, .augur-menu-item[data-disabled] .augur-menu-label, .augur-menu-item[data-disabled] .augur-menu-key { opacity: 0.4; }
   .augur-menu-item[data-danger] { color: var(--danger); }
@@ -436,31 +518,62 @@
   .augur-menu-item[data-danger] .augur-menu-icon { color: var(--danger); }
   .augur-menu-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .augur-menu-why { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  .augur-menu-key { font: inherit; font-size: var(--type-label); color: var(--ink-muted); }
+  .augur-menu-key { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-soft); color: var(--ink-muted); }
   .augur-menu-line { border: 0; border-top: 1px solid var(--hairline); margin: var(--space-1) 0; }
 
-  /* Tabs: views of one thing, with an ink rule under the one you're on. */
+  /* Tabs: Key (picked 6 Nov 2026), like the Keycap button. The names sit in a sunken tray, and the one
+     you're on is a raised key: a small corner and a thicker bottom line. */
   .augur-tabs { display: flex; flex-direction: column; gap: var(--space-5); }
-  .augur-tab-list { display: flex; gap: var(--space-5); border-bottom: 1px solid var(--hairline); overflow-x: auto; }
+  .augur-tab-list {
+    display: inline-flex; align-self: flex-start; max-width: 100%; box-sizing: border-box; gap: var(--space-1); padding: var(--space-1);
+    background: var(--key-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); overflow-x: auto;
+  }
   .augur-tab {
-    position: relative; display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); padding: var(--space-2) 0;
+    position: relative; display: inline-flex; align-items: center; gap: var(--space-2); min-height: calc(var(--target-sm) - var(--space-2)); padding: 0 var(--space-3);
+    border: 1px solid transparent; border-bottom-width: var(--key-edge-sm); border-radius: var(--radius-key);
     font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); white-space: nowrap; cursor: pointer; outline: none;
-    transition: color var(--motion-base) var(--ease-standard);
+    transition: color var(--motion-instant) var(--ease-standard), background var(--motion-instant) var(--ease-standard), border-color var(--motion-instant) var(--ease-standard);
   }
   .augur-tab[data-hovered] { color: var(--ink); }
-  .augur-tab[data-selected] { color: var(--ink); }
-  .augur-tab::after {
-    content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; border-radius: 1px; background: var(--ink);
-    transform: scaleX(0); transition: transform var(--motion-base) var(--ease-standard);
-  }
-  .augur-tab[data-selected]::after { transform: none; }
-  .augur-tab[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); border-radius: var(--radius-key); }
+  .augur-tab[data-hovered]:not([data-selected]) { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .augur-tab[data-selected] { color: var(--ink); font-weight: 500; background: var(--key); border-color: var(--key-side); border-bottom-color: var(--key-bottom); }
+  .augur-tab[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-tab[data-unavailable] { opacity: 0.4; }
   .augur-tab[data-unavailable][data-selected] { opacity: 1; }
-  .augur-tab-count { font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+  .augur-tab-count { font-family: var(--font-mono); font-size: var(--type-label); font-variant-numeric: tabular-nums; font-weight: 400; color: var(--ink-muted); }
   .augur-tab-panel { outline: none; }
   .augur-tab-panel[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-tab-why { margin: 0; max-width: var(--measure-prose); color: var(--ink-muted); }
+
+  /* Badges: Key. A count or a word on something else, as a small key; mono for numbers. Only "needs you"
+     is green; danger is a red edge. On a corner, it sits over the top end of what it marks. */
+  .augur-badge {
+    display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+    min-width: calc(var(--space-4) + var(--space-1)); height: calc(var(--space-4) + var(--space-1)); padding: 0 var(--space-1);
+    background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-variant-numeric: tabular-nums;
+    white-space: nowrap; color: var(--ink); vertical-align: middle;
+  }
+  .augur-badge[data-word] { padding: 0 var(--space-2); font-family: var(--font-sans); font-size: var(--type-small); }
+  .augur-badge[data-tone='needs'] { color: var(--needs-you); }
+  .augur-badge[data-tone='needs']:not([data-word]) { background: var(--needs-you); color: var(--slate-deep); border-color: var(--needs-you); border-bottom-color: color-mix(in srgb, var(--needs-you) 60%, var(--shade)); }
+  .augur-badge[data-tone='danger'] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); border-bottom-color: color-mix(in srgb, var(--danger) 60%, transparent); }
+  .augur-badge-on { position: relative; display: inline-flex; }
+  .augur-badge-on > .augur-badge { position: absolute; top: 0; right: 0; transform: translate(25%, -25%); }
+  .augur-badge[data-dot] { min-width: 0; width: var(--space-2); height: var(--space-2); padding: 0; border: 0; border-radius: var(--radius-key); background: var(--needs-you); }
+  .augur-badge-on > .augur-badge[data-dot] { top: var(--space-1); right: var(--space-1); transform: none; }
+
+  /* Dividers: Key. A groove cut into the surface: a dark line with a faint lit one under it. A label sits
+     on the groove; strong is a deeper cut between kinds of thing; upright, it divides a bar. */
+  .augur-divider { margin: 0; border: 0; border-top: 1px solid var(--groove); box-shadow: 0 1px 0 var(--groove-lit); }
+  .augur-divider[data-strong] { border-top-width: var(--key-edge-sm); }
+  .augur-divider[data-label] { display: flex; align-items: center; gap: var(--space-2); border: 0; box-shadow: none; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .augur-divider[data-label]::before, .augur-divider[data-label]::after { content: ''; border-top: 1px solid var(--groove); box-shadow: 0 1px 0 var(--groove-lit); }
+  .augur-divider[data-label]::before { width: var(--space-3); }
+  .augur-divider[data-label]::after { flex: 1; }
+  .augur-divider[data-label][data-strong]::before, .augur-divider[data-label][data-strong]::after { border-top-width: var(--key-edge-sm); }
+  .augur-divider[aria-orientation='vertical'] { align-self: stretch; width: 0; margin: var(--space-2) 0; border-top: 0; border-left: 1px solid var(--groove); box-shadow: 1px 0 0 var(--groove-lit); }
+  .augur-divider[aria-orientation='vertical'][data-strong] { border-left-width: var(--key-edge-sm); }
 
   /* Choice: two to four options, each with a line, on level hairline tiles. The chosen tile's outline turns ink
      and its mark fills; the tile itself stays flat, no raised edge. Never green: green means "needs you". */
@@ -511,12 +624,14 @@
   .augur-people { display: inline-flex; }
   .augur-people > .augur-avatar + .augur-avatar { margin-left: calc(var(--space-2) * -1); }
 
-  /* Tips: a short line on hover and focus. */
+  /* Tips: Sheet, like menus. A short line on hover and focus, on a solid square sheet with one edge. */
   .augur-tip {
-    max-width: 34ch; padding: var(--space-2) var(--space-3); border-radius: var(--radius-key);
-    background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline-strong); box-shadow: var(--shadow-raised);
+    max-width: 34ch; padding: var(--space-2) var(--space-3); border-radius: 0;
+    background: color-mix(in srgb, var(--shade) 32%, var(--slate-deep)); border: 1px solid var(--sheet-edge);
+    box-shadow: 0 var(--space-2) var(--space-4) color-mix(in srgb, var(--shade) 40%, transparent);
     font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink);
   }
+  .augur-tip kbd { font-family: var(--font-mono); color: var(--ink-muted); margin-left: var(--space-2); }
   .augur-tip[data-entering] { animation: augur-fade var(--motion-quick) var(--ease-out); }
 
   /* Progress: a bar, or a few named steps. */
