@@ -37,3 +37,7 @@ export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal
 export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
 export { Snippet, type SnippetProps, type SnippetCopy } from './snippet.js';
 export { Folds, Fold, type FoldsProps, type FoldProps } from './fold.js';
+export { ComboBox, type ComboBoxProps } from './combo-box.js';
+export { MultiSelect, type MultiSelectProps } from './multi-select.js';
+export { NumberField, type NumberFieldProps } from './number-field.js';
+export { Slider, type SliderProps } from './slider.js';
