@@ -9,6 +9,7 @@ export { Toasts, type ToastItem, type ToastsProps } from './toast.js';
 export { AppUnavailable, type AppState, type AppUnavailableProps } from './app-unavailable.js';
 export { Connection, type ConnectionState, type ConnectionProps } from './connection.js';
 export { Shell, type ShellProps, type ShellElement } from './shell.js';
+export { ShellMenu, MenuArc, MenuCaption, MenuView, MenuEsc, MenuUndo, MenuNote, MenuSkeleton, MenuRetry, MenuTools, MenuLink, MenuGroup, MenuRow, NotificationRow, AgentMark, AppTiles, AppTile, MenuSearch, MenuPair, MenuSwitch, MenuChoice, MenuKeys, MenuWho, arcOrder, arcSlot, type MenuMood, type ShellMenuProps, type MenuArcItem, type MenuArcProps, type MenuCaptionProps, type MenuViewProps, type MenuEscProps, type MenuUndoProps, type MenuNoteProps, type MenuRetryProps, type MenuToolsProps, type MenuLinkProps, type MenuGroupProps, type MenuRowProps, type NotificationRowProps, type AgentMarkProps, type AppTilesProps, type AppTileProps, type MenuSearchProps, type MenuPairProps, type MenuSwitchProps, type MenuChoiceProps, type MenuKeysProps, type MenuWhoProps } from './shell-menu.js';
 export * from './shell-model.js';
 export { CentreMenu, CentreMenuModel, searchMenu, type CentreMenuProps, type CentreMenuElement, type MenuCategory, type MenuItem, type MenuOption, type MenuVariant, type MenuBackground } from './centre-menu.js';
 export { Water, resolveWave, wavePresets, DEFAULT_WAVE, type WaveMove, type WavePreset } from './water.js';
