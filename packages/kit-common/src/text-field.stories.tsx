@@ -4,7 +4,7 @@ import { TextField } from './text-field.js';
 
 /**
  * Somewhere to write, drawn as a well (Well): the Keycap button's counterpart. A key sits up and a field
- * sits down, so the field is a slot a step darker than the ground, with a small corner and its depth drawn
+ * sits down, so the field is a slot a step darker than the ground, square, with its depth drawn
  * as a thicker top line, never an inner shadow. While you write in it, the kit's one focus ring sits around it.
  *
  * - **Required** and left empty, it asks in green ("Needs you"), never red.

@@ -65,7 +65,7 @@
 @keyframes augur-signal-ember { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
 @layer components {
-  /* Buttons: Keycap (picked 6 Nov 2026 from four directions). A key you can press: flat, a small corner, and
+  /* Buttons: Keycap (picked 6 Nov 2026 from four directions). A key you can press: flat, square, and
      depth drawn as a thicker bottom line, never a shadow or a glow. Pressed, the line closes to a hairline
      and the key sinks by the difference. No colour of its own: green means "needs you", red means danger. */
   /* No browser button look: each kind draws its own. */
@@ -236,7 +236,7 @@
   .augur-control:hover > .augur-reason, .augur-control:focus-within > .augur-reason { opacity: 1; transform: none; }
   .augur-control:hover > .augur-name, .augur-control:focus-within > .augur-name { transform: translate(-50%, 0); }
   /* Fields: Well (picked 6 Nov 2026 from four directions). The Keycap button's counterpart: a key sits up, a
-     field sits down. A slot a step darker than the ground, a small corner, and its depth drawn as a thicker top
+     field sits down. A slot a step darker than the ground, square, and its depth drawn as a thicker top
      line, never an inner shadow. Green means "needs you", red means wrong; focus is the kit's one ring. */
   .augur-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
   /* Unavailable: dimmed, but its reason stays at full strength. */
@@ -346,7 +346,7 @@
     background: var(--ink-muted); border-bottom: var(--well-depth) solid color-mix(in srgb, var(--ink-muted) 55%, var(--shade));
     transition: transform var(--motion-slow) var(--ease-spring), background var(--motion-base) var(--ease-standard);
   }
-  .augur-knob-off { width: 8px; height: 2px; border-radius: 1px; background: var(--slate-deep); }
+  .augur-knob-off { width: 8px; height: 2px; border-radius: 0; background: var(--slate-deep); }
   .augur-toggle-row[data-selected] .augur-switch {
     background: color-mix(in srgb, var(--ink) 24%, var(--slate-deep)); border-color: color-mix(in srgb, var(--ink) 40%, transparent);
     border-top-color: color-mix(in srgb, var(--shade) 40%, var(--slate-deep));
@@ -522,7 +522,7 @@
   .augur-menu-line { border: 0; border-top: 1px solid var(--hairline); margin: var(--space-1) 0; }
 
   /* Tabs: Key (picked 6 Nov 2026), like the Keycap button. The names sit in a sunken tray, and the one
-     you're on is a raised key: a small corner and a thicker bottom line. */
+     you're on is a raised key: square, with a thicker bottom line. */
   .augur-tabs { display: flex; flex-direction: column; gap: var(--space-5); }
   .augur-tab-list {
     display: inline-flex; align-self: flex-start; max-width: 100%; box-sizing: border-box; gap: var(--space-1); padding: var(--space-1);
