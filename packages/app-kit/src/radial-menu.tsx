@@ -71,6 +71,12 @@ export const RING_MOST = 8;
  */
 export type RingOverflow = 'list' | 'more';
 
+/**
+ * Past this many targets the outer ring gets too tight to read, so an action's targets open as a list beside
+ * it instead (PDR: the radial menu has two rings, D8).
+ */
+export const RING_TARGETS_MOST = 5;
+
 /** The id of the More action that holds the overflow. Never one of an app's own. */
 export const RING_MORE_ID = '\u0000more';
 
@@ -304,26 +310,31 @@ const previewOf = (a: RingAction, target?: string) => (typeof a.preview === 'fun
 const keyOf = (a: RingAction, t?: RingTarget) => (t ? `${a.id}\u0000${t.id}` : a.id);
 
 /**
- * The actions of one thing, in a ring round it (PDR-010). The rest of the app
- * racks out of focus and the thing itself stays sharp, ringed as selected, so
- * the menu never covers what it's about.
+ * The actions of one thing, in two rings round where it was opened (PDR-010;
+ * two rings, V5). The rest of the app racks out of focus and the thing itself
+ * stays sharp, ringed as selected.
  *
- * Up to eight actions sit in eight fixed directions (`RingSlot`), so a verb is
- * always in the same place: an action's own slot, danger at the bottom, the
- * rest clockwise from the top. A row's arc and the list keep that order. Each
- * action's name sits outside the ring, away from the subject.
+ * The inner ring is eight wedges in eight fixed directions (`RingSlot`), so a
+ * verb is always in the same place: an action's own slot, danger at the bottom,
+ * the rest clockwise from the top. Each wedge carries its name, always showing.
+ * The ring stays whole on screen, moved in from an edge rather than bent, so no
+ * direction ever changes. Cancel sits in the hub.
  *
- * An action that can't be done stays, dimmed, and can still be focused: its
- * reason and owner are read out, and choosing it asks the owner when the
- * subject takes `onAsk`. An action with targets opens them beside it. What an
- * action would change (`preview`) shows in one readout under the menu and is
- * read out politely. Danger, or anything marked `hold`, is held down to
- * confirm; with reduced motion it is pressed twice.
+ * An action with targets opens them on an outer ring, fanned out in its own
+ * direction, so Move then Procurement is one stroke; past `RING_TARGETS_MOST`
+ * they open as a list beside it. An action that can't be done stays, hatched
+ * and locked, and can still be focused: its reason and owner are shown and read
+ * out, and choosing it asks the owner when the subject takes `onAsk`. One
+ * readout under the ring says where you are (thing, verb, place) and what the
+ * focused choice would change (`preview`), read out politely. Danger, or
+ * anything marked `hold`, is held down to confirm, filling the hub; with
+ * reduced motion it is pressed twice.
  *
- * Keys: arrows (or Tab) go round, Home and End jump, a letter jumps to the next
- * action starting with it, Enter or Space chooses, Esc closes. On an action
- * with targets, ArrowRight or Enter goes into them and ArrowLeft or Esc comes
- * back out. Focus goes back to the thing when it closes.
+ * Keys: arrows (or Tab) go round, Home and End jump, 1 to 8 pick a direction
+ * clockwise from the top, a letter jumps to the next action starting with it,
+ * Enter or Space chooses, Esc closes. On an action with targets, ArrowRight or
+ * Enter goes into them and ArrowLeft or Esc comes back out. Focus goes back to
+ * the thing when it closes.
  */
 export function RadialMenu({ label, actions, onAction, onAsk, target, point, shape = 'auto', overflow = 'list', onClose }: RadialMenuProps) {
   /** Whether the ring overflows into More, and whether More is open. */
@@ -338,7 +349,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
   const asList = shape === 'list' || (shape === 'auto' && list.length > RING_MOST);
   const [focused, setFocused] = useState(() => Math.max(0, list.findIndex((a) => !a.disabled)));
   /** The action whose targets are open, and where its list sits. */
-  const [into, setInto] = useState<{ index: number; left: number; top: number; flip: boolean } | null>(null);
+  const [into, setInto] = useState<{ index: number; left: number; top: number; flip: boolean; outer: boolean } | null>(null);
   const [aimed, setAimed] = useState(0);
   const [holding, setHolding] = useState<string | null>(null);
   const [armed, setArmed] = useState<string | null>(null);
@@ -445,6 +456,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     const flip = right + gap + width > window.innerWidth;
     setInto({
       index,
+      outer: !asList && a.targets.length <= RING_TARGETS_MOST,
       left: flip ? Math.max(gap, left - gap - width) : right + gap,
       top: Math.min(Math.max(top, gap), window.innerHeight - (a.targets.length + 1) * size - gap),
       flip,
@@ -517,6 +529,13 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     else if (next.includes(e.key) || (e.key === 'Tab' && !e.shiftKey)) go(at + 1);
     else if (back.includes(e.key) || (e.key === 'Tab' && e.shiftKey)) go(at - 1);
     else if (e.key === 'Home') go(0);
+    else if (/^[1-8]$/.test(e.key)) {
+      // A number picks a direction, clockwise from the top (1 is up); in a list or the targets, the nth.
+      const n = Number(e.key) - 1;
+      const hit = inside || !placed.every((p) => p.slot) ? n : placed.findIndex((p) => p.slot === RING_SLOTS[n]);
+      if (hit < 0 || hit >= count) return;
+      go(hit);
+    }
     else if (e.key === 'End') go(count - 1);
     else if (e.key.length === 1 && /\S/.test(e.key)) {
       const names = inside ? targets.map((t) => t.label) : list.map((a) => a.label);
@@ -534,13 +553,13 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
   };
 
   /** Pointer handlers for something held to confirm; a click on it only counts when presses replace the hold. */
-  const holdable = (a: RingAction, t: RingTarget | undefined, can: boolean) =>
+  const holdable = (a: RingAction, t: RingTarget | undefined, can: boolean, focusOn: () => HTMLElement | null | undefined) =>
     can
       ? {
           onPointerDown: (e: PointerEvent) => {
             if (e.button > 0 || still()) return;
             // Focus first, so moving focus here doesn't cancel the hold that starts now.
-            (e.currentTarget as HTMLElement).focus();
+            focusOn()?.focus();
             press(a, t);
           },
           onPointerUp: stopHold,
@@ -549,59 +568,45 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
         }
       : {};
 
-  // Where the ring sits. A tile (as tall as a button and more) gets a whole ring round its edge.
-  // A row gets an arc beside its end, opening away from it, so the row and its words stay clear.
+  // Where the ring sits: centred where it was opened (or on the thing, from the keyboard), kept on screen
+  // with room for the outer ring of targets, so every verb keeps its direction.
   const el = menu.current ?? document.documentElement;
   const gap = num(el, '--ring-gap', 20);
   const size = num(el, '--ring-button', 44);
+  const hub = num(el, '--ring-hub', 44);
+  const outer = num(el, '--ring-outer', 120);
+  const band = num(el, '--ring-band', 44);
+  const seam = num(el, '--ring-seam', 2);
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const tile = box.height >= size * 2.5 && box.width <= box.height * 2.5;
-  const margin = size;
-  let cx0: number;
-  let cy0: number;
-  let rx: number;
-  let ry: number;
-  /** The angles the actions sit at, the first at the top, clockwise. */
-  let angles: number[];
-  /** A row's arc: which side it opens to, the space between buttons and how far it bows. */
-  let arc: { right: boolean; pitch: number; bow: number } | undefined;
-  if (tile) {
-    rx = box.width / 2 + gap + size / 2;
-    ry = box.height / 2 + gap + size / 2;
-    cx0 = Math.min(Math.max(box.x + box.width / 2, rx + margin), vw - rx - margin);
-    cy0 = Math.min(Math.max(box.y + box.height / 2, ry + margin), vh - ry - margin);
-    // Eight fixed directions, 45° apart, so each verb is always in the same place; past eight, spread by count.
-    angles = placed.map((p, i) => -Math.PI / 2 + (p.slot ? RING_SLOTS.indexOf(p.slot) * (Math.PI / 4) : (i * 2 * Math.PI) / list.length));
-  } else {
-    // A shallow arc, like a C, of buttons a target apart, opening away from the row: it never
-    // covers the row, and its names never run into each other.
-    const pitch = size + gap / 2;
-    const half = ((list.length - 1) * pitch) / 2;
-    const bow = size / 2;
-    const wide = box.width > vw / 3 && point;
-    const edge = wide ? point.x : box.x + box.width;
-    const right = edge + gap + size + margin * 4 < vw;
-    rx = bow;
-    ry = half;
-    cx0 = right ? edge + gap + size / 2 : (wide ? edge : box.x) - gap - size / 2;
-    cy0 = Math.min(Math.max(box.y + box.height / 2, half + margin), vh - half - margin);
-    // Not angles here: a position along the arc from -1 (top) to 1 (bottom), turned into x and y below.
-    angles = list.map((_, i) => (list.length > 1 ? -1 + (2 * i) / (list.length - 1) : 0));
-    arc = { right, pitch, bow };
-  }
+  // Room for the outer ring and the names beside it, so a target is never cut off by the edge.
+  const reach = outer + seam * 2 + band + gap + size;
+  const clampTo = (v: number, most: number) => (most < reach * 2 ? most / 2 : Math.min(Math.max(v, reach), most - reach));
+  const cx0 = clampTo(point?.x ?? box.x + box.width / 2, vw);
+  const cy0 = clampTo(point?.y ?? box.y + box.height / 2, vh);
+  const slotted = placed.every((p) => p.slot);
+  /** How wide each wedge is, and the angle each action sits at: the first at the top, clockwise. */
+  const span = slotted ? Math.PI / 4 : (2 * Math.PI) / Math.max(1, list.length);
+  const angles = placed.map((p, i) => -Math.PI / 2 + (p.slot ? RING_SLOTS.indexOf(p.slot) : i) * span);
+  /** The slots no action takes: drawn empty, so the ring stays whole and every direction keeps its place. */
+  const empty = slotted ? RING_SLOTS.filter((s) => !placed.some((p) => p.slot === s)).map((s) => -Math.PI / 2 + RING_SLOTS.indexOf(s) * span) : [];
+  const mid = (hub + outer) / 2;
+  const ringOut = Boolean(opened && into?.outer);
+  /** The angle each target sits at on the outer ring: a fan centred on its action's direction. */
+  const fan = ringOut ? Math.min(Math.PI / 6, (Math.PI * 5) / 6 / Math.max(1, targets.length)) : 0;
+  const targetAngles = ringOut ? targets.map((_, j) => angles[into!.index]! + (j - (targets.length - 1) / 2) * fan) : [];
+  const pid = `quill-ring-${id.replace(/[^\w-]/g, '')}`;
+  const half = outer + seam * 2 + band;
 
   const listAt: CSSProperties = {
     left: px(Math.min(box.x + box.width + gap, vw - 320 - gap)),
     top: px(Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2)),
   };
-  // One readout, under the ring or the list, for what the focused choice would change.
-  // An unavailable action at the bottom writes its reason under its name: the readout goes below that.
-  const bottomWhy = tile && placed.some((p, i) => p.action.disabled && (p.action.reason || p.action.owner) && Math.sin(angles[i]!) > 0.9);
-  const below = asList ? Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2) + list.length * size + gap : cy0 + ry + size / 2 + gap * 2 + (bottomWhy ? size : 0);
+  // One readout, under the ring or the list: where you are, then what the focused choice would change.
+  const below = asList ? Math.min(Math.max(box.y, gap), vh - list.length * size - gap * 2) + list.length * size + gap : cy0 + (ringOut ? half : outer) + gap;
   const readAt: CSSProperties = asList
-    ? { left: listAt.left, top: px(Math.min(below, vh - size - gap)) }
-    : { left: px(cx0), top: px(Math.min(below, vh - size - gap)), transform: 'translateX(-50%)' };
+    ? { left: listAt.left, top: px(Math.min(below, vh - size * 2 - gap)) }
+    : { left: px(cx0), top: px(Math.min(below, vh - size * 2 - gap)), transform: 'translateX(-50%)' };
 
   // What the readout says, and so what is read out.
   const aimedAt = opened ? targets[aimed] : undefined;
@@ -619,8 +624,22 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
       }
     }
   }
-
   if (inMore && !hint) hint = 'Esc goes back';
+  /** Where you are, in words: the thing, the verb, the place. Read out already, so only drawn. */
+  const trail = now && now.id !== RING_MORE_ID ? [label, now.label, ...(aimedAt ? [aimedAt.label] : [])] : [label];
+  const why = now?.disabled ? [now.reason && (/[.!?]$/.test(now.reason) ? now.reason : `${now.reason}.`), now.owner ? `${now.owner} can change this.` : undefined].filter(Boolean).join(' ') : aimedAt?.current ? 'Where it is now' : aimedAt?.disabled ? aimedAt.reason : undefined;
+
+  /** A wedge from radius r1 to r2, centred on angle a, w wide, a seam short at each side. */
+  const wedge = (a: number, w: number, r1: number, r2: number) => {
+    const o = half;
+    const cut1 = Math.min(w / 4, seam / r1);
+    const cut2 = Math.min(w / 4, seam / r2);
+    const at = (r: number, t: number) => `${(o + r * Math.cos(t)).toFixed(2)} ${(o + r * Math.sin(t)).toFixed(2)}`;
+    const big = w > Math.PI ? 1 : 0;
+    if (w >= 2 * Math.PI - 1e-6) return `M${at(r2, a)}A${r2} ${r2} 0 1 1 ${at(r2, a + Math.PI)}A${r2} ${r2} 0 1 1 ${at(r2, a)}ZM${at(r1, a)}A${r1} ${r1} 0 1 0 ${at(r1, a + Math.PI)}A${r1} ${r1} 0 1 0 ${at(r1, a)}Z`;
+    return `M${at(r1, a - w / 2 + cut1)}L${at(r2, a - w / 2 + cut2)}A${r2} ${r2} 0 ${big} 1 ${at(r2, a + w / 2 - cut2)}L${at(r1, a + w / 2 - cut1)}A${r1} ${r1} 0 ${big} 0 ${at(r1, a - w / 2 + cut1)}Z`;
+  };
+  const holdingAction = holding ? list.find((a) => holding === a.id || holding.startsWith(`${a.id}\u0000`)) : undefined;
 
   return createPortal(
     <>
@@ -645,16 +664,90 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
           aria-hidden="true"
           style={{ left: px(box.x), top: px(box.y), width: px(box.width), height: px(box.height) }}
         />
-        {asList || !tile ? null : (
-          <div className="quill-ring-orbit" aria-hidden="true" style={{ left: px(cx0 - rx), top: px(cy0 - ry), width: px(rx * 2), height: px(ry * 2) }} />
+        {asList ? null : (
+          <svg
+            className="quill-ring-disc"
+            aria-hidden="true"
+            width={half * 2}
+            height={half * 2}
+            viewBox={`0 0 ${half * 2} ${half * 2}`}
+            style={{ left: px(cx0 - half), top: px(cy0 - half) }}
+          >
+            <defs>
+              <pattern id={`${pid}-off`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect className="quill-ring-off-ground" width="6" height="6" />
+                <line className="quill-ring-off-line" x1="0" y1="0" x2="0" y2="6" />
+              </pattern>
+            </defs>
+            {empty.map((a) => (
+              <path key={`empty-${a}`} className="quill-ring-wedge" data-empty="" d={wedge(a, span, hub, outer)} />
+            ))}
+            {placed.map(({ action: a }, i) => {
+              const commits = !a.disabled && !a.targets?.length && needsHold(a);
+              const k = keyOf(a);
+              return (
+                <path
+                  key={a.id}
+                  className="quill-ring-wedge"
+                  d={wedge(angles[i]!, span, hub, outer)}
+                  style={a.disabled ? { fill: `url(#${pid}-off)` } : undefined}
+                  data-focus={(!into && i === focused) || into?.index === i ? '' : undefined}
+                  data-path={into?.index === i ? '' : undefined}
+                  data-danger={a.danger ? '' : undefined}
+                  data-off={a.disabled ? '' : undefined}
+                  data-armed={armed === k ? '' : undefined}
+                  onPointerEnter={() => {
+                    if (!into || into.index !== i) items.current[i]?.focus();
+                  }}
+                  {...holdable(a, undefined, commits, () => items.current[i])}
+                  onClick={() => {
+                    if (commits && !still()) return;
+                    items.current[i]?.focus();
+                    setFocused(i);
+                    chooseAction(i);
+                  }}
+                />
+              );
+            })}
+            {targetAngles.map((a, j) => {
+              const t = targets[j]!;
+              const blocked = t.disabled || t.current;
+              const k = keyOf(opened!, t);
+              return (
+                <path
+                  key={t.id}
+                  className="quill-ring-wedge"
+                  data-target=""
+                  d={wedge(a, fan, outer + seam * 2, half)}
+                  style={t.disabled ? { fill: `url(#${pid}-off)` } : undefined}
+                  data-focus={j === aimed ? '' : undefined}
+                  data-current={t.current ? '' : undefined}
+                  data-off={t.disabled ? '' : undefined}
+                  data-danger={opened!.danger ? '' : undefined}
+                  data-armed={armed === k ? '' : undefined}
+                  onPointerEnter={() => places.current[j]?.focus()}
+                  {...holdable(opened!, t, !blocked && needsHold(opened!), () => places.current[j])}
+                  onClick={() => {
+                    if (!blocked && needsHold(opened!) && !still()) return;
+                    setAimed(j);
+                    chooseTarget(t);
+                  }}
+                />
+              );
+            })}
+            <circle className="quill-ring-hub" cx={half} cy={half} r={hub - seam * 2} onClick={() => close()} />
+            {holdingAction ? <circle key={holding} className="quill-ring-hold" cx={half} cy={half} r={hub - seam * 4} pathLength={1} /> : null}
+          </svg>
+        )}
+        {asList ? null : (
+          <span className="quill-ring-cancel" aria-hidden="true" style={{ left: px(cx0), top: px(cy0) }}>
+            {holdingAction ? 'Hold' : 'Cancel'}
+          </span>
         )}
         <div className={asList ? 'quill-ring-list' : 'quill-ring-items'} style={asList ? listAt : undefined}>
           {placed.map(({ action: a, slot }, i) => {
             const angle = angles[i]!;
-            const x = arc ? cx0 + (arc.right ? 1 : -1) * arc.bow * (1 - angle * angle) : cx0 + rx * Math.cos(angle);
-            const y = arc ? cy0 + angle * ry : cy0 + ry * Math.sin(angle);
-            const side = arc ? (arc.right ? 'right' : 'left') : Math.abs(Math.cos(angle)) < 0.2 ? (Math.sin(angle) < 0 ? 'top' : 'bottom') : Math.cos(angle) > 0 ? 'right' : 'left';
-            const style = asList ? undefined : ({ left: px(x), top: px(y), '--ring-delay': `calc(var(--motion-instant) * ${i} / 4)` } as CSSProperties);
+            const style = asList ? undefined : ({ left: px(cx0 + mid * Math.cos(angle)), top: px(cy0 + mid * Math.sin(angle)) } as CSSProperties);
             const why = a.disabled && (a.reason || a.owner) ? `${id}-why-${a.id}` : undefined;
             const commits = !a.disabled && !a.targets?.length && needsHold(a);
             const k = keyOf(a);
@@ -666,7 +759,6 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                 role="menuitem"
                 tabIndex={!into && i === focused ? 0 : -1}
                 className={cx('quill-ring-item', a.danger ? 'quill-ring-danger' : undefined)}
-                data-side={asList ? undefined : side}
                 data-slot={slot}
                 data-path={into?.index === i ? '' : undefined}
                 data-holding={holding === k ? '' : undefined}
@@ -685,7 +777,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                   }
                   setFocused(i);
                 }}
-                {...holdable(a, undefined, commits)}
+                {...holdable(a, undefined, commits, () => items.current[i])}
                 onClick={() => {
                   if (commits && !still()) return;
                   setFocused(i);
@@ -693,7 +785,7 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                 }}
               >
                 <span className="quill-ring-button">
-                  <Icon name={a.icon} size={18} />
+                  <Icon name={a.disabled && !asList ? 'lock' : a.icon} size={18} />
                 </span>
                 <span className="quill-ring-name">
                   <span className="quill-ring-label">{a.label}</span>
@@ -713,13 +805,19 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
             className="quill-ring-targets"
             role="group"
             aria-label={opened.label}
+            data-shape={into.outer ? 'ring' : 'list'}
             data-flip={into.flip ? '' : undefined}
-            style={{ left: px(into.left), top: px(into.top) }}
+            style={into.outer ? undefined : { left: px(into.left), top: px(into.top) }}
           >
             {targets.map((t, j) => {
               const blocked = t.disabled || t.current;
               const why = t.current || (t.disabled && t.reason) ? `${id}-at-${t.id}` : undefined;
               const k = keyOf(opened, t);
+              const a = targetAngles[j];
+              const r = half + gap / 2;
+              const style: CSSProperties | undefined =
+                a === undefined ? undefined : { left: px(cx0 + r * Math.cos(a)), top: px(cy0 + r * Math.sin(a)) };
+              const side = a === undefined ? undefined : Math.abs(Math.cos(a)) < 0.3 ? (Math.sin(a) < 0 ? 'top' : 'bottom') : Math.cos(a) > 0 ? 'right' : 'left';
               return (
                 <button
                   key={t.id}
@@ -728,11 +826,13 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                   role="menuitem"
                   tabIndex={j === aimed ? 0 : -1}
                   className="quill-ring-target"
+                  data-side={side}
                   data-holding={holding === k ? '' : undefined}
                   data-armed={armed === k ? '' : undefined}
                   aria-disabled={blocked || undefined}
                   aria-current={t.current || undefined}
                   aria-describedby={why}
+                  style={style}
                   onFocus={() => {
                     if (aimed !== j) {
                       stopHold();
@@ -740,14 +840,17 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
                     }
                     setAimed(j);
                   }}
-                  {...holdable(opened, t, !blocked && needsHold(opened))}
+                  {...holdable(opened, t, !blocked && needsHold(opened), () => places.current[j])}
                   onClick={() => {
                     if (!blocked && needsHold(opened) && !still()) return;
                     setAimed(j);
                     chooseTarget(t);
                   }}
                 >
-                  <span className="quill-ring-label">{t.label}</span>
+                  <span className="quill-ring-label">
+                    {t.disabled && into.outer ? <Icon name="lock" size={14} /> : null}
+                    {t.label}
+                  </span>
                   {t.detail ? <span className="quill-ring-detail">{t.detail}</span> : null}
                   {why ? (
                     <span id={why} className="quill-ring-why">
@@ -760,9 +863,21 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
           </div>
         ) : null}
       </div>
-      <div className="quill-ring-readout" role="status" aria-live="polite" data-leaving={leaving ? '' : undefined} style={readAt}>
-        {consequence ? <span className="quill-ring-consequence">{consequence}</span> : null}
-        {hint ? <span className="quill-ring-hint">{hint}</span> : null}
+      <div className="quill-ring-readout" data-leaving={leaving ? '' : undefined} style={readAt}>
+        <span className="quill-ring-trail" aria-hidden="true">
+          {trail.map((part, n) => (
+            <span key={n}>{part}</span>
+          ))}
+        </span>
+        {why ? (
+          <span className="quill-ring-said" aria-hidden="true">
+            {why}
+          </span>
+        ) : null}
+        <span className="quill-ring-status" role="status" aria-live="polite">
+          {consequence ? <span className="quill-ring-consequence">{consequence}</span> : null}
+          {hint ? <span className="quill-ring-hint">{hint}</span> : null}
+        </span>
       </div>
     </>,
     document.body,
