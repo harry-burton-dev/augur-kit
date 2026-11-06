@@ -1,60 +1,68 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState,
+  type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode,
+} from 'react';
 import { cx, Icon } from '@augur/kit-common';
 import { reducedMotion, tokenValue } from './motion.js';
 
-/** An app the bar can open. */
-export interface BarApp {
-  id: string;
-  name: string;
-  /** One of AUGUR's icon names. */
-  icon: string;
-  /** What it's for, in a few words: the small print in a start menu. */
-  line?: string;
-  /** Set when it can't open here, and why: it stays in its menu, greyed, with this as its small print. */
-  off?: string;
-}
-
-/** A group of apps: a tile on the desktop's bar, and a folder in the Apps menu. */
-export interface BarGroup {
-  id: string;
-  name: string;
-  icon: string;
-  line?: string;
-  apps: BarApp[];
-}
-
-/** One of the open app's own pages: a tile in the side rail, under the fixed block. */
-export interface BarPage {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-/** Something that needs you, on this floor: the app it's in and the pages down to it. The first one leads. */
-export interface BarLight {
-  app: string;
-  path?: string[];
-}
+/*
+ * The app bar (Navigation brief; it replaces Title and Orbit), in parts, the way a shell header is
+ * built from its pieces:
+ *
+ *   <AppBar mode="desk">                      the bar: rests in one of four places, or docks as the rail
+ *     <BarTile icon="work" name="Work" menu={  a tile; with `menu`, it opens a start menu
+ *       <StartMenuItem … /> <StartMenuFolder …>…</StartMenuFolder> }/>
+ *     <BarDivider />                          the hairline before what's open
+ *   </AppBar>
+ *
+ *   <AppBar mode="app">                       docked as the side rail
+ *     <RailBlock> <RailPair>…</RailPair> <BarTile kind="app" …/> </RailBlock>   never changes
+ *     <RailPages> <BarTile kind="page" …/> </RailPages>                          the open app's pages
+ *   </AppBar>
+ *
+ * Attention is light, not words: `lit` on each step that leads to the thing, `lead` on the first.
+ * Icons are AUGUR icon names, drawn by Common's Icon, so the set can change in one place.
+ */
 
 /** Where the bar rests on the desktop: under the band, upper, lower or at the bottom. */
 export type BarStop = 0 | 1 | 2 | 3;
+const STOPS = ['under the band', 'upper', 'lower', 'bottom'] as const;
+const NARROW = 720;
+
+interface Menu {
+  owner: string;
+  title?: string;
+  content: ReactNode;
+  focus: boolean;
+}
+
+interface BarState {
+  mode: 'desk' | 'app';
+  narrow: boolean;
+  stop: BarStop;
+  /** How many desktop tiles fit across the bar, for a More tile. */
+  room: number;
+  stack: Menu[];
+  open(level: number, menu: Menu): void;
+  close(from?: number, focusOwner?: boolean): void;
+  say(text: string): void;
+  hover(level: number, then: () => void): void;
+}
+
+const Bar = createContext<BarState | null>(null);
+const Level = createContext(0);
+
+/** The bar a part is in: its mode, how many tiles fit (for a More tile) and whether it's narrow. */
+export function useAppBar() {
+  const bar = useContext(Bar);
+  return { mode: bar?.mode ?? 'desk', narrow: bar?.narrow ?? false, room: bar?.room ?? Infinity, stop: bar?.stop ?? 1 };
+}
 
 export interface AppBarProps {
-  /** The groups of apps, in order. With a single app and no more, the bar holds only that app. */
-  groups: BarGroup[];
-  /** Groups as tiles of their own, or one Apps tile holding them all as folders. */
-  holds?: 'groups' | 'folder';
-  /** The apps that are open, in the order they opened. */
-  running?: string[];
   /** On the desktop it's a bar of tiles; with an app open it docks as the side rail. */
   mode?: 'desk' | 'app';
-  /** The open app you're in, when `mode` is app. */
-  app?: string;
-  /** The open app's pages, and the one you're on. */
-  pages?: BarPage[];
-  page?: string;
-  /** What needs you on this floor. Light rises from each step that leads to it; only the first breathes. */
-  light?: BarLight[];
+  /** What the bar is called to a screen reader; with an app open, say which. */
+  label?: string;
   /** Where the bar rests on the desktop. Uncontrolled from `defaultStop` when left out. */
   stop?: BarStop;
   defaultStop?: BarStop;
@@ -62,61 +70,29 @@ export interface AppBarProps {
   /** One line by the bar, the first time: what the tiles are. */
   hint?: string;
   onHintDone?(): void;
-  onOpen?(app: string): void;
-  onHome?(): void;
-  onPage?(page: string): void;
-  onClose?(app: string): void;
-}
-
-const STOPS = ['under the band', 'upper', 'lower', 'bottom'] as const;
-const NARROW = 720;
-
-type Tile =
-  | { kind: 'menu'; id: string; name: string; icon: string; lit: boolean; lead: boolean; start?: boolean }
-  | { kind: 'open'; id: string; name: string; icon: string; lit: boolean; lead: boolean; current: boolean; running: boolean; side?: boolean }
-  | { kind: 'home'; id: string; name: string; icon: string }
-  | { kind: 'page'; id: string; name: string; icon: string; lit: boolean; lead: boolean; current: boolean };
-
-type Item =
-  | { kind: 'app'; app: BarApp; lit: boolean; lead: boolean; current: boolean; running: boolean }
-  | { kind: 'folder'; group: BarGroup; lit: boolean; lead: boolean }
-  | { kind: 'close'; app: BarApp }
-  | { kind: 'hr' };
-
-interface Menu {
-  title: string;
-  items: Item[];
-  /** The tile or row that opened it, by its data-key. */
-  owner: string;
-  focus: boolean;
+  children?: ReactNode;
 }
 
 /**
- * The app bar (Navigation brief; it replaces Title and Orbit). On the desktop it's one bar of large
- * tiles across the screen, each opening a start menu, and it rests in one of four places. When an app
- * opens, the same bar glides to the left edge and docks as the side rail: Home and Apps, then what's
- * open, never changing, and under them the open app's pages. Attention is light, not words.
- *
- * It sits in a positioned host (the shell), which gives it the screen's size and moves its stage
- * aside by `--bar-rail` while an app is open.
+ * The bar itself. It sits in a positioned host (the shell): on the desktop it rests across it at one of
+ * four places, moved by its grip; with an app open it glides to the left edge as the side rail, under
+ * the band, `--bar-rail` wide. Changing `mode` fades the tiles out, moves the bar, and fades the new
+ * ones in. It holds the start menus its tiles open.
  */
-export function AppBar({
-  groups, holds = 'groups', running = [], mode = 'desk', app, pages = [], page, light = [],
-  stop: stopProp, defaultStop = 1, onStop, hint, onHintDone, onOpen, onHome, onPage, onClose,
-}: AppBarProps) {
+export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, onStop, hint, onHintDone, children }: AppBarProps) {
   const bar = useRef<HTMLElement>(null);
-  const menusRef = useRef<HTMLDivElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
   const [ownStop, setOwnStop] = useState<BarStop>(defaultStop);
   const stop = stopProp ?? ownStop;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [shown, setShown] = useState(mode);
-  const [swapping, setSwapping] = useState(false);
+  const frozen = useRef<ReactNode>(children);
   const [stack, setStack] = useState<Menu[]>([]);
   const [drag, setDrag] = useState<{ dy: number; y: number } | null>(null);
   const [said, setSaid] = useState('');
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const sayTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // The host's size: where the stops are, and how many tiles fit.
   useLayoutEffect(() => {
     const host = bar.current?.offsetParent as HTMLElement | null;
     if (!host) return;
@@ -128,23 +104,18 @@ export function AppBar({
     return () => ro.disconnect();
   }, []);
 
-  // Desktop and app: the tiles fade, the bar moves, and the new tiles come in.
+  // Desktop and app: the old tiles fade, the bar moves, the new ones come in.
+  const swapping = mode !== shown;
+  if (!swapping) frozen.current = children;
   useEffect(() => {
-    if (mode === shown) return;
+    if (!swapping) return;
     setStack([]);
-    if (reducedMotion()) {
-      setShown(mode);
-      return;
-    }
-    setSwapping(true);
-    const t = setTimeout(() => {
-      setShown(mode);
-      setSwapping(false);
-    }, tokenValue('motion-quick', 160));
+    const t = setTimeout(() => setShown(mode), reducedMotion() ? 0 : tokenValue('motion-quick', 160));
     return () => clearTimeout(t);
-  }, [mode, shown]);
+  }, [swapping, mode]);
 
   const narrow = size.w > 0 && size.w < NARROW;
+  const inApp = shown === 'app';
   const barH = tokenValue('bar-height', 88);
   const stopY = (i: number) => [tokenValue('band-top', 64), Math.round(size.h * 0.25 - barH / 2), Math.round(size.h * 0.75 - barH / 2), size.h - barH][i]!;
   const setStop = (i: number) => {
@@ -153,70 +124,47 @@ export function AppBar({
     setOwnStop(s);
     onStop?.(s);
   };
-
-  // Light: what leads to something that needs you.
-  const lit = (a: string, path: string[] = []) => light.some((l) => l.app === a && path.every((p, i) => l.path?.[i] === p));
-  const leads = (a: string, path: string[] = []) => !!light[0] && light[0].app === a && path.every((p, i) => light[0]!.path?.[i] === p);
-  const litGroup = (g: BarGroup) => g.apps.some((a) => !a.off && lit(a.id));
-  const leadGroup = (g: BarGroup) => g.apps.some((a) => leads(a.id));
-  const apps = groups.flatMap((g) => g.apps);
-  const appOf = (id?: string) => apps.find((a) => a.id === id);
-  const solo = apps.length === 1;
-  const inApp = shown === 'app';
-
-  const openTile = (id: string, side?: boolean): Tile | null => {
-    const a = appOf(id);
-    return a ? { kind: 'open', id, name: a.name, icon: a.icon, lit: lit(id), lead: leads(id), current: inApp && app === id, running: running.includes(id), side } : null;
-  };
-  const opens = running.map((id) => openTile(id)).filter((t): t is Tile => !!t);
-
-  const tiles = (): (Tile | 'hr')[] => {
-    if (solo) return [openTile(apps[0]!.id)!];
-    const tileW = tokenValue(narrow ? 'bar-tile-narrow' : 'bar-tile', 112);
-    const room = Math.floor((size.w - tokenValue('bar-grip', 36)) / tileW) - opens.length;
-    let heads: Tile[];
-    if (holds === 'folder') heads = [{ kind: 'menu', id: 'start', name: 'Apps', icon: 'apps', start: true, lit: groups.some(litGroup), lead: groups.some(leadGroup) }];
-    else {
-      const all: Tile[] = groups.map((g) => ({ kind: 'menu', id: g.id, name: g.name, icon: g.icon, lit: litGroup(g), lead: leadGroup(g) }));
-      const cut = Math.max(1, room - 1);
-      heads = size.w === 0 || all.length <= room ? all : [...all.slice(0, cut), { kind: 'menu', id: 'more', name: 'More', icon: 'more', lit: all.slice(cut).some((t) => 'lit' in t && t.lit), lead: false }];
-    }
-    return [...heads, ...(opens.length ? (['hr'] as const) : []), ...opens];
-  };
-  const deskTiles = inApp ? [] : tiles();
-  const shownGroups = deskTiles.flatMap((t) => (t !== 'hr' && t.kind === 'menu' ? [t.id] : []));
-
-  const appItem = (a: BarApp): Item => ({ kind: 'app', app: a, lit: !a.off && lit(a.id), lead: !a.off && leads(a.id), current: inApp && app === a.id, running: running.includes(a.id) });
-  const folder = (g: BarGroup): Item => ({ kind: 'folder', group: g, lit: litGroup(g), lead: leadGroup(g) });
-  const menuFor = (id: string): Omit<Menu, 'owner' | 'focus'> => {
-    if (id === 'start') {
-      const current = appOf(app);
-      const close: Item[] = inApp && current ? [{ kind: 'hr' }, { kind: 'close', app: current }] : [];
-      return { title: 'Apps', items: [...groups.map(folder), ...close] };
-    }
-    if (id === 'more') return { title: 'More', items: groups.filter((g) => !shownGroups.includes(g.id)).map(folder) };
-    const g = groups.find((x) => x.id === id);
-    return { title: g?.name ?? '', items: (g?.apps ?? []).map(appItem) };
-  };
+  const room = size.w ? Math.floor((size.w - tokenValue('bar-grip', 36)) / tokenValue(narrow ? 'bar-tile-narrow' : 'bar-tile', 112)) : Infinity;
 
   const close = useCallback((from = 0, focusOwner = false) => {
     setStack((s) => {
-      if (focusOwner && s[from]) {
-        const owner = s[from]!.owner;
-        requestAnimationFrame(() => (bar.current?.parentElement?.querySelector(`[data-key="${owner}"]`) as HTMLElement | null)?.focus());
-      }
+      const owner = s[from]?.owner;
+      if (focusOwner && owner) requestAnimationFrame(() => (document.querySelector(`[data-bar-key="${owner}"]`) as HTMLElement | null)?.focus());
       return s.slice(0, from);
     });
   }, []);
-  const openMenu = (owner: string, spec: Omit<Menu, 'owner' | 'focus'>, level: number, focus: boolean) =>
-    setStack((s) => [...s.slice(0, level), { ...spec, owner, focus }]);
+  const state = useMemo<BarState>(
+    () => ({
+      mode: shown,
+      narrow,
+      stop,
+      room,
+      stack,
+      open: (level, menu) => {
+        if (hint) onHintDone?.();
+        setStack((s) => [...s.slice(0, level), menu]);
+      },
+      close,
+      say: (text) => {
+        setSaid(text);
+        clearTimeout(sayTimer.current);
+        sayTimer.current = setTimeout(() => setSaid(''), tokenValue('motion-title', 2400) * 2.5);
+      },
+      // Pointing at a folder rolls it out, as the old Start menu did. It waits longer once one is out, so a slow hand can reach it.
+      hover: (level, then) => {
+        clearTimeout(hoverTimer.current);
+        hoverTimer.current = setTimeout(then, stack.length > level + 1 ? tokenValue('motion-calm', 600) * 0.75 : tokenValue('motion-quick', 160));
+      },
+    }),
+    [shown, narrow, stop, room, stack, close, hint, onHintDone],
+  );
+  useEffect(() => () => (clearTimeout(hoverTimer.current), clearTimeout(sayTimer.current)), []);
 
   // Menus close on a press anywhere else.
   useEffect(() => {
     if (!stack.length) return;
     const down = (e: PointerEvent) => {
-      const t = e.target as Element | null;
-      if (!t?.closest?.('.aerie-bar-menu, .aerie-bar-tile')) close(0);
+      if (!(e.target as Element | null)?.closest?.('.aerie-bar-menu, .aerie-bar-tile')) close(0);
     };
     document.addEventListener('pointerdown', down);
     return () => document.removeEventListener('pointerdown', down);
@@ -225,15 +173,14 @@ export function AppBar({
   // Each menu goes by what opened it: up or down from a desktop tile, out to the side from the rail or a folder.
   useLayoutEffect(() => {
     const host = bar.current?.offsetParent as HTMLElement | null;
-    const box = menusRef.current;
-    if (!host || !box) return;
+    if (!host || !layer.current) return;
     const s = host.getBoundingClientRect();
     const top = tokenValue('band-top', 64);
     const gap = tokenValue('space-2', 8);
-    [...box.children].forEach((node, level) => {
+    [...layer.current.children].forEach((node, level) => {
       const el = node as HTMLElement;
       const m = stack[level];
-      const owner = m && (host.querySelector(`[data-key="${m.owner}"]`) as HTMLElement | null);
+      const owner = m && (host.querySelector(`[data-bar-key="${m.owner}"]`) as HTMLElement | null);
       if (!m || !owner) return;
       const r = owner.getBoundingClientRect();
       const w = el.offsetWidth;
@@ -255,7 +202,7 @@ export function AppBar({
         const below = r.top - s.top < s.height / 2;
         y = below ? r.bottom - s.top : r.top - s.top - h;
         el.style.setProperty('--from', below ? 'top left' : 'bottom left');
-        el.style.setProperty('--rise', below ? `-${gap * 0.75}px` : `${gap * 0.75}px`);
+        el.style.setProperty('--rise', `${below ? -gap * 0.75 : gap * 0.75}px`);
       }
       el.style.left = `${Math.max(gap, Math.min(x, s.width - w - gap))}px`;
       el.style.top = `${Math.max(top, Math.min(y, s.height - h - gap))}px`;
@@ -263,107 +210,28 @@ export function AppBar({
     });
   }, [stack, inApp]);
 
-  const say = (text: string) => {
-    setSaid(text);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setSaid(''), tokenValue('motion-title', 2400) * 2.5);
-  };
-
-  const act = (level: number, item: Item, key: string, viaKey: boolean) => {
-    if (item.kind === 'hr') return;
-    if (item.kind === 'folder') {
-      openMenu(key, { title: item.group.name, items: item.group.apps.map(appItem) }, level + 1, viaKey);
-      return;
-    }
-    if (item.kind === 'app' && item.app.off) {
-      say(`${item.app.name}. ${item.app.off}`);
-      return;
-    }
-    setStack([]);
-    if (item.kind === 'app') onOpen?.(item.app.id);
-    else onClose?.(item.app.id);
-  };
-
-  const press = (t: Tile) => {
-    if (hint) onHintDone?.();
-    if (t.kind === 'menu') {
-      if (stack[0]?.owner === `tile-${t.id}`) close(0);
-      else openMenu(`tile-${t.id}`, menuFor(t.id), 0, false);
-    } else if (t.kind === 'home') onHome?.();
-    else if (t.kind === 'open') onOpen?.(t.id);
-    else onPage?.(t.id);
-  };
-
-  const tileKey = (e: KeyboardEvent<HTMLButtonElement>, t: Tile) => {
+  // Along the bar, the arrow keys move between tiles.
+  const along = (e: KeyboardEvent<HTMLElement>) => {
+    const keys = inApp ? ['ArrowUp', 'ArrowDown'] : ['ArrowLeft', 'ArrowRight'];
+    const t = (e.target as Element).closest('.aerie-bar-tile');
+    if (!t || !keys.includes(e.key)) return;
     const all = [...(bar.current?.querySelectorAll<HTMLElement>('.aerie-bar-tile') ?? [])];
-    const at = all.indexOf(e.currentTarget);
-    const along = inApp ? ['ArrowUp', 'ArrowDown'] : ['ArrowLeft', 'ArrowRight'];
-    const opens = inApp ? 'ArrowRight' : stop < 2 ? 'ArrowDown' : 'ArrowUp';
-    if (along.includes(e.key)) {
-      e.preventDefault();
-      all[(at + (e.key === along[1] ? 1 : -1) + all.length) % all.length]?.focus();
-    } else if (t.kind === 'menu' && (e.key === opens || e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      if (hint) onHintDone?.();
-      openMenu(`tile-${t.id}`, menuFor(t.id), 0, true);
-    }
+    const at = all.indexOf(t as HTMLElement);
+    e.preventDefault();
+    all[(at + (e.key === keys[1] ? 1 : -1) + all.length) % all.length]?.focus();
   };
-
-  const rowKey = (e: KeyboardEvent<HTMLButtonElement>, level: number, item: Item, key: string) => {
-    const rows = [...(e.currentTarget.closest('.aerie-bar-menu')?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
-    const at = rows.indexOf(e.currentTarget);
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      rows[(at + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length]?.focus();
-    } else if (e.key === 'ArrowRight' && item.kind === 'folder') {
-      e.preventDefault();
-      act(level, item, key, true);
-    } else if ((e.key === 'ArrowLeft' || e.key === 'Escape') && level > 0) {
-      e.preventDefault();
-      close(level, true);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      close(0, true);
-    } else if (e.key === 'Tab') close(0, true);
-    else if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      act(level, item, key, true);
-    }
-  };
-
-  // Pointing at a folder rolls it out, as the old Start menu did. It waits longer once one is out, so a slow hand can reach it.
-  const hover = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const point = (e: ReactPointerEvent, level: number, item: Item, key: string) => {
-    if (e.pointerType === 'touch') return;
-    clearTimeout(hover.current);
-    const wait = stack.length > level + 1 ? tokenValue('motion-calm', 600) * 0.75 : tokenValue('motion-quick', 160);
-    hover.current = setTimeout(() => {
-      if (item.kind === 'folder') {
-        if (stack[level + 1]?.owner !== key) act(level, item, key, false);
-      } else close(level + 1);
-    }, wait);
-  };
-  useEffect(() => () => clearTimeout(hover.current), []);
 
   // Moving the bar: drag on its rails, or the arrow keys on its grip.
   const gripKey = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      setStop(stop + (e.key === 'ArrowUp' ? -1 : 1));
-    } else if (e.key === 'Home') {
-      e.preventDefault();
-      setStop(0);
-    } else if (e.key === 'End') {
-      e.preventDefault();
-      setStop(3);
-    }
+    const to = e.key === 'ArrowUp' ? stop - 1 : e.key === 'ArrowDown' ? stop + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? 3 : null;
+    if (to === null) return;
+    e.preventDefault();
+    setStop(to);
   };
   const gripDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
     setStack([]);
-    const r = bar.current!.getBoundingClientRect();
     e.currentTarget.setPointerCapture?.(e.pointerId);
-    setDrag({ dy: e.clientY - r.top, y: stopY(stop) });
+    setDrag({ dy: e.clientY - bar.current!.getBoundingClientRect().top, y: stopY(stop) });
   };
   const gripMove = (e: ReactPointerEvent) => {
     if (!drag) return;
@@ -378,38 +246,11 @@ export function AppBar({
     setStop(best);
   };
 
-  const tile = (t: Tile, n: number) => {
-    const isLit = 'lit' in t && t.lit;
-    const isLead = 'lead' in t && t.lead;
-    const current = 'current' in t && t.current;
-    const words = [t.name, t.kind === 'open' && t.running ? 'open' : '', current ? 'you’re here' : '', isLit ? 'needs your attention' : ''].filter(Boolean).join(', ');
-    const key = `tile-${t.id}`;
-    return (
-      <button
-        key={key}
-        type="button"
-        data-key={key}
-        className={cx('aerie-bar-tile', t.kind === 'menu' && t.start && 'aerie-bar-start', t.kind === 'open' && t.running && !inApp && 'aerie-bar-running', t.kind === 'open' && inApp && 'aerie-bar-side', t.kind === 'home' && 'aerie-bar-half', isLit && 'aerie-bar-lit', isLead && 'aerie-bar-lead')}
-        style={{ '--n': n } as CSSProperties}
-        aria-haspopup={t.kind === 'menu' ? 'menu' : undefined}
-        aria-expanded={t.kind === 'menu' ? stack[0]?.owner === key : undefined}
-        aria-current={current ? 'page' : undefined}
-        aria-label={words}
-        onClick={() => press(t)}
-        onKeyDown={(e) => tileKey(e, t)}
-      >
-        <Icon name={t.icon} />
-        <span>{t.name}</span>
-      </button>
-    );
-  };
-
-  const current = appOf(app);
-  let n = 0;
   const y = drag ? drag.y : stopY(stop);
+  const gap = tokenValue('space-2', 8);
 
   return (
-    <>
+    <Bar.Provider value={state}>
       {drag ? (
         <div className="aerie-bar-rails" aria-hidden="true">
           {STOPS.map((name, i) => (
@@ -427,61 +268,22 @@ export function AppBar({
         data-swapping={swapping ? '' : undefined}
         data-dragging={drag ? '' : undefined}
         style={{ '--bar-y': `${y}px` } as CSSProperties}
-        aria-label={inApp && current ? `App bar: ${current.name}` : 'App bar'}
+        aria-label={label ?? 'App bar'}
       >
         {inApp ? null : (
-          <button
-            type="button"
-            className="aerie-bar-grip"
-            aria-label="Move the app bar. Up and down arrows move it between its places."
-            onKeyDown={gripKey}
-            onPointerDown={gripDown}
-            onPointerMove={gripMove}
-            onPointerUp={gripUp}
-            onPointerCancel={gripUp}
-          >
+          <button type="button" className="aerie-bar-grip" aria-label="Move the app bar. Up and down arrows move it between its places." onKeyDown={gripKey} onPointerDown={gripDown} onPointerMove={gripMove} onPointerUp={gripUp} onPointerCancel={gripUp}>
             <Icon name="grip" size={16} />
           </button>
         )}
         <span className="aerie-bar-sr" aria-live="polite">
           {inApp ? '' : `App bar: ${STOPS[stop]}`}
         </span>
-        {inApp ? (
-          <div className="aerie-bar-tiles">
-            <div className="aerie-bar-fixed">
-              <div className="aerie-bar-pair" data-solo={solo ? '' : undefined}>
-                {tile({ kind: 'home', id: 'home', name: 'Home', icon: 'home' }, n++)}
-                {solo ? null : (
-                  <button
-                    type="button"
-                    data-key="tile-start"
-                    className={cx('aerie-bar-tile', 'aerie-bar-half')}
-                    style={{ '--n': n++ } as CSSProperties}
-                    aria-haspopup="menu"
-                    aria-expanded={stack[0]?.owner === 'tile-start'}
-                    onClick={() => press({ kind: 'menu', id: 'start', name: 'Apps', icon: 'apps', lit: false, lead: false })}
-                    onKeyDown={(e) => tileKey(e, { kind: 'menu', id: 'start', name: 'Apps', icon: 'apps', lit: false, lead: false })}
-                  >
-                    <Icon name="apps" />
-                    <span>Apps</span>
-                  </button>
-                )}
-              </div>
-              {running.map((id) => {
-                const t = openTile(id, true);
-                return t ? tile(t, n++) : null;
-              })}
-            </div>
-            <div className="aerie-bar-pages">
-              {pages.map((p) => tile({ kind: 'page', id: p.id, name: p.name, icon: p.icon, current: p.id === page, lit: !!app && lit(app, [p.id]), lead: !!app && leads(app, [p.id]) }, n++))}
-            </div>
-          </div>
-        ) : (
-          <div className="aerie-bar-tiles">{deskTiles.map((t, i) => (t === 'hr' ? <hr key={`hr-${i}`} /> : tile(t, n++)))}</div>
-        )}
+        <div className="aerie-bar-tiles" onKeyDown={along}>
+          {swapping ? frozen.current : children}
+        </div>
       </nav>
       {hint && !inApp ? (
-        <div className="aerie-bar-hint" style={{ top: stop >= 2 ? undefined : y + barH + tokenValue('space-2', 8), bottom: stop >= 2 ? size.h - y + tokenValue('space-2', 8) : undefined }}>
+        <div className="aerie-bar-hint" style={stop >= 2 ? { bottom: size.h - y + gap } : { top: y + barH + gap }}>
           <p>{hint}</p>
           <button
             type="button"
@@ -494,49 +296,244 @@ export function AppBar({
           </button>
         </div>
       ) : null}
-      <div ref={menusRef} className="aerie-bar-menus">
+      <div ref={layer} className="aerie-bar-menus">
         {stack.map((m, level) => (
-          <div key={`${level}-${m.owner}`} className={cx('aerie-bar-menu', level > 0 && 'aerie-bar-sub')} role="menu" aria-label={m.title}>
-            {level ? null : <h4 aria-hidden="true">{m.title}</h4>}
-            {m.items.map((it, i) => {
-              if (it.kind === 'hr') return <hr key={`hr-${i}`} />;
-              const key = it.kind === 'folder' ? `folder-${level}-${it.group.id}` : it.kind === 'close' ? 'close' : `app-${level}-${it.app.id}`;
-              const label = it.kind === 'folder' ? it.group.name : it.kind === 'close' ? `Close ${it.app.name}` : it.app.name;
-              const icon = it.kind === 'folder' ? 'folder' : it.kind === 'close' ? 'close' : it.app.icon;
-              const sub = it.kind === 'folder' ? it.group.line : it.kind === 'app' ? (it.app.off ?? (it.current ? 'You’re here' : it.running ? 'Open' : it.app.line)) : undefined;
-              const isLit = (it.kind === 'folder' || it.kind === 'app') && it.lit;
-              const isLead = (it.kind === 'folder' || it.kind === 'app') && it.lead;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="menuitem"
-                  data-key={key}
-                  className={cx(isLit && 'aerie-bar-lit', isLead && 'aerie-bar-lead')}
-                  aria-haspopup={it.kind === 'folder' ? 'menu' : undefined}
-                  aria-expanded={it.kind === 'folder' ? stack[level + 1]?.owner === key : undefined}
-                  aria-disabled={it.kind === 'app' && it.app.off ? true : undefined}
-                  aria-current={it.kind === 'app' && it.current ? 'page' : undefined}
-                  onClick={() => act(level, it, key, false)}
-                  onKeyDown={(e) => rowKey(e, level, it, key)}
-                  onPointerOver={(e) => point(e, level, it, key)}
-                >
-                  <Icon name={icon} />
-                  <span className="aerie-bar-row">
-                    {label}
-                    {sub ? <small>{sub}</small> : null}
-                    {isLit ? <span className="aerie-bar-sr">, needs your attention</span> : null}
-                  </span>
-                  {it.kind === 'folder' ? <Icon name="chevron-right" size={16} className="aerie-bar-chev" /> : <span />}
-                </button>
-              );
-            })}
-          </div>
+          <Level.Provider key={`${level}-${m.owner}`} value={level}>
+            <StartMenu title={level ? undefined : m.title} sub={level > 0}>
+              {m.content}
+            </StartMenu>
+          </Level.Provider>
         ))}
       </div>
       <span className="aerie-bar-sr" aria-live="polite">
         {said}
       </span>
-    </>
+    </Bar.Provider>
+  );
+}
+
+export interface BarTileProps {
+  /** An AUGUR icon name. */
+  icon: string;
+  name: string;
+  /**
+   * What the tile is. `menu` opens a start menu (give `menu`); `app` is an open app in the rail's fixed
+   * block; `page` is one of the open app's pages; `half` sits in a RailPair (Home, Apps).
+   */
+  kind?: 'menu' | 'app' | 'page' | 'half' | 'plain';
+  /** The start menu it opens: StartMenuItems and StartMenuFolders. */
+  menu?: ReactNode;
+  /** The menu's heading. Defaults to the tile's name. */
+  menuTitle?: string;
+  /** You're here: a hard line on the bar's inner edge. */
+  current?: boolean;
+  /** An open app, on the desktop bar: it carries the hard line too. */
+  running?: boolean;
+  /** Something that needs you is through here. */
+  lit?: boolean;
+  /** …and it's the first thing that does: its light breathes. */
+  lead?: boolean;
+  /** The group of apps tile that holds all of them (one Apps folder): its icon is brighter. */
+  start?: boolean;
+  onPress?(): void;
+}
+
+/** A tile: one large icon with its name under it, filling the bar's height. With `menu`, it opens a start menu. */
+export function BarTile({ icon, name, kind, menu, menuTitle, current, running, lit, lead, start, onPress }: BarTileProps) {
+  const bar = useContext(Bar);
+  const key = useId();
+  const opens = menu !== undefined;
+  const open = !!bar && bar.stack[0]?.owner === key;
+  const show = (focus: boolean) => bar?.open(0, { owner: key, title: menuTitle ?? name, content: menu, focus });
+  const words = [name, running ? 'open' : '', current ? 'you’re here' : '', lit ? 'needs your attention' : ''].filter(Boolean).join(', ');
+  const openKey = bar?.mode === 'app' ? 'ArrowRight' : (bar?.stop ?? 1) < 2 ? 'ArrowDown' : 'ArrowUp';
+  return (
+    <button
+      type="button"
+      data-bar-key={key}
+      className={cx('aerie-bar-tile', start && 'aerie-bar-start', running && 'aerie-bar-running', kind === 'app' && 'aerie-bar-side', kind === 'half' && 'aerie-bar-half', lit && 'aerie-bar-lit', lit && lead && 'aerie-bar-lead')}
+      aria-haspopup={opens ? 'menu' : undefined}
+      aria-expanded={opens ? open : undefined}
+      aria-current={current ? 'page' : undefined}
+      aria-label={words}
+      onClick={() => {
+        if (opens) {
+          if (open) bar?.close(0);
+          else show(false);
+        }
+        onPress?.();
+      }}
+      onKeyDown={(e) => {
+        if (opens && (e.key === openKey || e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          show(true);
+        }
+      }}
+    >
+      <Icon name={icon} />
+      <span>{name}</span>
+    </button>
+  );
+}
+
+/** The hairline between the desktop bar's groups and the apps that are open. */
+export function BarDivider() {
+  return <hr />;
+}
+
+/** The side rail's fixed block: Home and Apps, then what's open. It's the same in every app. */
+export function RailBlock({ children }: { children?: ReactNode }) {
+  return <div className="aerie-bar-fixed">{children}</div>;
+}
+
+/** Two half tiles side by side at the top of the rail (Home and Apps), or one alone. */
+export function RailPair({ children }: { children?: ReactNode }) {
+  const solo = Array.isArray(children) ? children.filter(Boolean).length < 2 : true;
+  return (
+    <div className="aerie-bar-pair" data-solo={solo ? '' : undefined}>
+      {children}
+    </div>
+  );
+}
+
+/** The open app's pages, under the fixed block. They scroll if there are many. */
+export function RailPages({ children }: { children?: ReactNode }) {
+  return <div className="aerie-bar-pages">{children}</div>;
+}
+
+export interface StartMenuProps {
+  /** The heading over the rows. A folder's menu has none. */
+  title?: string;
+  /** A folder rolled out from another menu. */
+  sub?: boolean;
+  children?: ReactNode;
+}
+
+/**
+ * A start menu: solid, hairline-edged, words on every row. The bar opens and places these for its tiles;
+ * use it alone only to show one.
+ */
+export function StartMenu({ title, sub, children }: StartMenuProps) {
+  return (
+    <div className={cx('aerie-bar-menu', sub && 'aerie-bar-sub')} role="menu" aria-label={title}>
+      {title ? <h4 aria-hidden="true">{title}</h4> : null}
+      {children}
+    </div>
+  );
+}
+
+/** The hairline between rows in a start menu. */
+export function StartMenuDivider() {
+  return <hr />;
+}
+
+interface RowProps {
+  icon: string;
+  name: string;
+  /** What it's for, in a few words: the small print. */
+  line?: string;
+  lit?: boolean;
+  lead?: boolean;
+}
+
+export interface StartMenuItemProps extends RowProps {
+  /** Set when it can't open here, and why: it stays, greyed, with this as its small print. */
+  off?: string;
+  /** You're in it. */
+  current?: boolean;
+  onPress?(): void;
+}
+
+function useRow(kind: 'item' | 'folder') {
+  const bar = useContext(Bar);
+  const level = useContext(Level);
+  const key = useId();
+  const keys = (e: KeyboardEvent<HTMLButtonElement>, act: () => void) => {
+    const rows = [...(e.currentTarget.closest('.aerie-bar-menu')?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    const at = rows.indexOf(e.currentTarget);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      rows[(at + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length]?.focus();
+    } else if (e.key === 'ArrowRight' && kind === 'folder') {
+      e.preventDefault();
+      act();
+    } else if ((e.key === 'ArrowLeft' || e.key === 'Escape') && level > 0) {
+      e.preventDefault();
+      bar?.close(level, true);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      bar?.close(0, true);
+    } else if (e.key === 'Tab') bar?.close(0, true);
+    else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      act();
+    }
+  };
+  return { bar, level, key, keys };
+}
+
+/** A row in a start menu that opens something: an app, or an action such as Close. */
+export function StartMenuItem({ icon, name, line, lit, lead, off, current, onPress }: StartMenuItemProps) {
+  const { bar, level, key, keys } = useRow('item');
+  const act = () => {
+    if (off) return bar?.say(`${name}. ${off}`);
+    bar?.close(0);
+    onPress?.();
+  };
+  const on = lit && !off;
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      data-bar-key={key}
+      className={cx(on && 'aerie-bar-lit', on && lead && 'aerie-bar-lead')}
+      aria-disabled={off ? true : undefined}
+      aria-current={current ? 'page' : undefined}
+      onClick={act}
+      onKeyDown={(e) => keys(e, act)}
+      onPointerOver={(e) => e.pointerType !== 'touch' && bar?.hover(level, () => bar.close(level + 1))}
+    >
+      <Icon name={icon} />
+      <span className="aerie-bar-row">
+        {name}
+        {(off ?? line) ? <small>{off ?? line}</small> : null}
+        {on ? <span className="aerie-bar-sr">, needs your attention</span> : null}
+      </span>
+      <span />
+    </button>
+  );
+}
+
+export interface StartMenuFolderProps extends RowProps {
+  /** What rolls out to the side: more StartMenuItems and StartMenuFolders. */
+  children?: ReactNode;
+}
+
+/** A folder in a start menu: it rolls out to the side when you point at it, press it, or press the right arrow. */
+export function StartMenuFolder({ icon = 'folder', name, line, lit, lead, children }: Partial<Pick<RowProps, 'icon'>> & Omit<StartMenuFolderProps, 'icon'>) {
+  const { bar, level, key, keys } = useRow('folder');
+  const open = !!bar && bar.stack[level + 1]?.owner === key;
+  const roll = (focus: boolean) => bar?.open(level + 1, { owner: key, content: children, focus });
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      data-bar-key={key}
+      className={cx(lit && 'aerie-bar-lit', lit && lead && 'aerie-bar-lead')}
+      aria-haspopup="menu"
+      aria-expanded={open}
+      onClick={() => roll(false)}
+      onKeyDown={(e) => keys(e, () => roll(true))}
+      onPointerOver={(e) => e.pointerType !== 'touch' && bar?.hover(level, () => !open && roll(false))}
+    >
+      <Icon name={icon} />
+      <span className="aerie-bar-row">
+        {name}
+        {line ? <small>{line}</small> : null}
+        {lit ? <span className="aerie-bar-sr">, needs your attention</span> : null}
+      </span>
+      <Icon name="chevron-right" size={16} className="aerie-bar-chev" />
+    </button>
   );
 }

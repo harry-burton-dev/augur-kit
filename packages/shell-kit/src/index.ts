@@ -12,7 +12,7 @@ export { Shell, type ShellProps, type ShellElement } from './shell.js';
 export * from './shell-model.js';
 export { CentreMenu, CentreMenuModel, searchMenu, type CentreMenuProps, type CentreMenuElement, type MenuCategory, type MenuItem, type MenuOption, type MenuVariant, type MenuBackground } from './centre-menu.js';
 export { Water, resolveWave, wavePresets, DEFAULT_WAVE, type WaveMove, type WavePreset } from './water.js';
-export { AppBar, type AppBarProps, type BarApp, type BarGroup, type BarPage, type BarLight, type BarStop } from './app-bar.js';
+export { AppBar, BarTile, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop } from './app-bar.js';
 export { Horizon, type HorizonProps } from './horizon.js';
 export * from './floors.js';
 export { animate, finishMotion, liftGhost, moving, motionMode, reducedMotion, tokenValue, tokenEasing, type Ghost } from './motion.js';

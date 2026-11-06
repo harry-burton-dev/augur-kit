@@ -164,7 +164,7 @@
   background: radial-gradient(50% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent);
 }
 .aerie-bar-lit, .aerie-bar .aerie-bar-lit, .aerie-bar-menu .aerie-bar-lit { color: var(--grey-9); }
-.aerie-bar-lit > svg:first-child { color: var(--needs-light); }
+.aerie-bar-lit > svg:first-child, .aerie-bar-menu .aerie-bar-lit > svg:first-child { color: var(--needs-light); }
 .aerie-bar-lit.aerie-bar-lead::before { animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
 @media (forced-colors: active) { .aerie-bar-lit { outline: 2px solid Highlight; outline-offset: -2px; } }
 

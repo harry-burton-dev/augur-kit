@@ -11,6 +11,7 @@
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
 @source not './**/*.fixture.ts';
+@source not './**/*.fixture.tsx';
 
 @layer components {
   /* Toasts: at the bottom, above everything. */
