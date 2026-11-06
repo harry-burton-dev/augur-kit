@@ -165,31 +165,31 @@
     }
   },
   "radius": {
-    "$description": "Corners. The water and panes are soft; controls are pills.",
+    "$description": "Corners. Everything is square (PDR: square corners, 6 Nov 2026): keys, wells, sheets and panes alike. Only circles stay round.",
     "radius-key": {
-      "$value": "4px",
+      "$value": "0px",
       "$type": "dimension",
-      "$description": "Keycaps, source numbers, small number keys: the smallest rounded things."
+      "$description": "Small keys and marks (check boxes, switch knobs, tabs, tags, menu rows): square, as every corner is (PDR: square corners)."
     },
     "radius-control": {
-      "$value": "6px",
+      "$value": "0px",
       "$type": "dimension",
-      "$description": "Buttons: a key's corners (PDR: Keycap button). Soft enough to read as something to press, square enough to stay flat."
+      "$description": "Buttons, wells, switches, tab trays and cards: square, so keys and wells sit with the Sheet menus (PDR: square corners; was 6px under the Keycap pick)."
     },
     "radius-inset": {
-      "$value": "12px",
+      "$value": "0px",
       "$type": "dimension",
-      "$description": "Inset areas: previews, quotes."
+      "$description": "Inset areas (previews, quotes, notices, the Select list): square."
     },
     "radius-card": {
-      "$value": "22px",
+      "$value": "0px",
       "$type": "dimension",
-      "$description": "Panes, raised cards, overlays, sheets (top corners only)."
+      "$description": "Panes, raised cards, overlays and dialogs: square."
     },
     "radius-pill": {
-      "$value": "999px",
+      "$value": "0px",
       "$type": "dimension",
-      "$description": "Buttons, chips, pills, toasts."
+      "$description": "Kept as a name for parts that were pills (segmented switches, filters, bars, toasts); square now. Only true circles (radios, dots, avatars) stay round, with 50%."
     }
   },
   "shadow": {

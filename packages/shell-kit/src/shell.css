@@ -58,7 +58,7 @@
 .aerie-shell[data-arriving] .aerie-point { animation: aerie-arrive var(--motion-calm) var(--s-ease); }
 @keyframes aerie-arrive { 30% { transform: scale(2.2); } }
 .aerie-handle { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 96px; height: 28px; display: flex; justify-content: center; padding-top: var(--space-2); }
-.aerie-handle i { display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--hairline-strong); transition: width var(--motion-slow) var(--s-ease); }
+.aerie-handle i { display: block; width: 40px; height: 4px; border-radius: 0; background: var(--hairline-strong); transition: width var(--motion-slow) var(--s-ease); }
 .aerie-handle:hover i, .aerie-handle:focus-visible i { width: 56px; background: color-mix(in srgb, var(--ink) 50%, transparent); }
 /* On a floor the handle takes the floor's colour on every screen, so the level is always in view. */
 .aerie-shell[data-floor-kind] .aerie-handle i { background: color-mix(in srgb, var(--floor-mark) 70%, transparent); box-shadow: 0 0 var(--space-3) color-mix(in srgb, var(--floor-mark) 40%, transparent); }
