@@ -194,15 +194,15 @@ function Field({ look, state, label = 'Notes', guide }: { look: Look; state: Wri
         <div className="wd-input">{body}</div>
         {state === 'mentioning' ? (
           <ul className="wd-sheet wd-found" role="listbox" aria-label="People and teams">
-            <li className="wd-group">People</li>
-            <li className="wd-option" aria-selected="true">
+            <li className="wd-group" role="presentation">People</li>
+            <li role="option" className="wd-option" aria-selected="true">
               <Icon name="person" size={14} /> Nora Briggs <small>nora@example.org</small>
             </li>
-            <li className="wd-option">
+            <li role="option" className="wd-option">
               <Icon name="person" size={14} /> Ben Norris <small>ben@example.org</small>
             </li>
-            <li className="wd-group">Teams</li>
-            <li className="wd-option">
+            <li className="wd-group" role="presentation">Teams</li>
+            <li role="option" className="wd-option">
               <Icon name="people" size={14} /> Ops
             </li>
           </ul>
@@ -216,7 +216,7 @@ function Field({ look, state, label = 'Notes', guide }: { look: Look; state: Wri
               ['person', 'Mention someone', '@'],
               ['tag', 'Refer to a thing', '#'],
             ].map(([icon, name, key], i) => (
-              <li key={name} className="wd-option" aria-selected={i === 0}>
+              <li key={name} role="option" className="wd-option" aria-selected={i === 0}>
                 <Icon name={icon as IconName} size={14} /> {name}
                 <kbd className="wd-kbd">{key}</kbd>
               </li>
