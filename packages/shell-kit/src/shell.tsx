@@ -1,14 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
-import { floorIconOf, floorKindOf, floorLevel, floorMeaning, floorStack, floorTone } from './floors.js';
-import { Water } from './water.js';
+import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone } from './floors.js';
+import { Background } from './background.js';
+import { Flat } from './background-flat.js';
+import { ShellBar } from './shell-bar.js';
+import { wavePresets, type Water } from './water.js';
 import { agentUrgency, ago, streamWords, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
-import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu, unavailableNames } from './shell-menu.js';
+import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu } from './shell-menu.js';
 
 export interface ShellProps {
   /** What the Shell knows and does; the host keeps it and listens on it. */
   model: ShellModel;
-  /** The stage: the app that's open, or Title or Orbit. */
+  /** The stage: the app that's open, or the desktop's own content when none is. */
   children?: ReactNode;
 }
 
@@ -33,36 +36,16 @@ const isTyping = (e: Event) => {
 export function Shell({ model, children }: ShellProps) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
   const root = useRef<ShellElement>(null);
-  const ground = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLElement>(null);
   const place = useRef<HTMLElement>(null);
   const water = useRef<Water | null>(null);
 
   const here = model.currentFloor;
-  const background = model.background;
-
-  // The water: on unless the screen asks for the still ground, in its floor's colours and height.
-  useLayoutEffect(() => {
-    const host = ground.current;
-    if (!host || !background || background === 'none') {
-      water.current?.destroy();
-      water.current = null;
-      host?.replaceChildren();
-      return;
-    }
-    water.current ??= new Water(host);
-    let colors: { navy: string; green: string } | undefined;
-    if (here && here.kind !== 'personal' && root.current) {
-      const cs = getComputedStyle(root.current);
-      const tone = floorTone(here);
-      const navy = cs.getPropertyValue(`--floor-${tone}-low`).trim();
-      const green = cs.getPropertyValue(`--floor-${tone}-high`).trim();
-      colors = navy && green ? { navy, green } : undefined;
-    }
-    water.current.set({ preset: background, colors, level: here ? floorLevel[here.kind] : 0 });
-  }, [background, here]);
-
-  useEffect(() => () => water.current?.destroy(), []);
+  const tone = here ? floorTone(here) : 'you';
+  // A water preset's name, as hosts set it before the set existed, means the water in that preset.
+  const preset = model.background in wavePresets;
+  const background = preset ? 'water' : model.background || 'none';
+  const options = { ...(preset ? { preset: model.background } : {}), ...model.backgroundOptions, ...(background === 'water' ? { onWater: (w: Water | null) => (water.current = w) } : {}) };
 
   // Every draw hands the model what it moves and focuses.
   useLayoutEffect(() => {
@@ -143,13 +126,17 @@ export function Shell({ model, children }: ShellProps) {
       data-floor-kind={here?.kind}
       data-floor-tone={here ? floorTone(here) : undefined}
       data-background={background}
+      data-bar={model.openNow ? 'app' : 'desk'}
       data-view={model.view}
       data-gauge={model.currentFloor ? '' : undefined}
     >
+      {/* Apps sit on flat ground; the desktop's background steps away while one is open (PDR-014). */}
       <div className="aerie-ground">
-        <div ref={ground} className="aerie-water" />
+        <Flat floor={tone} />
+        <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!!model.openNow} />
       </div>
       <Band model={model} tab={tab} mood={mood} place={place} />
+      <ShellBar model={model} inert={model.isOpen} />
       <Gauge model={model} tab={tab} />
       {model.card ? (
         <div className={`aerie-card aerie-${model.card.kind}`} aria-hidden="true">
@@ -243,30 +230,6 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
             {model.workspace ? <span>{model.workspace}</span> : null}
           </div>
         )}
-        {model.navs.length ? (
-          <nav className="aerie-navs" aria-label="Go to">
-            {model.navs.map((n) => (
-              <button
-                key={n.id}
-                className="aerie-nav augur-control"
-                tabIndex={tab}
-                aria-label={n.unavailable ? unavailableNames(n.label, n.unavailable).label : n.current ? `${n.label}, you’re here` : n.label}
-                aria-current={n.current ? 'page' : undefined}
-                aria-disabled={n.unavailable ? 'true' : undefined}
-                onClick={() => !n.unavailable && !n.current && model.emit('ui-nav', { id: n.id })}
-              >
-                <Icon name={n.icon} size={16} />
-                <HoverName>{n.unavailable ? unavailableNames(n.label, n.unavailable).hover : n.label}</HoverName>
-              </button>
-            ))}
-          </nav>
-        ) : null}
-        {model.backTo ? (
-          <button className="aerie-back" tabIndex={tab} aria-label={`Back to ${model.backTo}`} onClick={() => model.emit('ui-back', {})}>
-            <Icon name="back" size={16} />
-            <span>Back</span>
-          </button>
-        ) : null}
       </div>
       <button className="aerie-handle augur-control" aria-label="Open the shell" tabIndex={tab} onClick={() => model.open()}>
         <i />

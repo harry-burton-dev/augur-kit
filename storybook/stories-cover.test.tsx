@@ -24,8 +24,8 @@ const waiting = new Set([
   'Lifecycle',
 ]);
 
-/** Parts being replaced (Title and Orbit, by the taskbar in the Navigation brief): no stories. */
-const replaced = new Set(['CentreMenu']);
+/** Parts being replaced: no stories. Title and Orbit (CentreMenu) have gone to the archive. */
+const replaced = new Set<string>([]);
 
 /** Parts that draw nothing of their own, so a story would show nothing. */
 const undrawn = new Set(['DataProvider']);

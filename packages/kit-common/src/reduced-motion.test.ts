@@ -89,10 +89,4 @@ describe('reduce motion stops every loop', () => {
     const missing = loops.flatMap((s) => [...(bySystem.has(s) ? [] : [`${s} (system setting)`]), ...(bySwitch.has(`${SWITCH} ${s}`) ? [] : [`${s} (AUGUR's switch)`])]);
     expect(missing).toEqual([]);
   });
-  it('stops the centre menu’s transitions under both', () => {
-    const menu = sheets.find(([f]) => f.endsWith('centre-menu.css'))![1];
-    const all = (r: Rule) => /transition\s*:\s*none/.test(r.body) && r.selectors.some((s) => s.endsWith('.aerie-menu *'));
-    expect(menu.some((r) => reducing(r) && all(r))).toBe(true);
-    expect(menu.some((r) => !reducing(r) && all(r) && r.selectors.some((s) => s.startsWith(SWITCH)))).toBe(true);
-  });
 });
