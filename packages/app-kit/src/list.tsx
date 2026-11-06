@@ -59,6 +59,8 @@ export interface ListItem {
   disabled?: boolean;
   /** Why it can't be opened; it takes the detail line's place. */
   reason?: string;
+  /** More about the row, folded under it: a chevron at its end opens it in place (an expanding row). */
+  more?: ReactNode;
 }
 
 export interface ListProps {
@@ -74,6 +76,10 @@ export interface ListProps {
   empty?: string;
   /** Whether to show the bar that counts the rows. */
   bar?: boolean;
+  /** `well`: rows in a well (Key). `plain`: no well, a hairline under each row, for a short list inside a page. */
+  look?: 'well' | 'plain';
+  /** The word on an expanding row's chevron, read aloud with the row's title: "More about". */
+  moreLabel?: string;
   onOpen?: (item: ListItem) => void;
   onAction?: (item: ListItem, action: ListAction) => void;
   onRetry?: () => void;
@@ -100,16 +106,26 @@ function RowRing({ ring, children }: { ring: () => RingSubject | undefined; chil
 
 /**
  * Things you can act on, one per row: a lead mark, a title, a line of detail,
- * a time or count at the end, then the row's own actions as words. The first
+ * a time or count at the end, then the row's own actions as words. A row with
+ * `more` folds it under itself and opens it in place from the chevron at its
+ * end. `look="plain"` drops the well for a short list inside a page. The first
  * row that needs you pings; the rest are a still green. Arrows, Home, End and
  * Enter come from React Aria's grid list.
  */
-export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, onOpen, onAction, onRetry, ringFor, className }: ListProps) {
+export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, look = 'well', moreLabel = 'More about', onOpen, onAction, onRetry, ringFor, className }: ListProps) {
+  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(new Set());
+  const fold = (id: string) =>
+    setUnfolded((was) => {
+      const next = new Set(was);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   const [one, many] = noun;
   const count = items.length;
   const head = bar ? <div className="quill-list-bar quill-label">{loading ? `${many}…` : `${count} ${count === 1 ? one : many}`}</div> : null;
   const wrap = (body: ReactNode) => (
-    <div className={cx('quill-list', className)} data-density={density}>
+    <div className={cx('quill-list', className)} data-density={density} data-look={look}>
       {head}
       {body}
     </div>
@@ -163,6 +179,21 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
                     {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
                   </span>
                   {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
+                  {item.more !== undefined ? (
+                    <button
+                      type="button"
+                      className="quill-list-fold"
+                      aria-expanded={unfolded.has(item.id)}
+                      aria-label={`${moreLabel} ${item.title}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fold(item.id);
+                      }}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
+                      <Icon name="chevron-down" size={16} />
+                    </button>
+                  ) : null}
                   {(item.actions ?? []).slice(0, 2).map((action, i) => {
                     const off = Boolean(item.disabled || action.disabled);
                     return (
@@ -181,7 +212,15 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
                   })}
                   </>
                 );
-                return ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
+                const row = ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
+                return item.more !== undefined && unfolded.has(item.id) ? (
+                  <>
+                    <span className="quill-list-line">{row}</span>
+                    <div className="quill-list-more">{item.more}</div>
+                  </>
+                ) : (
+                  row
+                );
               })()}
             </GridListItem>
           ))}

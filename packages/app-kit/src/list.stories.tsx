@@ -53,3 +53,18 @@ export const Empty: Story = { args: { items: [], empty: 'Nothing needs you today
 
 /** Couldn't load: said in red with Try again, in place of the rows. */
 export const CouldntLoad: Story = { args: { error: 'Couldn’t load your work.' } };
+
+/** Plain: no well, a hairline under each row, for a short list inside a page. */
+export const Plain: Story = { args: { look: 'plain', items: ITEMS.slice(2, 5).map(({ group: _g, ...item }) => item) } };
+
+/** Expanding rows: a row with `more` folds it under itself, and the chevron at its end opens it in place. */
+export const ExpandingRows: Story = {
+  args: {
+    look: 'plain',
+    items: [
+      { id: 'import', title: 'Nightly import', detail: 'Import agent · 4,210 rows read', meta: '02:00', status: 'running', more: 'Reading the port feed, then the crew list. It has 1,380 rows left and should finish by 02:40. Nothing has been changed yet.' },
+      { id: 'match', title: 'Invoice match, October', detail: 'Ledger agent · 3 don’t match', meta: '09:12', status: 'needs', more: 'Three invoices from Brekke Supply are 2% over their orders. It waits for you to accept the difference or send them back.' },
+      { id: 'brief', title: 'Port call summary', detail: 'Writer agent', meta: 'Thu', status: 'done' },
+    ],
+  },
+};
