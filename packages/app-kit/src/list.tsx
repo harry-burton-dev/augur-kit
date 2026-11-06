@@ -25,8 +25,8 @@ import {
   type Selection,
   type SortDescriptor,
 } from 'react-aria-components';
-import { Button, Icon, cx, type IconName } from '@augur/kit-common';
-import { State, Status, statusUrgency, type StatusName } from './states.js';
+import { Button, Icon, Status, cx, statusUrgency, type IconName, type StatusName } from '@augur/kit-common';
+import { State } from './states.js';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 import { writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';

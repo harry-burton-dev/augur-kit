@@ -31,3 +31,4 @@ export { Letterbox, type LetterboxProps, type LetterboxLook, type LetterboxBars,
 export { Explain, type ExplainProps } from './explain.js';
 export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
+export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
