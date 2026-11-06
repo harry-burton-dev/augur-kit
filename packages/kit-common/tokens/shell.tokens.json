@@ -20,6 +20,61 @@
       "$value": "#172F7A",
       "$type": "color",
       "$description": "Floors: the lower glow bands on the org's floor, a deep navy that reads as the deepest, quietest water. Light, never ink."
+    },
+    "water-deep-ocean-navy": {
+      "$value": "#1D4ED8",
+      "$type": "color",
+      "$description": "The water, Deep Ocean preset: the lower, navy bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-deep-ocean-green": {
+      "$value": "#10B981",
+      "$type": "color",
+      "$description": "The water, Deep Ocean preset: the upper, green bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-deep-ocean-slate": {
+      "$value": "#1F2733",
+      "$type": "color",
+      "$description": "The water, Deep Ocean preset: the centre of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-deep-ocean-slate-deep": {
+      "$value": "#0F141B",
+      "$type": "color",
+      "$description": "The water, Deep Ocean preset: the edge of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-aurora-navy": {
+      "$value": "#2563EB",
+      "$type": "color",
+      "$description": "The water, Aurora preset: the lower, navy bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-aurora-slate": {
+      "$value": "#26303D",
+      "$type": "color",
+      "$description": "The water, Aurora preset: the centre of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-aurora-slate-deep": {
+      "$value": "#151A22",
+      "$type": "color",
+      "$description": "The water, Aurora preset: the edge of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-sonar-line-navy": {
+      "$value": "#3B82F6",
+      "$type": "color",
+      "$description": "The water, Sonar Line preset: the lower, navy bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-sonar-line-slate-deep": {
+      "$value": "#1A2029",
+      "$type": "color",
+      "$description": "The water, Sonar Line preset: the edge of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-minimal-slate": {
+      "$value": "#2E3644",
+      "$type": "color",
+      "$description": "The water, Minimal preset: the centre of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "water-minimal-slate-deep": {
+      "$value": "#252C38",
+      "$type": "color",
+      "$description": "The water, Minimal preset: the edge of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
     }
   },
   "effect": {
