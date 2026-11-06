@@ -32,4 +32,5 @@ export { defineReactApp, useAppContext, useFormats, type AppMount, type AppInten
 export { placeRoutes, place, readSearch, mountedAt, type Place, type PlaceSpec, type PlaceArgs, type PlaceLinkProps, type PlaceRoutesOptions, type AppRoutes, type ParamsOf, type SearchOf, type SearchSpec, type SearchKind } from './routes.js';
 export { createAppClient, AppError, isAppError, type AppClient, type AppClientOptions, type AppFetcher, type AnyPaths, type Answer, type CallOptions, type HttpMethod, type PathsFor, type Problem, type ErrorWords } from './client.js';
 export { useData, useChange, useRefresh, DataView, DataProvider, newDataClient, type AppBus, type DataKey, type DataState, type DataOptions, type DataClient, type ChangeState, type ChangeOptions, type DataViewProps } from './query.js';
+export { Guide, FirstSteps, type GuideStep, type GuideLabels, type GuideProps, type FirstStep, type FirstStepsProps } from './guide.js';
 export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';
