@@ -3,9 +3,8 @@ import { cx, Icon, type IconName } from '@augur/kit-common';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 
 /**
- * What a tile is. Each kind has its own physical shape, so you can tell a
- * thing's kind before you read it: a collection is a solid block, a folder
- * has a tab, a series is a stack, a document is a page.
+ * What a tile is. Each kind has its own icon and word at the top of the
+ * tile, so you can tell a thing's kind at a glance.
  */
 export type TileKind = 'collection' | 'folder' | 'series' | 'document' | 'library';
 
@@ -35,8 +34,8 @@ export interface KindTileProps {
 const ICONS: Record<TileKind, IconName> = { collection: 'library', folder: 'folder', series: 'series', document: 'document', library: 'library' };
 
 /**
- * One thing in a place, as a tile you can walk into. Hover lifts it as a real
- * object would lift; pressing it presses it down. Right-click, the
+ * One thing in a place, as a tile you can walk into: a flat card in a well.
+ * Pointed at, it comes up as a soft key; pressed, it goes down. Right-click, the
  * context-menu key or a long press opens its radial menu, and so does its
  * "more" mark, which shows while the tile is hovered or holds focus (PDR-010,
  * amendment 6). The mark sits beside the tile's button, not in it, so each
