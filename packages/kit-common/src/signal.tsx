@@ -44,7 +44,9 @@ export function Signal({ kind, label, count, children, className }: SignalProps)
   const style = counted ? ({ '--signal-count': Math.max(1, Math.min(count, STREAK_MOST)) } as CSSProperties) : undefined;
   return (
     <span className={cx('augur-signal', className)} data-kind={kind} style={style}>
-      <span className="augur-signal-light" aria-hidden="true" />
+      <span className="augur-signal-socket" aria-hidden="true">
+        <span className="augur-signal-light" aria-hidden="true" />
+      </span>
       {counted ? <span className="augur-signal-count">{count}</span> : null}
       <span className="augur-signal-label">{label}</span>
       {children ? <span className="augur-signal-more">{children}</span> : null}
