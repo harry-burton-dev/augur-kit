@@ -663,7 +663,7 @@
   .quill-filter-view { font-weight: 600; }
   .quill-filter-any { color: var(--ink-muted); }
   .quill-filter-panel { width: max-content; min-width: calc(var(--space-8) * 4); max-width: var(--measure-glance); }
-  .quill-filter-find .augur-input { width: 100%; margin-bottom: var(--space-1); }
+  .quill-filter-find { margin-bottom: var(--space-1); }
   .quill-filter-item[data-selected] .augur-option-mark { color: var(--ink); }
   .quill-filter-none { margin: 0; padding: var(--space-2) var(--space-3); font-size: var(--type-small); color: var(--ink-muted); }
   .quill-filter-clear { all: unset; display: inline-flex; align-items: center; padding: 0 var(--space-3); font-size: var(--type-small); color: var(--ink-muted); cursor: pointer; }
@@ -776,8 +776,8 @@
   .quill-table-pager { display: flex; align-items: center; gap: var(--space-2); min-height: 48px; padding: 0 var(--space-2) 0 var(--space-3); }
   .quill-table-pages { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-soft); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
   .quill-table-bar > .quill-label { flex: 1; }
-  .quill-table-filter { display: inline-flex; align-items: center; gap: var(--space-2); flex: 0 1 280px; border-bottom: 1px solid var(--focus); }
-  .quill-table-filter input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); padding: var(--space-2) 0; }
+  .quill-table-filter { flex: 0 1 280px; width: auto; min-height: var(--target-sm); }
+  .quill-table-filter .augur-input { padding: var(--space-2) 0; font-size: var(--type-meta); line-height: var(--leading-meta); }
   .quill-table-find { border: 0; background: none; color: var(--ink-muted); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
   .quill-table-find:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .quill-table-find:focus-visible { outline: var(--focus-ring) solid var(--focus); }
@@ -1267,7 +1267,6 @@
   }
   .quill-guide-skip:hover, .quill-first-hide:hover { color: var(--ink); }
   .quill-guide-skip:focus-visible, .quill-first-hide:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .quill-guide-skip kbd { font-family: var(--font-mono); font-size: var(--type-label); padding: 0 var(--space-1); border: 1px solid var(--hairline-strong); }
 
   /* First steps: a section of the start page, label and hairline, not over anything. */
   .quill-first { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; color: var(--ink); font-family: var(--font-sans); }

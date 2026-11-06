@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Button, Icon, cx } from '@augur/kit-common';
+import { Button, Icon, KeyCap, cx } from '@augur/kit-common';
 
 export interface GuideStep {
   /** The `id` of the part this step lights. If it isn't on the page, the step still shows, over the dimmed page. */
@@ -136,7 +136,7 @@ export function Guide({ steps, step: stepProp, defaultStep = 0, onStep, onSkip, 
           ) : null}
           {last ? null : (
             <button type="button" className="quill-guide-skip" onClick={() => onSkip?.()}>
-              <kbd>Esc</kbd>
+              <KeyCap>Esc</KeyCap>
               {words.skip}
             </button>
           )}

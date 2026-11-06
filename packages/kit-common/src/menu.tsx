@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Menu as AriaMenu, MenuItem, MenuTrigger, Popover, Separator, type Key } from 'react-aria-components';
 import { Icon, type IconName } from './icon.js';
+import { KeyCap } from './key-cap.js';
 
 /** One action in a menu, or '-' for the line before the next group (danger goes last, behind one). */
 export interface MenuAction {
@@ -84,7 +85,7 @@ export function Menu({ label, items, onAction, children, placement = 'bottom sta
                     <span className="augur-menu-label">{e.label}</span>
                     {e.disabled && e.reason ? <span className="augur-menu-why">{e.reason}</span> : null}
                   </span>
-                  {e.key ? <kbd className="augur-menu-key">{e.key}</kbd> : null}
+                  {e.key ? <KeyCap className="augur-menu-key">{e.key}</KeyCap> : null}
                 </MenuItem>
               ),
             )}

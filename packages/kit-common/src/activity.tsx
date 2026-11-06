@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { Button } from './button.js';
 import { cx } from './cx.js';
 import { Mark, type PersonProps } from './person.js';
-import { TextField } from './text-field.js';
+import { SearchField } from './search-field.js';
 
 export interface ActivityEvent {
   id: string;
@@ -91,9 +91,8 @@ export function Activity({ label, events, seenFrom, onOpen, pageSize = 8, empty 
           </ul>
         </div>
       ) : null}
-      <TextField
+      <SearchField
         label={`Find in ${label.toLowerCase()}`}
-        type="search"
         placeholder="Who, what or when"
         value={query}
         onChange={(q) => {
