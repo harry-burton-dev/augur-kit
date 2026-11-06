@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ms } from '@augur/kit-common';
 import { KindTile } from './tiles.js';
-import { pageActions, placeActions, RING_MORE_ID, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
+import { pageActions, placeActions, RING_MORE_ID, RING_TARGETS_MOST, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -389,5 +389,76 @@ describe('List rows with a radial menu (W3.5b)', () => {
       </RingProvider>,
     );
     expect(document.querySelector('.quill-ring-more')).toBeNull();
+  });
+});
+
+describe('RadialMenu two rings', () => {
+  const verbs: RingAction[] = [
+    { id: 'open', label: 'Open', icon: 'arrow' },
+    { id: 'publish', label: 'Publish', icon: 'publish', slot: 'e', disabled: true, reason: 'It needs a review first', owner: 'Sam' },
+    { id: 'delete', label: 'Delete', icon: 'delete', danger: true },
+    { id: 'rename', label: 'Rename', icon: 'rename', slot: 'w' },
+  ];
+  const wedges = () => [...document.querySelectorAll('.quill-ring-wedge')];
+
+  it('draws a wedge for every direction, empty where nothing sits, with Cancel in the hub', () => {
+    open({ label: 'Plan', onAction: () => {}, actions: verbs });
+    expect(wedges()).toHaveLength(8);
+    expect(document.querySelectorAll('.quill-ring-wedge[data-empty]')).toHaveLength(4);
+    expect(document.querySelector('.quill-ring-wedge[data-off]')).not.toBeNull();
+    expect(document.querySelector('.quill-ring-cancel')!.textContent).toBe('Cancel');
+  });
+
+  it('picks a direction with 1 to 8, clockwise from the top, and skips a number with nothing there', () => {
+    open({ label: 'Plan', onAction: () => {}, actions: verbs });
+    const menu = document.querySelector('[role="menu"]')!;
+    key(menu, '7');
+    expect(document.activeElement!.textContent).toContain('Rename');
+    key(menu, '5');
+    expect(document.activeElement!.textContent).toContain('Delete');
+    key(menu, '2');
+    expect(document.activeElement!.textContent).toContain('Delete');
+  });
+
+  it('says where you are in words, and why an unavailable action is, with who can change it', () => {
+    open({ label: 'Plan', onAction: () => {}, actions: verbs });
+    key(document.querySelector('[role="menu"]')!, '3');
+    expect(document.querySelector('.quill-ring-trail')!.textContent).toBe('PlanPublish');
+    expect(document.querySelector('.quill-ring-said')!.textContent).toBe('It needs a review first. Sam can change this.');
+  });
+
+  it('fans targets out on the outer ring, and past five opens them as a list beside it', () => {
+    const few = Array.from({ length: RING_TARGETS_MOST }, (_, i) => ({ id: `t${i}`, label: `Place ${i}` }));
+    const many = [...few, { id: 'last', label: 'One more' }];
+    const subject = (targets: typeof few): RingSubject => ({ label: 'Plan', onAction: () => {}, actions: [{ id: 'move', label: 'Move', icon: 'folder', targets }] });
+
+    open(subject(few));
+    key(document.querySelector('[role="menu"]')!, 'ArrowRight');
+    expect(document.querySelector('.quill-ring-targets')!.getAttribute('data-shape')).toBe('ring');
+    expect(document.querySelectorAll('.quill-ring-wedge[data-target]')).toHaveLength(RING_TARGETS_MOST);
+    expect(document.querySelector('.quill-ring-trail')!.textContent).toBe('PlanMovePlace 0');
+
+    act(() => root?.unmount());
+    open(subject(many));
+    key(document.querySelector('[role="menu"]')!, 'ArrowRight');
+    expect(document.querySelector('.quill-ring-targets')!.getAttribute('data-shape')).toBe('list');
+    expect(document.querySelectorAll('.quill-ring-wedge[data-target]')).toHaveLength(0);
+  });
+
+  it('chooses with a click on the wedge itself, and Cancel in the hub closes without choosing', () => {
+    vi.useFakeTimers();
+    const onAction = vi.fn();
+    open({ label: 'Plan', onAction, actions: verbs });
+    act(() => void document.querySelector('.quill-ring-hub')!.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    settle();
+    expect(document.querySelector('[role="menu"]')).toBeNull();
+    expect(onAction).not.toHaveBeenCalled();
+
+    act(() => root?.unmount());
+    open({ label: 'Plan', onAction, actions: verbs });
+    const openWedge = wedges().find((w) => !w.hasAttribute('data-empty'))!;
+    act(() => void openWedge.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    settle();
+    expect(onAction).toHaveBeenCalledWith('open');
   });
 });

@@ -36,6 +36,26 @@
       "$type": "dimension",
       "$description": "The radial menu's radius when it is opened on a row rather than a tile: centred where it was opened, beside the row."
     },
+    "ring-hub": {
+      "$value": "44px",
+      "$type": "dimension",
+      "$description": "The radius of the radial menu's hub: the round middle that says Cancel, and fills while an action is held to confirm."
+    },
+    "ring-outer": {
+      "$value": "120px",
+      "$type": "dimension",
+      "$description": "The outer radius of the radial menu's inner ring of verbs. The wedges run from the hub to here, each wide enough for its icon and its name."
+    },
+    "ring-band": {
+      "$value": "44px",
+      "$type": "dimension",
+      "$description": "How deep the radial menu's outer ring is: the band of targets (people, floors, folders) fanned out beyond an action, a comfortable target deep."
+    },
+    "ring-seam": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "The gap between the radial menu's wedges and between its two rings: a hairline of ground, so each wedge reads as its own target."
+    },
     "reel-card": {
       "$value": "256px",
       "$type": "dimension",
