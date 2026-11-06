@@ -1,9 +1,12 @@
 // @vitest-environment happy-dom
-import { act, type ReactNode } from 'react';
+import { act, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { DateField, dayDistance, parseDay } from './date.js';
-import { List, Table } from './list.js';
+import { Dialog } from '@augur/kit-common';
+import { DateField, DropZone, dayDistance, parseDay } from './date.js';
+import { List, Table, relativeTime } from './list.js';
+import { Palette } from './palette.js';
+import { TimeField } from './time.js';
 import { PageHead, Section } from './page.js';
 import { Details, Notice, State } from './states.js';
 import { Refs, Tally, Timeline } from './things.js';
@@ -443,5 +446,177 @@ describe('writing and trees', () => {
     expect(rows()).toEqual(['Policies', 'HR', 'IT', 'Other']);
     act(() => (document.querySelectorAll('[role="row"]')[2] as HTMLElement).click());
     expect(chosen).toHaveBeenCalledWith(expect.objectContaining({ id: 'it' }));
+  });
+});
+
+describe('fields in a Dialog', () => {
+  const primary = () => [...document.querySelectorAll('button')].find((b) => b.textContent === 'Go')!;
+  const enter = (el: HTMLElement) => act(async () => void el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+  const type = (input: HTMLInputElement, value: string) =>
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+  it('Enter in a PeoplePicker looks, and leaves the Dialog alone', async () => {
+    const onClose = vi.fn();
+    const search = vi.fn(async () => []);
+    draw(<Dialog open heading="Share" actionLabel="Go" onClose={onClose} fields={<PeoplePicker label="With" search={search} />} />);
+    const input = document.querySelector('input')!;
+    type(input, 'Nora');
+    await enter(input);
+    expect(search).toHaveBeenCalledWith('Nora');
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Enter in a DateField presses the primary with the day just typed', async () => {
+    const onClose = vi.fn();
+    const onChange = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<DateField label="Due" name="due" quick={[]} onChange={onChange} now={new Date(2026, 10, 6)} />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '13 nov');
+    await enter(input);
+    expect(onClose).toHaveBeenCalledWith({ due: '2026-11-13' });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('Enter in a DateField holds on a day it can’t read', async () => {
+    const onClose = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<DateField label="Due" name="due" quick={[]} />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, 'soonish');
+    await enter(input);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(text()).toContain('Try “13 Nov”');
+  });
+
+  it('Enter in a TimeField presses the primary with the time just typed', async () => {
+    const onClose = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<TimeField label="At" name="at" />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '9am');
+    await enter(input);
+    expect(onClose).toHaveBeenCalledWith({ at: '09:00' });
+  });
+
+  it('a second Enter in a DateField keeps the day', async () => {
+    const onChange = vi.fn();
+    draw(<DateField label="Due" quick={[]} onChange={onChange} now={new Date(2026, 10, 6)} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '13 nov');
+    await enter(input);
+    await enter(input);
+    expect(onChange.mock.calls).toEqual([['2026-11-13']]);
+  });
+
+  it('holds the primary until a required TagPicker has a tag, and says so', async () => {
+    const onSubmit = vi.fn();
+    const Form = () => {
+      const [tags, setTags] = useState<string[]>([]);
+      return (
+        <Dialog
+          open
+          heading="Tag"
+          actionLabel="Go"
+          onClose={() => {}}
+          onSubmit={onSubmit}
+          fields={
+            <>
+              <TagPicker label="Tags" name="tags" required options={[{ value: 'a', label: 'A' }]} value={tags} onChange={setTags} />
+              <button type="button" onClick={() => setTags(['a'])}>
+                Add
+              </button>
+            </>
+          }
+        />
+      );
+    };
+    draw(<Form />);
+    await act(async () => primary().click());
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(document.querySelector<HTMLElement>('.quill-tag-picker')!.dataset.state).toBe('attention');
+    expect(text()).toContain('Needs you.');
+    await act(async () => button('Add').click());
+    expect(text()).not.toContain('Needs you.');
+    await act(async () => primary().click());
+    expect(onSubmit).toHaveBeenCalledWith({ tags: 'a' });
+  });
+});
+
+describe('saying why', () => {
+  it('a DateField with a reason stays focusable, says why and can’t be changed', () => {
+    const onChange = vi.fn();
+    draw(<DateField label="Due" disabled reason="Only its owner can move the date." defaultValue="2026-11-13" onChange={onChange} />);
+    const input = document.querySelector('input')!;
+    expect(input.disabled).toBe(false);
+    expect(input.readOnly).toBe(true);
+    expect(input.getAttribute('aria-disabled')).toBe('true');
+    expect(text()).toContain('Only its owner can move the date.');
+    act(() => input.focus());
+    act(() => void input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+    act(() => input.blur());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input.value).toContain('13 Nov');
+  });
+
+  it('a DropZone with a reason keeps its key focusable, says why and takes nothing', () => {
+    draw(<DropZone disabled reason="This library is read-only." />);
+    const key = button('Choose files');
+    expect(key.disabled).toBe(false);
+    expect(key.getAttribute('aria-disabled')).toBe('true');
+    expect(text()).toContain('This library is read-only.');
+    const open = vi.spyOn(document.querySelector<HTMLInputElement>('input[type="file"]')!, 'click');
+    act(() => key.click());
+    expect(open).not.toHaveBeenCalled();
+  });
+});
+
+describe('the palette', () => {
+  const items = ['One', 'Two', 'Three'].map((label) => ({ id: label, label }));
+  const press = (key: string) => act(() => void document.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })));
+  const palette = (list: typeof items, onPick = vi.fn()) => <Palette open onClose={() => {}} placeholder="Find" query="" onQuery={() => {}} items={list} onPick={onPick} />;
+
+  it('keeps the chosen row in sight as the keys move it', () => {
+    const scrolled: string[] = [];
+    const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(function (this: HTMLElement) {
+      scrolled.push(this.textContent ?? '');
+    });
+    draw(palette(items));
+    press('ArrowDown');
+    press('ArrowDown');
+    expect(scrolled.at(-1)).toContain('Three');
+    spy.mockRestore();
+  });
+
+  it('marks the row Enter will open when the list shrinks under it', () => {
+    const onPick = vi.fn();
+    draw(palette(items, onPick));
+    press('ArrowDown');
+    press('ArrowDown');
+    act(() => root!.render(palette(items.slice(0, 2), onPick)));
+    expect(document.querySelector('[role="option"][aria-selected="true"]')?.textContent).toContain('Two');
+    press('Enter');
+    expect(onPick).toHaveBeenCalledWith(items[1]);
+  });
+});
+
+describe('dates in a table', () => {
+  const now = Date.parse('2026-11-06T12:00:00Z');
+  it.each([
+    ['2026-11-06T12:00:10Z', 'just now'],
+    ['2026-11-06T12:20:00Z', 'in 20 min'],
+    ['2026-11-06T15:00:00Z', 'in 3 h'],
+    ['2026-11-09T12:00:00Z', 'in 3 d'],
+    ['2026-11-06T11:40:00Z', '20 min ago'],
+  ])('reads %s as %s', (value, said) => {
+    expect(relativeTime(value, now)).toBe(said);
+  });
+
+  it('gives the date for anything a month or more away', () => {
+    expect(relativeTime('2027-01-06T12:00:00Z', now)).toContain('2027');
   });
 });

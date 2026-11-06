@@ -14,7 +14,7 @@ import {
 import { CalendarDate, endOfMonth, getDayOfWeek, parseDate, type DateDuration } from '@internationalized/date';
 import { writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';
-import { FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, type FieldProps, type FieldState } from '@augur/kit-common';
+import { FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, useReason, warnNoReason, type FieldProps, type FieldState } from '@augur/kit-common';
 
 /** The way a day is written back into the field for editing, which parseDay reads: English words, day first. */
 const TYPED = 'en-GB';
@@ -143,7 +143,7 @@ export interface DateFieldProps extends FieldProps {
  * months in the person's language. Its value is YYYY-MM-DD. Takes part in a
  * Dialog's checks like TextField.
  */
-export function DateField({ label, hint, required, optional, disabled, state, message, className, value: given, defaultValue, onChange, name, empty = 'Not set', quick = DEFAULT_QUICK, now = new Date() }: DateFieldProps) {
+export function DateField({ label, hint, required, optional, disabled, reason, state, message, className, value: given, defaultValue, onChange, name, empty = 'Not set', quick = DEFAULT_QUICK, now = new Date() }: DateFieldProps) {
   const [own, setOwnValue] = useState(defaultValue ?? '');
   const value = given ?? own;
   const formats = useFormats();
@@ -152,29 +152,38 @@ export function DateField({ label, hint, required, optional, disabled, state, me
   const [calendar, setCalendar] = useState(false);
   const shown = shownState(state, message, check);
   const { describedBy, line } = useMessage(shown.message);
+  const { reasoned, describe, caption } = useReason(disabled, reason);
+  const key = useRef({});
+  warnNoReason(key.current, `DateField "${label}"`, disabled, reason);
   const input = useRef<HTMLInputElement>(null);
   const typing = draft !== undefined;
   const picked = value ? read(value) : null;
+  // Enter commits and a Dialog checks in the same tick, before `value` has moved.
+  const latest = useRef(value);
+  latest.current = value;
 
   const choose = (iso: string) => {
     setDraft(undefined);
     setCheck({ state: 'idle' });
-    if (iso === value) return;
+    if (iso === latest.current) return;
+    latest.current = iso;
     if (given === undefined) setOwnValue(iso);
     onChange?.(iso);
   };
+  /** Takes what was typed. Gives the day, empty for none, or null when it can't be read. */
   const commit = () => {
     const text = draft ?? '';
-    if (!text.trim()) return choose('');
-    const day = parseDay(text, now);
-    if (day) return choose(day);
-    setCheck({ state: 'error', message: 'Try “13 Nov”, “friday” or “+2w”.' });
+    const day = text.trim() ? parseDay(text, now) : '';
+    if (day === null) setCheck({ state: 'error', message: 'Try “13 Nov”, “friday” or “+2w”.' });
+    else choose(day);
+    return day;
   };
   useFieldCheck({
     check: () => {
-      if (typing) commit();
-      if (check.state === 'error') return false;
-      if (required && !value && !(typing && parseDay(draft ?? '', now))) {
+      if (reasoned) return true;
+      const day = typing ? commit() : latest.current;
+      if (day === null) return false;
+      if (required && !day) {
         setCheck({ state: 'attention', message: NEEDS_YOU });
         return false;
       }
@@ -182,7 +191,7 @@ export function DateField({ label, hint, required, optional, disabled, state, me
     },
     focus: () => input.current?.focus(),
     name,
-    value: () => value,
+    value: () => latest.current,
   });
   const words = value ? `${dayName(value, now, formats)} · ${dayDistance(value, now)}` : '';
   const shownQuick = quick.slice(0, 4);
@@ -196,25 +205,29 @@ export function DateField({ label, hint, required, optional, disabled, state, me
         setDraft(v);
         if (check.state !== 'idle') setCheck({ state: 'idle' });
       }}
-      onFocus={() => setDraft(value ? dayName(value, new Date(0)) : '')}
+      onFocus={() => !reasoned && setDraft(value ? dayName(value, new Date(0)) : '')}
       onBlur={() => typing && commit()}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit();
-        else if (e.key === 'Escape' && typing) {
+        if (e.key === 'Enter') {
+          if (typing) commit();
+          // A Dialog around it takes Enter too: it presses the primary.
+          e.continuePropagation();
+        } else if (e.key === 'Escape' && typing) {
           setDraft(undefined);
           setCheck({ state: 'idle' });
         } else e.continuePropagation();
       }}
       isRequired={required}
-      isDisabled={disabled}
+      isDisabled={disabled && !reasoned}
+      isReadOnly={reasoned}
       isInvalid={shown.state === 'error' || shown.state === 'attention'}
       validationBehavior="aria"
-      aria-describedby={describedBy}
+      aria-describedby={[describe['aria-describedby'], describedBy].filter(Boolean).join(' ') || undefined}
     >
       <FieldHead label={label} required={required} optional={optional} />
       <FieldHint hint={hint} />
       <div className="augur-field-box">
-        <Input ref={input} className="augur-input" placeholder={empty} autoComplete="off" />
+        <Input ref={input} className="augur-input" placeholder={empty} autoComplete="off" aria-disabled={describe['aria-disabled']} />
         <StateMark state={shown.state} />
         <DialogTrigger isOpen={calendar} onOpenChange={setCalendar}>
           <AriaButton className="quill-date-cal" aria-label="Choose on a calendar" isDisabled={disabled}>
@@ -267,6 +280,7 @@ export function DateField({ label, hint, required, optional, disabled, state, me
         </div>
       ) : null}
       {line()}
+      {caption}
     </AriaTextField>
   );
 }
@@ -294,6 +308,8 @@ export interface DropZoneProps {
   accept?: string;
   multiple?: boolean;
   disabled?: boolean;
+  /** Why it can't take files, in one sentence. With one, its key stays focusable and says so. */
+  reason?: string;
   /** Something is being done with the last files: says so and takes no more until it's done. */
   busy?: boolean;
   /** One line, for a dialog or a panel. */
@@ -310,10 +326,13 @@ export interface DropZoneProps {
  * it accepts and says which it turned away. Its Choose button is the way in
  * from the keyboard; dropping is a shortcut, never the only way.
  */
-export function DropZone({ heading = 'Drop files here', hint, action = 'Choose files', accept = '', multiple = true, disabled, busy, compact, onFiles, onReject, className }: DropZoneProps) {
+export function DropZone({ heading = 'Drop files here', hint, action = 'Choose files', accept = '', multiple = true, disabled, reason, busy, compact, onFiles, onReject, className }: DropZoneProps) {
   const [over, setOver] = useState(false);
   const depth = useRef(0);
   const picker = useRef<HTMLInputElement>(null);
+  const { reasoned, describe, caption } = useReason(disabled, reason);
+  const key = useRef({});
+  warnNoReason(key.current, `DropZone "${heading}"`, disabled, reason);
   const take = (list: FileList | null | undefined) => {
     if (!list?.length || disabled || busy) return;
     const files = multiple ? [...list] : [list[0]!];
@@ -332,7 +351,7 @@ export function DropZone({ heading = 'Drop files here', hint, action = 'Choose f
   };
   return (
     <div
-      className={cx('quill-drop', className)}
+      className={cx('quill-drop augur-control relative', className)}
       data-over={over ? '' : undefined}
       data-compact={compact ? '' : undefined}
       data-disabled={disabled ? '' : undefined}
@@ -350,7 +369,7 @@ export function DropZone({ heading = 'Drop files here', hint, action = 'Choose f
       <Icon name="upload" size={20} />
       <span className="quill-drop-heading">{heading}</span>
       {hint && !compact ? <span className="quill-drop-hint">{hint}</span> : null}
-      <button type="button" disabled={disabled || busy} onClick={() => picker.current?.click()}>
+      <button type="button" {...describe} disabled={(disabled && !reasoned) || busy} onClick={() => !reasoned && picker.current?.click()}>
         {busy ? 'Working…' : action}
       </button>
       <input
@@ -366,6 +385,7 @@ export function DropZone({ heading = 'Drop files here', hint, action = 'Choose f
           e.target.value = '';
         }}
       />
+      {caption}
     </div>
   );
 }

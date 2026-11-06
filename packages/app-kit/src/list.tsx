@@ -255,17 +255,18 @@ export interface TableSort {
   dir: 'asc' | 'desc';
 }
 
-/** "4 min ago", "3 h ago", "2 d ago", then the date. */
+/** "4 min ago", "3 h ago", "2 d ago", or ahead "in 4 min", "in 3 h", "in 2 d", then the date. */
 export const relativeTime = (value: unknown, now = Date.now(), formats: AppFormats = {}): string => {
   const t = value instanceof Date ? value.getTime() : Date.parse(String(value));
   if (Number.isNaN(t)) return String(value ?? '');
-  const mins = Math.round((now - t) / 60000);
+  const mins = Math.abs(Math.round((now - t) / 60000));
+  const away = (n: number, unit: string) => (t > now ? `in ${n} ${unit}` : `${n} ${unit} ago`);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 60) return away(mins, 'min');
   const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} h ago`;
+  if (hours < 24) return away(hours, 'h');
   const days = Math.round(hours / 24);
-  if (days < 30) return `${days} d ago`;
+  if (days < 30) return away(days, 'd');
   return writeDate(t, { dateStyle: 'medium' }, formats);
 };
 

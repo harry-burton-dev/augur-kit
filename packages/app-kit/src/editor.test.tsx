@@ -3,6 +3,7 @@ import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Editor as TiptapEditor } from '@tiptap/react';
+import { Dialog } from '@augur/kit-common';
 import { Editor, Prose, plainText, readMentions, type MentionSource } from './editor.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -80,6 +81,18 @@ describe('the editor on Tiptap', () => {
     await act(async () => (document.querySelector('[role="option"]') as HTMLElement).click());
     expect(seen.at(-1)).toBe('Ask [@Nora Briggs](person:u1)');
     expect(document.querySelector('[role="listbox"]')).toBeNull();
+  });
+
+  it('Esc closes the mention list and leaves a Dialog around it open', async () => {
+    const onClose = vi.fn();
+    const source = vi.fn<MentionSource>(async () => ({ found: [{ kind: 'person', id: 'u1', label: 'Nora Briggs' }] }));
+    await draw(<Dialog open heading="Note" actionLabel="Save" onClose={onClose} fields={<Editor label="Brief" mentionSource={source} />} />);
+    await act(async () => void engine().chain().focus().insertContent('Ask @No').run());
+    await act(() => new Promise((r) => setTimeout(r, 0)));
+    expect(document.querySelector('[role="listbox"]')).not.toBeNull();
+    await act(async () => void document.querySelector('.ProseMirror')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(document.querySelector('[role="listbox"]')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('counts against its guide without stopping anyone', async () => {

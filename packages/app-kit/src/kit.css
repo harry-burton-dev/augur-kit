@@ -952,7 +952,7 @@
   .quill-drop[data-compact] .quill-drop-heading { flex: 1; color: var(--ink-muted); font-size: var(--type-meta); }
   .quill-drop[data-compact] button { margin-top: 0; }
   .quill-drop[data-over] { background: color-mix(in srgb, var(--ink) 7%, var(--well)); border-color: var(--ink-muted); border-top-color: var(--ink); }
-  .quill-drop[data-disabled] { opacity: 0.4; }
+  .quill-drop[data-disabled] > :not(.augur-reason, .augur-reason-mark) { opacity: 0.4; }
   .quill-drop > svg { color: var(--ink-muted); }
   .quill-drop[data-over] > svg { color: var(--ink); }
   .quill-drop-heading { font-size: var(--type-body); line-height: var(--leading-body); }
