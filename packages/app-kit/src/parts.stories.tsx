@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DateField, DropZone } from './date.js';
 import { List, Table } from './list.js';
 import { PageHead, Section } from './page.js';
-import { Details, Facts, Note, Notice, Rows, State, Status, Tag } from './states.js';
+import { Status } from '@augur/kit-common';
+import { Details, Facts, Note, Notice, Rows, State, Tag } from './states.js';
 import { Card, Cards, Path, Refs, Tally, Timeline } from './things.js';
 
 function Parts() {
