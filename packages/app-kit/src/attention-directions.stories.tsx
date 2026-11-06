@@ -228,3 +228,52 @@ export const NeedsYou: Story = {
     </Board>
   ),
 };
+
+/* ---- Sheet notice: ways to say the tone without a line down the left edge ---- */
+
+const marks = [
+  { id: 'stamp', name: 'A1 · Stamp', note: 'The tone word in mono, printed solid: tone-coloured fill, dark letters, at the start of the sentence.' },
+  { id: 'corner', name: 'A2 · Corner', note: 'A small solid square of the tone set into the top-left corner of the sheet, and the word in mono beside the text.' },
+  { id: 'frame', name: 'A3 · Frame', note: 'The sheet’s own edge takes the tone all the way round, one hairline, with the word in mono in the top edge.' },
+] as const;
+
+function NoticeSet() {
+  return (
+    <div className="ad-region">
+      <Notice tone="needs" heading="Waiting for your back-brief." action="Write it" more={2}>
+        Lee asked for it by Friday.
+      </Notice>
+      <Notice tone="warning" heading="Two records are going stale.">
+        Nobody has opened them since August.
+      </Notice>
+      <Notice tone="refused" heading="Publishing was refused." action="See why">
+        The library is read-only during the upgrade.
+      </Notice>
+      <Notice tone="info">Records you archive stay searchable for a year.</Notice>
+    </div>
+  );
+}
+
+/** Sheet, picked; the tone drawn three ways other than a coloured line down the left edge. */
+export const SheetNoticeMarks: Story = {
+  name: 'Sheet notice: tone marks',
+  render: () => (
+    <div className="ad-stage">
+      <header className="ad-head">
+        <h2 className="ad-part">Sheet notice: tone marks</h2>
+        <p className="ad-summary">Sheet is picked. Three ways to say the tone without a coloured line down the left edge. The word is always there, so colour is never the only sign.</p>
+      </header>
+      <div className="ad-grid" data-three>
+        {marks.map((m) => (
+          <section key={m.id} className="ad-column" data-direction="sheet" data-mark={m.id} aria-label={`Notice: ${m.name}`}>
+            <h3 className="ad-name">{m.name}</h3>
+            <p className="ad-note">{m.note}</p>
+            <div className="ad-specimens">
+              <NoticeSet />
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  ),
+};
