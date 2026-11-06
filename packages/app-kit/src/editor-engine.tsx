@@ -291,15 +291,19 @@ export default function EditorEngine({
 
   const view = useEditorState({
     editor,
-    selector: ({ editor: e }) => ({
-      text: e ? e.getText({ blockSeparator: '\n' }) : '',
-      selecting: Boolean(e && !e.state.selection.empty && e.isFocused),
-      bold: Boolean(e?.isActive('bold')),
-      italic: Boolean(e?.isActive('italic')),
-      list: Boolean(e?.isActive('bulletList')),
-      numbered: Boolean(e?.isActive('orderedList')),
-      quote: Boolean(e?.isActive('blockquote')),
-    }),
+    // A destroyed editor (one being replaced, as on a remount in a real browser) has no schema left to read.
+    selector: ({ editor: live }) => {
+      const e = live && !live.isDestroyed ? live : null;
+      return {
+        text: e ? e.getText({ blockSeparator: '\n' }) : '',
+        selecting: Boolean(e && !e.state.selection.empty && e.isFocused),
+        bold: Boolean(e?.isActive('bold')),
+        italic: Boolean(e?.isActive('italic')),
+        list: Boolean(e?.isActive('bulletList')),
+        numbered: Boolean(e?.isActive('orderedList')),
+        quote: Boolean(e?.isActive('blockquote')),
+      };
+    },
   });
 
   useFieldCheck({
