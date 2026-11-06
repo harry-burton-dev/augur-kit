@@ -3,12 +3,15 @@ name: Storybook
 # changes: on a pull request, or on the push to main that brings it in. Chromatic hosts each build,
 # links it from the pull request, and shows what looks different there to accept or deny. TurboSnap
 # (--only-changed) snapshots only the stories whose code changed, to stay inside the free tier.
+# A change to this workflow runs it too, and it can be run by hand (Actions, Storybook, Run workflow) to
+# publish main again, for example right after the Chromatic token is first set.
 on:
   pull_request:
-    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml']
+    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml', '.github/workflows/storybook.yml']
   push:
     branches: [main]
-    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml']
+    paths: ['packages/kit-common/**', 'packages/app-kit/**', 'packages/shell-kit/**', 'storybook/**', 'pnpm-lock.yaml', '.github/workflows/storybook.yml']
+  workflow_dispatch:
 concurrency:
   group: storybook-${{ github.ref }}
   cancel-in-progress: true
