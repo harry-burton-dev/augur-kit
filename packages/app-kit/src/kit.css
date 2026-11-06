@@ -339,45 +339,56 @@
   @media (hover: none) { .quill-ring-more { opacity: 1; } }
 
   /* The navigation path: the path you took is lit, its neighbours dimmed, a line joins it from the top down. */
+  /* Data marks are drawn as Key (round N, picked 6 Nov 2026): they sit in a well, like a field, and the thing you're on comes up as a soft key. */
+  :is(.quill-tree, .quill-path, .quill-lifecycle ol, .quill-timeline ol, .quill-reel, .quill-tile, .quill-ref, .augur-signal-socket) {
+    --mark-point: color-mix(in srgb, var(--ink) 4%, transparent);
+    --mark-pick: color-mix(in srgb, var(--ink) 7%, var(--well));
+    --mark-pick-edge: color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+  :is(.quill-tree, .quill-path, .quill-lifecycle ol, .quill-timeline ol, .quill-reel) {
+    box-sizing: border-box; padding: var(--space-1); background: var(--well);
+    border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control);
+  }
   .quill-tree { display: flex; flex-direction: column; min-width: 0; }
-  .quill-tree.quill-path-tree { --tree-ground: var(--slate); gap: 0; }
+  .quill-tree.quill-path-tree { --tree-ground: var(--well); gap: 0; }
   .quill-tree-row {
     position: relative; display: flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); min-width: 0;
     padding: 0 var(--space-3) 0 calc(var(--space-3) + var(--tree-level) * var(--space-4));
     border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer;
     background-image: linear-gradient(var(--row-tint, transparent), var(--row-tint, transparent));
-    transition: opacity var(--motion-slow) var(--ease-out), filter var(--motion-slow) var(--ease-out), box-shadow var(--motion-slow) var(--ease-out);
+    transition: opacity var(--motion-slow) var(--ease-out), box-shadow var(--motion-slow) var(--ease-out);
   }
   .quill-tree-row[data-level='0'] { font-size: var(--type-body); }
-  /* Dimmed by distance from where you are: the current one's neighbours one step, its parent's two, anything further three, softened. */
+  /* Dimmed by distance from where you are: the current one's neighbours one step, its parent's two, anything further three. Depth is dimming only, never blur. */
   .quill-tree[data-light='path'] .quill-tree-row[data-distance='1'] { opacity: var(--path-dim-1); }
   .quill-tree[data-light='path'] .quill-tree-row[data-distance='2'] { opacity: var(--path-dim-2); }
-  .quill-tree[data-light='path'] .quill-tree-row[data-distance='3'] { opacity: var(--path-dim-3); filter: blur(var(--path-soft)); }
+  .quill-tree[data-light='path'] .quill-tree-row[data-distance='3'] { opacity: var(--path-dim-3); }
   /* Something inside needs you: never dimmed past the first step, so its words stay readable. */
-  .quill-tree[data-light='path'] .quill-tree-row[data-needs]:not([data-distance='0']) { opacity: var(--path-dim-1); filter: none; }
+  .quill-tree[data-light='path'] .quill-tree-row[data-needs]:not([data-distance='0']) { opacity: var(--path-dim-1); }
   /* Hover and focus always bring a row back to full strength, so its words meet contrast. */
-  .quill-tree .quill-tree-row:hover, .quill-tree .quill-tree-row:focus-visible { opacity: 1; filter: none; --row-tint: color-mix(in srgb, var(--ink) 6%, transparent); }
-  @media (prefers-contrast: more) { .quill-tree .quill-tree-row { opacity: 1 !important; filter: none !important; } }
+  .quill-tree .quill-tree-row:hover, .quill-tree .quill-tree-row:focus-visible { opacity: 1; --row-tint: var(--mark-point); }
+  @media (prefers-contrast: more) { .quill-tree .quill-tree-row { opacity: 1 !important; } }
   .quill-tree-row:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-gap) * -1); }
-  .quill-tree-row[data-current] { --row-tint: color-mix(in srgb, var(--ink) 9%, transparent); font-weight: 500; }
+  /* On the path, a little lighter; where you are, a soft key. */
+  .quill-tree-lit { --row-tint: var(--mark-point); }
+  .quill-tree-row[data-current], .quill-tree .quill-tree-row[data-current]:hover { --row-tint: transparent; background-color: var(--mark-pick); box-shadow: inset 0 -1px 0 var(--mark-pick-edge); font-weight: 500; }
   .quill-tree-row[aria-disabled] { cursor: not-allowed; }
   .quill-tree-row:hover > .augur-reason, .quill-tree-row:focus > .augur-reason { opacity: 1; transform: none; z-index: 2; }
   /* The breadcrumb: the path's rows stick to the top of the rail, each under the one above (the kit sets each top). */
   .quill-tree-row[data-pinned] { position: sticky; top: 0; z-index: 1; background-color: var(--tree-ground); }
   .quill-tree-fold { color: var(--ink-muted); }
   .quill-tree-fold:hover, .quill-tree-fold:focus-visible { color: var(--ink); }
-  /* Needs you: the row blooms, and its sentence is always written under its name. */
-  .quill-tree-row[data-needs] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--needs-you) 40%, transparent), 0 0 var(--space-3) color-mix(in srgb, var(--needs-you) 18%, transparent); }
+  /* Needs you: a green dot, and its sentence is always written under its name. Quiet, like the rest of the well. */
   .quill-tree-row[data-needs] .quill-tree-dot { background: var(--needs-you); }
   .quill-tree-dot { flex: none; width: var(--space-1); height: var(--space-1); margin-inline: 1px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--motion-slow) var(--ease-out), background var(--motion-slow) var(--ease-out); }
   .quill-tree-lit .quill-tree-dot { background: var(--ink); transform: scale(1.5); }
-  .quill-tree-row[data-current] .quill-tree-dot { transform: scale(2); box-shadow: 0 0 0 1px var(--focus); }
+  .quill-tree-row[data-current] .quill-tree-dot { transform: scale(2); }
   .quill-tree-icon { flex: none; color: var(--ink-muted); }
   .quill-tree-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .quill-tree-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .quill-tree-needs { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: var(--space-1); color: var(--needs-you); font-size: var(--type-small); line-height: var(--leading-small); font-weight: 400; }
-  .quill-tree-count { color: var(--ink-muted); font-size: var(--type-label); font-variant-numeric: tabular-nums; }
-  .quill-tree-line { position: absolute; left: calc(var(--space-3) + var(--line-level) * var(--space-4) + 2px); width: 1px; background: color-mix(in srgb, var(--ink) 55%, transparent); pointer-events: none; }
+  .quill-tree-count { color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); font-variant-numeric: tabular-nums; }
+  .quill-tree-line { position: absolute; left: calc(var(--space-3) + var(--line-level) * var(--space-4) + 2px); width: 1px; background: color-mix(in srgb, var(--ink) 30%, transparent); pointer-events: none; }
   .quill-tree-line[data-part='start'] { top: 50%; bottom: 0; }
   .quill-tree-line[data-part='through'] { top: 0; bottom: 0; }
   .quill-tree-line[data-part='end'] { top: 0; height: 50%; }
@@ -394,7 +405,7 @@
   /* A reel: a lane of cards, its light at the start when the cards are pulled in. */
   .quill-reel {
     --reel-light: var(--ink-muted);
-    display: grid; grid-template-columns: var(--space-7) minmax(0, 1fr); border-radius: var(--radius-inset); background: var(--surface-inset);
+    display: grid; grid-template-columns: var(--space-7) minmax(0, 1fr);
   }
   .quill-reel[data-reveal='all'] { grid-template-columns: minmax(0, 1fr); }
   .quill-reel[data-tone='action'] { --reel-light: var(--green); }
@@ -405,7 +416,7 @@
   }
   .quill-reel-light[aria-disabled] { cursor: default; opacity: 0.4; }
   .quill-reel-light:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-gap) * -1); border-radius: var(--radius-inset); }
-  .quill-reel-count { font-size: var(--type-lead); line-height: var(--leading-lead); font-weight: var(--weight-title); font-variant-numeric: tabular-nums; }
+  .quill-reel-count { font-family: var(--font-mono); font-size: var(--type-lead); line-height: var(--leading-lead); font-weight: 400; font-variant-numeric: tabular-nums; }
   .quill-reel-slit {
     flex: 1; width: 2px; min-height: var(--space-7); border-radius: var(--radius-pill);
     background: linear-gradient(to bottom, transparent, var(--reel-light) 20%, var(--light) 50%, var(--reel-light) 80%, transparent);
@@ -421,16 +432,16 @@
   .quill-reel-waiting { margin: 0; padding: var(--space-5) 0; color: var(--ink-muted); font-size: var(--type-meta); }
   .quill-reel-card {
     display: flex; flex-direction: column; gap: var(--space-3); width: var(--reel-card); min-height: calc(var(--reel-card) * 0.56);
-    padding: var(--space-3) var(--space-4); border: 1px solid var(--hairline); border-radius: var(--radius-inset); text-align: left; color: var(--ink); font: inherit; cursor: pointer;
-    background: linear-gradient(160deg, color-mix(in srgb, var(--reel-light) 16%, var(--slate)) 0%, var(--slate-deep) 100%);
-    box-shadow: var(--shadow-raised); transform: scale(0.94); transform-origin: 50% 100%;
-    transition: transform var(--motion-slow) var(--ease-out), border-color var(--motion-slow) var(--ease-out), box-shadow var(--motion-slow) var(--ease-out);
+    padding: var(--space-3) var(--space-4); border: 0; border-radius: var(--radius-key); text-align: left; color: var(--ink); font: inherit; cursor: pointer;
+    background: transparent; opacity: var(--focus-far-dim);
+    transition: opacity var(--motion-slow) var(--ease-out), background-color var(--motion-slow) var(--ease-out), box-shadow var(--motion-slow) var(--ease-out);
   }
-  .quill-reel-card:hover { transform: translateY(calc(var(--space-1) * -1)) scale(0.96); }
-  .quill-reel-card[data-front] { transform: none; border-color: var(--hairline-strong); }
-  .quill-reel[data-tone='action'] .quill-reel-card[data-front] { box-shadow: var(--shadow-raised), 0 0 var(--space-7) calc(var(--space-4) * -1) var(--reel-light); }
+  /* The card in front comes up as a key; the rest wait, dimmed, until you point at one. */
+  .quill-reel-card:hover { opacity: 1; background: var(--mark-point); }
+  .quill-reel-card[data-front] { opacity: 1; background: var(--mark-pick); box-shadow: inset 0 calc(var(--key-edge) * -1) 0 var(--mark-pick-edge); }
+  .quill-reel[data-tone='action'] .quill-reel-card[data-front] .quill-reel-title::before { content: ''; display: inline-block; width: var(--space-2); height: var(--space-2); margin-right: var(--space-2); border-radius: 50%; background: var(--needs-you); vertical-align: middle; }
   .quill-reel-card:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-reel-when { color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .quill-reel-when { color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
   .quill-reel-when[data-urgent] { color: var(--reel-light); }
   .quill-reel[data-tone='quiet'] .quill-reel-when[data-urgent], .quill-reel[data-tone='upcoming'] .quill-reel-when[data-urgent] { color: var(--warning); }
   .quill-reel-art { display: flex; align-items: center; gap: var(--space-3); min-height: var(--space-7); color: var(--ink-muted); }
@@ -440,45 +451,30 @@
   /* Tiles: each kind has its own shape, lifts on hover and presses down. */
   .quill-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--measure-card) / 2.2), 1fr)); gap: var(--space-5) var(--space-4); padding-top: var(--space-2); }
   .quill-tile {
-    --tile-face: color-mix(in srgb, var(--ink) 8%, var(--slate));
-    --tile-drop: var(--space-1) var(--space-2) var(--space-5) calc(var(--space-2) * -1) color-mix(in srgb, var(--shade) 60%, transparent);
     position: relative; display: flex; flex-direction: column; gap: var(--space-2); min-height: calc(var(--measure-card) / 2.4); padding: var(--space-4);
-    border: 0; border-radius: var(--radius-key); text-align: left; color: var(--ink); font: inherit; cursor: pointer;
-    background: var(--tile-face); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent), var(--tile-drop);
-    transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), filter var(--motion-base) var(--ease-out);
+    border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-control);
+    text-align: left; color: var(--ink); font: inherit; cursor: pointer; background: var(--well);
+    transition: background-color var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out);
   }
   /* A tile and its "more" mark (PDR-010, amendment 6), bottom right, clear of a document's folded corner and the ribbon. */
   .quill-tile-place { position: relative; display: grid; }
   .quill-tile-more { position: absolute; right: var(--space-2); bottom: var(--space-2); }
-  .quill-tile-place[data-kind='document'] .quill-tile-more { color: color-mix(in srgb, var(--slate-deep) 70%, transparent); }
-  .quill-tile-place[data-kind='document'] .quill-tile-more:hover { color: var(--slate-deep); background: color-mix(in srgb, var(--slate-deep) 12%, transparent); }
-  .quill-tile:hover { transform: translateY(calc(var(--space-1) * -1)); filter: brightness(1.06); }
-  .quill-tile:active { transform: translateY(1px); }
+  /* Pointed at, it comes up as a soft key; pressed, its edge goes. A tile's kind is its icon and word, not its shape. */
+  .quill-tile:hover { background: var(--mark-pick); box-shadow: inset 0 -1px 0 var(--mark-pick-edge); }
+  .quill-tile:active { box-shadow: none; }
   .quill-tile:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-tile[data-kind='folder']::before { content: ''; position: absolute; left: 0; top: calc(var(--space-2) * -1); width: 38%; height: var(--space-2); border-radius: var(--radius-key) var(--radius-key) 0 0; background: var(--tile-face); }
-  .quill-tile[data-kind='folder'] { border-top-left-radius: 0; --tile-drop: 0 var(--space-1) var(--space-2) calc(var(--space-1) * -1) color-mix(in srgb, var(--shade) 45%, transparent); }
-  .quill-tile[data-kind='series'] {
-    --tile-drop: var(--space-1) calc(var(--space-1) * -1) 0 -1px color-mix(in srgb, var(--ink) 12%, var(--slate)), var(--space-2) calc(var(--space-2) * -1) 0 -2px color-mix(in srgb, var(--ink) 9%, var(--slate)),
-      var(--space-1) var(--space-2) var(--space-4) calc(var(--space-2) * -1) color-mix(in srgb, var(--shade) 55%, transparent);
-  }
-  .quill-tile[data-kind='series'] .quill-tile-count { font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: var(--weight-title); }
-  /* A page, but not a bright one: dimmer than the text on slate, so documents don't always win the eye over the places around them (PDR-010, amendment 4). */
-  .quill-tile[data-kind='document'] { --tile-face: color-mix(in srgb, var(--ink) 72%, var(--slate)); color: var(--slate-deep); clip-path: polygon(0 0, calc(100% - var(--space-4)) 0, 100% var(--space-4), 100% 100%, 0 100%); }
-  .quill-tile[data-kind='document'] .quill-tile-top { color: color-mix(in srgb, var(--slate-deep) 70%, transparent); }
-  .quill-tile[data-kind='document'] .quill-tile-state { color: var(--navy); }
-  .quill-tile[data-kind='library'] { box-shadow: inset var(--space-1) 0 0 var(--tile-mark, var(--navy)), inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent), var(--tile-drop); }
-  .quill-tile[data-kind='add'] { align-items: flex-start; justify-content: space-between; color: var(--ink-muted); background: var(--surface-inset); box-shadow: inset 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--shade) 30%, transparent); }
-  .quill-tile[data-kind='add']:hover { color: var(--ink); filter: none; transform: none; background: color-mix(in srgb, var(--shade) 30%, transparent); }
-  .quill-tile[data-locked], .quill-tile[aria-disabled] { cursor: not-allowed; filter: saturate(0.5); }
-  .quill-tile[data-locked]:hover, .quill-tile[aria-disabled]:hover { transform: none; }
+  .quill-tile[data-kind='add'] { align-items: flex-start; justify-content: space-between; color: var(--ink-muted); background: none; border: 1px dashed var(--hairline-strong); }
+  .quill-tile[data-kind='add']:hover { color: var(--ink); }
+  .quill-tile[data-locked], .quill-tile[aria-disabled] { cursor: not-allowed; border-style: dashed; border-top-width: 1px; }
+  .quill-tile[data-locked]:hover, .quill-tile[aria-disabled]:hover { background: var(--well); box-shadow: none; }
+  .quill-tile[data-locked] > :not(.quill-tile-foot), .quill-tile[aria-disabled] > :not(.quill-tile-foot) { opacity: 0.6; }
   .quill-tile-ribbon { position: absolute; top: calc(var(--space-1) * -1); right: 30%; width: var(--space-3); height: var(--space-5); background: var(--green); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); }
-  .quill-tile-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .quill-tile-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
   .quill-tile-eyebrow { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
   .quill-tile-name { margin-top: auto; font-size: var(--type-body); line-height: var(--leading-body); font-weight: 500; overflow-wrap: anywhere; }
   .quill-tile-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--type-label); line-height: var(--leading-label); }
-  .quill-tile-state { padding: 0 var(--space-1); border: 1px solid currentColor; letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .quill-tile-state { padding: 0 var(--space-1); border: 1px solid currentColor; font-family: var(--font-mono); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
   .quill-tile-owner, .quill-tile-note, .quill-tile-why { color: var(--ink-muted); }
-  .quill-tile[data-kind='document'] .quill-tile-note { color: color-mix(in srgb, var(--slate-deep) 70%, transparent); }
 
   /* The palette: find and go, over the racked app. */
   .quill-palette-veil { position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); display: flex; justify-content: center; align-items: flex-start; padding: 14vh var(--edge) 0; }
@@ -647,13 +643,12 @@
 
   /* Lifecycle */
   .quill-lifecycle { display: flex; flex-direction: column; gap: var(--space-3); }
-  .quill-lifecycle ol { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0; padding: 0; list-style: none; }
-  .quill-lifecycle li { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
-  .quill-lifecycle li + li::before { content: ''; width: var(--space-4); height: 1px; background: var(--hairline-strong); }
-  .quill-lifecycle-disc { flex: none; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }
+  .quill-lifecycle ol { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; list-style: none; }
+  .quill-lifecycle li { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .quill-lifecycle-disc { flex: none; align-self: stretch; height: var(--well-depth); background: var(--hairline); }
   .quill-lifecycle li[data-at='passed'] .quill-lifecycle-disc { background: var(--ink-muted); }
-  .quill-lifecycle li[data-at='here'] { color: var(--ink); font-weight: 600; }
-  .quill-lifecycle li[data-at='here'] .quill-lifecycle-disc { width: 10px; height: 10px; border-color: var(--ink); background: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 15%, transparent); }
+  .quill-lifecycle li[data-at='here'] { color: var(--ink); background: var(--mark-pick); box-shadow: inset 0 -1px 0 var(--mark-pick-edge); }
+  .quill-lifecycle li[data-at='here'] .quill-lifecycle-disc { background: var(--ink); }
   .quill-lifecycle-moves { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .quill-lifecycle-why { margin: 0; font-size: var(--type-small); color: var(--ink-muted); }
   .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
@@ -824,35 +819,37 @@
   .quill-tally-words b:is([data-status='warning'], [data-status='needs']) { color: var(--warning); }
   .quill-tally-words b[data-status='failed'] { color: var(--danger); }
   .quill-tally-words b[data-status='done'] { color: var(--success); }
-  .quill-timeline ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); }
-  .quill-timeline-day { padding-top: var(--space-2); }
-  .quill-timeline-day:first-child { padding-top: 0; }
-  .quill-timeline-ev { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: var(--space-3); }
-  .quill-timeline-ev time { color: var(--ink-muted); font-size: var(--type-small); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .quill-timeline ol { list-style: none; margin: 0; display: flex; flex-direction: column; font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .quill-timeline-day { padding: var(--space-4) var(--space-3) var(--space-1); font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
+  .quill-timeline-day:first-child { padding-top: var(--space-2); }
+  .quill-timeline-ev { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-3); padding: var(--space-1) var(--space-3); }
+  .quill-timeline-ev:hover { background: var(--mark-point); }
+  .quill-timeline-ev time { color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-small); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 1px; }
   .quill-timeline-ev b { font-weight: 500; }
   .quill-timeline .quill-fold { margin-top: var(--space-3); }
-  .quill-path { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-  .quill-path li { position: relative; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: var(--space-3); padding-bottom: var(--space-4); }
-  .quill-path li:last-child { padding-bottom: 0; }
-  .quill-path li:not(:last-child)::before { content: ''; position: absolute; left: 15.5px; top: 34px; bottom: 2px; width: 1px; background: var(--hairline-strong); }
-  .quill-path-disc { grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--floor) 82%, var(--slate-deep)); color: var(--slate-deep); }
-  .quill-path li[data-here] .quill-path-disc { box-shadow: 0 0 0 2px var(--slate), 0 0 0 3.5px var(--green); }
+  .quill-path { list-style: none; margin: 0; display: flex; flex-direction: column; }
+  .quill-path li { position: relative; display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: var(--space-3); padding: var(--space-2) var(--space-3); }
+  .quill-path li[data-here] { background: var(--mark-pick); box-shadow: inset 0 -1px 0 var(--mark-pick-edge); }
+  /* A floor is told by its icon, not its colour: the personal floor's colour is green, and green only means "needs you". */
+  .quill-path-disc { grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); border: 1px solid var(--hairline-strong); }
+  .quill-path li[data-here] .quill-path-disc { color: var(--ink); border-color: var(--ink); }
   .quill-path-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-3); padding-top: 6px; font-size: var(--type-meta); line-height: var(--leading-meta); }
   .quill-path-title button { all: unset; cursor: pointer; border-radius: var(--radius-key); }
   .quill-path-title button:hover { text-decoration: underline; text-underline-offset: 3px; }
   .quill-path-title button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-path-line { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  .quill-path-mark { color: var(--green); }
+  .quill-path-mark { color: var(--ink-muted); font-family: var(--font-mono); }
   .quill-path-mark[data-tone='no'] { color: var(--danger); }
   .quill-refs { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
   .quill-refs-empty { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  .quill-ref { display: inline-flex; align-items: center; max-width: 100%; vertical-align: middle; border: 1px solid var(--hairline); border-radius: var(--radius-key); background: var(--surface-pane); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); transition: border-color var(--motion-instant) var(--ease-standard); }
-  .quill-ref:hover { border-color: var(--hairline-strong); }
+  .quill-ref { display: inline-flex; align-items: center; max-width: 100%; vertical-align: middle; background: var(--well); border: 1px solid var(--hairline); border-top: var(--well-depth) solid var(--well-edge); border-radius: var(--radius-key); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); transition: background-color var(--motion-instant) var(--ease-standard); }
+  .quill-ref:hover { background: var(--mark-pick); border-color: var(--hairline-strong); }
   .quill-ref button { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 3px var(--space-3) 3px var(--space-2); border-radius: var(--radius-key); }
   .quill-ref button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-ref svg { flex: none; color: var(--ink-muted); }
   .quill-ref-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-ref-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--floor); }
+  /* Kept on another floor: a hollow ring; the floor's name is in its title. */
+  .quill-ref-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--ink-muted); }
   .quill-ref .quill-ref-remove { padding: 3px var(--space-2); color: var(--ink-muted); border-left: 1px solid var(--hairline); border-radius: 0 var(--radius-key) var(--radius-key) 0; }
   .quill-ref .quill-ref-remove:hover { color: var(--ink); }
   .quill-refs-closed { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px var(--space-3) 3px var(--space-2); border: 1px dashed var(--hairline-strong); border-radius: var(--radius-key); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
@@ -1095,15 +1092,15 @@
   .quill-tree { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
   .quill-tree-heading { padding: var(--space-2) var(--space-3) var(--space-1); }
   .quill-tree-item { outline: none; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
-  .quill-tree-item[data-hovered] { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .quill-tree-item[data-selected] { color: var(--ink); background: color-mix(in srgb, var(--ink) 9%, transparent); }
+  .quill-tree-item[data-hovered] { color: var(--ink); background: var(--mark-point); }
+  .quill-tree-item[data-selected] { color: var(--ink); background: var(--mark-pick); box-shadow: inset 0 -1px 0 var(--mark-pick-edge); }
   .quill-tree-item[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-gap) * -1); }
   .quill-tree-item-row { display: flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); padding: var(--space-1) var(--space-3) var(--space-1) 0; font-size: var(--type-meta); line-height: var(--leading-meta); }
   .quill-tree-chevron { all: unset; flex: none; display: grid; place-items: center; width: 20px; height: 20px; margin-left: var(--space-1); border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; transform: rotate(-90deg); transition: transform var(--motion-quick) var(--ease-standard); }
   .quill-tree-chevron[data-open] { transform: none; }
   .quill-tree-icon { flex: none; color: var(--ink-muted); }
   .quill-tree-item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-tree-item-meta { flex: none; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+  .quill-tree-item-meta { flex: none; font-family: var(--font-mono); font-size: var(--type-label); font-variant-numeric: tabular-nums; color: var(--ink-muted); }
   .quill-tree-compact { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
 }
 
