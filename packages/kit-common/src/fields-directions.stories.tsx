@@ -2,12 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';
 import { Checkbox, CheckboxGroup } from './checkbox.js';
 import { Choice } from './choice.js';
+import { Select } from './select.js';
 import { TextField } from './text-field.js';
 import { Toggle } from './toggle.js';
 import './fields-directions.stories.css';
 
 /**
- * Four directions for the fields round (6 Nov 2026), to pick one from: text fields, several lines,
+ * Four directions for the fields round (6 Nov 2026), to pick one from: text fields, several lines, selects,
  * checkboxes, radios (Choice) and toggles, each with its focus ring. All four sit with the Keycap
  * button: flat greys, hairlines, no blur, no colour of their own. Green still means "needs you", red
  * means wrong, blue means focus. The parts and their props are the same in every direction; only the
@@ -47,8 +48,9 @@ function Specimen({ direction, name, summary }: { direction: string; name: strin
           <TextField label="Collection" required state="attention" message="Needs you." />
           <TextField label="Email" defaultValue="alex" state="error" message="That isn’t an email address." />
         </Column>
-        <Column title="Several lines">
+        <Column title="Several lines and select">
           <TextField label="Summary" multiline rows={3} maxLength={280} defaultValue="Plans for the third quarter, by floor." />
+          <Select label="Kind" options={['Report', 'Note', 'Plan']} defaultValue="Plan" />
           <TextField label="Made by" defaultValue="Alex Morgan" readOnly />
           <TextField label="Floor" defaultValue="Research" disabled reason="Floors come from your department." />
         </Column>
