@@ -1,5 +1,5 @@
 import { Children, useState, type ReactNode } from 'react';
-import { Button, IconButton, Menu, cx, type ButtonKind } from '@augur/kit-common';
+import { Button, Icon, IconButton, Menu, cx, type ButtonKind } from '@augur/kit-common';
 
 /** A step in the trail: what this page is inside. */
 export interface TrailStep {
@@ -19,7 +19,20 @@ export interface PageAction {
   reason?: string;
 }
 
+/** How you got to this page, when a link brought you from somewhere else. */
+export interface PageArrival {
+  /** Where you came from ("Night roster"). */
+  from: string;
+  /** Why the link brought you here, as the rest of one sentence ("where Halden's crew is short a watch"). */
+  why?: string;
+  /** Go back to where you came from. */
+  onBack: () => void;
+  /** You've read the line: it shrinks to a Back key beside the actions. */
+  read?: boolean;
+}
+
 export interface PageHeadProps {
+  /** @deprecated PDR-014: a page says where it is with its title in a fixed slot and an `arrival` line, not a trail. Still drawn, for apps that pass it. */
   trail?: TrailStep[];
   onTrail?: (step: TrailStep) => void;
   eyebrow?: string;
@@ -30,17 +43,26 @@ export interface PageHeadProps {
   onAction?: (action: PageAction) => void;
   /** The title's heading level, 1 by default: it's the page's one heading. */
   level?: number;
+  /** Where a link brought you from: one line under the title, then a Back key once `read`. */
+  arrival?: PageArrival;
+  /** While several things are picked: their SelectionBar, in the actions' slot, so actions stay in one place. */
+  selection?: ReactNode;
   /** Anything that belongs to the title and comes under it: tags, a status. */
   children?: ReactNode;
   className?: string;
 }
 
 /**
- * The top of an app's page: the trail of what this is inside, an eyebrow, the
- * title, one line of summary, and the page's actions. Three trail steps, then
- * the middle folds to "…"; two actions show, at most one primary, the rest in ⋯.
+ * The top of an app's page, in the Line look: a kind label in mono capitals,
+ * the title and one line of summary on the left, the page's actions on the
+ * right. Both sit in fixed slots, the same place on every page, and the head
+ * is always as tall as the frame's horizon (`frame-head`), so its foot lines
+ * up with the rail's and the drawer's. A link that brings you here leaves one
+ * arrival line, which shrinks to a Back key once you've read it. Two actions
+ * show, at most one primary, the rest in ⋯; while several things are picked,
+ * the selection takes their slot.
  */
-export function PageHead({ trail = [], onTrail, eyebrow, heading, summary, actions = [], onAction, level = 1, children, className }: PageHeadProps) {
+export function PageHead({ trail = [], onTrail, eyebrow, heading, summary, actions = [], onAction, level = 1, arrival, selection, children, className }: PageHeadProps) {
   const [unfolded, setUnfolded] = useState(false);
   let primary = false;
   const shown = actions.slice(0, 2).map((a) => {
@@ -86,9 +108,29 @@ export function PageHead({ trail = [], onTrail, eyebrow, heading, summary, actio
             </p>
           ) : null}
           {children}
+          {arrival && !arrival.read ? (
+            <p className="quill-page-head-arrival">
+              <Icon name="link" size={14} />
+              <span>
+                You came here from <b>{arrival.from}</b>
+                {arrival.why ? `, ${arrival.why}` : ''}.
+              </span>
+              <button type="button" onClick={arrival.onBack}>
+                Back
+              </button>
+            </p>
+          ) : null}
         </div>
-        {shown.length ? (
+        {selection ? (
+          <div className="quill-page-head-acts">{selection}</div>
+        ) : shown.length || arrival?.read ? (
           <div className="quill-page-head-acts">
+            {arrival?.read ? (
+              <button type="button" className="quill-page-head-back" onClick={arrival.onBack}>
+                <Icon name="back" size={14} />
+                {arrival.from}
+              </button>
+            ) : null}
             {shown.map((a) => (
               <Button key={a.id} kind={a.kind} size="sm" disabled={a.disabled} reason={a.reason} onPress={() => onAction?.(a)}>
                 {a.label}
