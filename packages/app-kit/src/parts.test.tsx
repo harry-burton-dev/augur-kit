@@ -157,6 +157,20 @@ describe('the parts apps took from the Lit kit', () => {
       expect(drawn()[0]).toBe('Row 0000');
     });
 
+    it('shows a page at a time with Back and On, and goes back to the first on a new sort', () => {
+      draw(<Table noun="rows" pageSize={10} virtual columns={columns} rows={many} />);
+      expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(false);
+      expect(drawn()).toEqual(many.slice(0, 10).map((r) => r.name));
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^1–10 of 3,?000$/);
+      expect(button('Back: the rows before these').getAttribute('aria-disabled')).toBe('true');
+      act(() => button('On: the next rows').click());
+      expect(drawn()[0]).toBe('Row 0010');
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^11–20 of/);
+      act(() => [...document.querySelectorAll<HTMLElement>('.quill-table-head[data-allows-sorting]')][1]!.click());
+      expect(drawn()[0]).toBe('Row 2999');
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^1–10 of/);
+    });
+
     it('looks as it always did while loading or empty', () => {
       draw(<Table noun="rows" virtual columns={columns} rows={[]} empty="No rows yet." />);
       expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(false);
