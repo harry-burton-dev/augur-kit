@@ -329,7 +329,7 @@ describe('lifecycles and people', () => {
     expect(rows[1]).toMatchObject({ disabled: true, reason: 'Already chosen.' });
   });
 
-  it('looks after typing, and gathers what’s picked as chips', async () => {
+  it('looks after typing, and gathers what’s picked in a list under it', async () => {
     const search = vi.fn(async () => [
       { kind: 'person' as const, id: 'u1', name: 'Nora Briggs', detail: 'Ops' },
       { kind: 'team' as const, id: 't1', name: 'Ops', size: 4 },
@@ -347,7 +347,9 @@ describe('lifecycles and people', () => {
     expect(rows).toHaveLength(1);
     await act(async () => rows[0]!.click());
     expect(change).toHaveBeenLastCalledWith([{ kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'Ops' }]);
-    expect(document.querySelector('.quill-ref-name')!.textContent).toBe('Nora Briggs');
+    expect(document.querySelector('.quill-people-one .augur-person-text')!.textContent).toContain('Nora Briggs');
+    await act(async () => document.querySelector<HTMLElement>('[aria-label="Take off Nora Briggs"]')!.click());
+    expect(change).toHaveBeenLastCalledWith([]);
     expect(document.querySelector('input')!.value).toBe('');
   });
 });
