@@ -609,6 +609,23 @@
   .augur-letterbox-actions { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
 }
 
+/* Status: where a thing is, as a mark and a word (moved from Quill, PDR-016). */
+@layer components {
+  .augur-status { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }
+  .augur-status-mark { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; }
+  .augur-status-word { color: var(--ink); }
+  .augur-status[data-status='needs'] .augur-status-mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--needs-you); }
+  .augur-status[data-status='needs'] .augur-status-word { color: var(--needs-you); }
+  .augur-status[data-status='needs'][data-next] .augur-status-mark::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; --ping-scale: 1.9; }
+  .augur-status[data-status='running'] .augur-status-mark::before { content: ''; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
+  .augur-status[data-status='queued'] .augur-status-mark::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }
+  .augur-status[data-status='paused'] .augur-status-mark::before { content: ''; width: 8px; height: 8px; border-left: 2px solid var(--ink-muted); border-right: 2px solid var(--ink-muted); }
+  .augur-status:is([data-status='queued'], [data-status='paused'], [data-status='done']) .augur-status-word { color: var(--ink-muted); }
+  .augur-status[data-status='done'] .augur-status-mark { color: var(--success); }
+  .augur-status[data-status='failed'] :is(.augur-status-mark, .augur-status-word) { color: var(--danger); }
+  .augur-status[data-status='warning'] :is(.augur-status-mark, .augur-status-word) { color: var(--warning); }
+}
+
 @keyframes augur-spin { to { transform: rotate(1turn); } }
 @keyframes augur-count { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @keyframes augur-ping { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(var(--ping-scale, 1.14)); opacity: 0; } }
@@ -629,14 +646,16 @@
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
-    .augur-signal[data-kind='ember'] .augur-signal-light { animation: none; }
+    .augur-signal[data-kind='ember'] .augur-signal-light,
+    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
   }
   :root[data-motion='reduce'] {
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
-    .augur-signal[data-kind='ember'] .augur-signal-light { animation: none; }
+    .augur-signal[data-kind='ember'] .augur-signal-light,
+    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
   }
 }
