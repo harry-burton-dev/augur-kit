@@ -180,7 +180,7 @@ export interface DataViewProps<T> {
   empty?: { heading: string; body?: string; action?: string; onAction?: () => void };
   /** What to say above the error's own words, such as "Libraries didn't load". */
   failed?: string;
-  size?: 'region' | 'line';
+  size?: 'region' | 'line' | 'page';
   children: (data: T) => ReactNode;
 }
 

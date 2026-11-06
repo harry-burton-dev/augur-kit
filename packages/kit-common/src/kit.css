@@ -578,16 +578,18 @@
   .augur-progress { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
   .augur-progress-head { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); }
   .augur-progress-value { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
-  .augur-bar { position: relative; display: block; height: 6px; overflow: hidden; border-radius: var(--radius-pill); background: var(--surface-inset); }
-  .augur-bar > i { position: absolute; top: 0; bottom: 0; left: 0; display: block; border-radius: inherit; background: var(--green); transition: width var(--motion-slow) var(--ease-out); }
-  .augur-progress[data-indeterminate] .augur-bar > i { animation: augur-run var(--motion-run) var(--ease-standard) infinite; }
+  /* The bar is the horizon's line (PDR, 6 Nov): a groove that fills with ink, never green, since green means
+     only "needs you". Not known yet, a short stretch of ink travels along it. */
+  .augur-bar { position: relative; display: block; height: var(--key-edge-sm); overflow: hidden; background: var(--groove); box-shadow: 0 1px 0 var(--groove-lit); }
+  .augur-bar > i { position: absolute; top: 0; bottom: 0; left: 0; display: block; background: var(--ink); transition: width var(--motion-slow) var(--ease-out); }
+  .augur-progress[data-indeterminate] .augur-bar > i { width: 30%; background: var(--ink-muted); animation: augur-travel var(--motion-run) var(--ease-standard) infinite alternate; }
   .augur-steps { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
   .augur-step { display: inline-flex; align-items: center; gap: var(--space-2); }
   .augur-step-mark { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; border: var(--focus-ring) solid currentColor; }
   .augur-step[data-state='done'] { color: var(--ink); }
   .augur-step[data-state='done'] .augur-step-mark { border-color: transparent; }
-  .augur-step[data-state='now'] { color: var(--green); }
-  .augur-step[data-state='now'] .augur-step-mark { background: color-mix(in srgb, var(--green) 25%, transparent); }
+  .augur-step[data-state='now'] { color: var(--ink); font-weight: 500; }
+  .augur-step[data-state='now'] .augur-step-mark { background: color-mix(in srgb, var(--ink) 20%, transparent); }
 
   /* The letterbox: urgent things in a 2.39:1 frame; above and below step back behind the scrim. */
   .augur-letterbox { position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); }
@@ -684,6 +686,7 @@
 @keyframes augur-spin { to { transform: rotate(1turn); } }
 @keyframes augur-count { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @keyframes augur-ping { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(var(--ping-scale, 1.14)); opacity: 0; } }
+@keyframes augur-travel { from { left: 0; } to { left: 70%; } }
 @keyframes augur-run { 0% { left: 0; width: 0; } 50% { width: 30%; } 100% { left: 100%; width: 0; } }
 @keyframes augur-open-frame { from { clip-path: inset(50% 0); } to { clip-path: inset(0 0); } }
 @keyframes augur-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -703,7 +706,7 @@
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
-    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
+    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
   }
   :root[data-motion='reduce'] {
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
@@ -711,7 +714,7 @@
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
-    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
+    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
   }
 }
 
