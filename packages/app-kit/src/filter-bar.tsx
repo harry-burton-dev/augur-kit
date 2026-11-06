@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Button as AriaButton, Input, Menu, MenuItem, MenuTrigger, Popover, SearchField, type Key, type Selection } from 'react-aria-components';
-import { Icon, cx, type IconName, type SelectOption } from '@augur/kit-common';
+import { Button as AriaButton, Menu, MenuItem, MenuTrigger, Popover, type Key, type Selection } from 'react-aria-components';
+import { Icon, SearchField, cx, type IconName, type SelectOption } from '@augur/kit-common';
 import { Tag } from './states.js';
 
 /** One way to narrow a list: its button in the bar, and the choices it opens. */
@@ -59,9 +59,7 @@ function Choices({ id, label, options, chosen, single, search, button, onPick }:
       </AriaButton>
       <Popover className="augur-popover augur-menu quill-filter-panel" placement="bottom start" offset={6}>
         {search ? (
-          <SearchField aria-label={`Find a ${label.toLocaleLowerCase()}`} value={word} onChange={setWord} className="quill-filter-find" autoFocus>
-            <Input className="augur-input" placeholder="Find…" />
-          </SearchField>
+          <SearchField label={`Find a ${label.toLocaleLowerCase()}`} placeholder="Find…" value={word} onChange={setWord} className="quill-filter-find" autoFocus />
         ) : null}
         <Menu
           aria-label={label}

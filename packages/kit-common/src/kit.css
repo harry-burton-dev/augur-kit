@@ -194,6 +194,15 @@
     background: radial-gradient(120% 140% at 50% 0%, color-mix(in srgb, var(--light) 10%, transparent), transparent 60%);
   }
 
+  /* Busy (picked 6 Nov 2026, Groove): no spinner. The key's bottom edge becomes the horizon's groove, and a
+     short stretch of ink runs along it until the work is done; the words say what is happening. */
+  .augur-button[data-pending] { border-bottom-color: var(--groove); }
+  .augur-button[data-pending]::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: calc(-1 * var(--key-depth)); height: var(--key-depth);
+    background: linear-gradient(var(--ink), var(--ink)) no-repeat 0 0 / 30% 100%;
+    animation: augur-sweep var(--motion-run) var(--ease-standard) infinite alternate;
+  }
+  /* Kept for apps that drew their own; the kit itself no longer spins a button. */
   .augur-spinner {
     width: 14px;
     height: 14px;
@@ -355,9 +364,10 @@
     transform: translateX(22px); background: var(--ink); color: var(--slate-deep); border-bottom-color: color-mix(in srgb, var(--ink) 62%, var(--shade));
   }
   .augur-toggle-row[data-selected] .augur-toggle-word { color: var(--ink); }
-  .augur-toggle-row[data-busy] .augur-knob::after {
-    content: ''; position: absolute; inset: -3px; border-radius: var(--radius-control); border: var(--focus-ring) solid transparent; border-top-color: var(--ink);
-    animation: augur-spin var(--motion-spin) linear infinite;
+  .augur-toggle-row[data-busy] .augur-switch::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: calc(-1 * var(--key-edge-sm)); height: var(--key-edge-sm);
+    background: linear-gradient(var(--ink), var(--ink)) no-repeat 0 0 / 30% 100%;
+    animation: augur-sweep var(--motion-run) var(--ease-standard) infinite alternate;
   }
 
   /* Checkboxes: wait for the form's primary. The box is a small well; ticked, a light key comes up in it. */
@@ -518,7 +528,7 @@
   .augur-menu-item[data-danger] .augur-menu-icon { color: var(--danger); }
   .augur-menu-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .augur-menu-why { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  .augur-menu-key { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-soft); color: var(--ink-muted); }
+  .augur-menu-key { flex: none; }
   .augur-menu-line { border: 0; border-top: 1px solid var(--hairline); margin: var(--space-1) 0; }
 
   /* Tabs: Key (picked 6 Nov 2026), like the Keycap button. The names sit in a sunken tray, and the one
@@ -633,6 +643,39 @@
   }
   .augur-tip kbd { font-family: var(--font-mono); color: var(--ink-muted); margin-left: var(--space-2); }
   .augur-tip[data-entering] { animation: augur-fade var(--motion-quick) var(--ease-out); }
+
+  /* Key caps: Key (picked 6 Nov 2026). A key to press, as the Keycap button at its smallest: mono, square,
+     with a thicker bottom edge. A combination sits side by side. */
+  .augur-key-cap {
+    display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 1.6em; padding: 0 var(--space-1);
+    background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-weight: 400; color: var(--ink);
+    white-space: nowrap; vertical-align: middle;
+  }
+  .augur-keys { display: inline-flex; align-items: center; gap: var(--space-1); vertical-align: middle; font: inherit; }
+
+  /* Links: Key (picked 6 Nov 2026). Never underlined: ink words in a heavier weight; pointing at them lifts
+     them as a soft key. Inside and outside AUGUR alike. */
+  .augur-link {
+    color: var(--ink); font-weight: 500; text-decoration: none; cursor: pointer; outline: none;
+    padding: 0 2px; margin: 0 -2px; border-bottom: 1px solid transparent; border-radius: var(--radius-key);
+    transition: background var(--motion-instant) var(--ease-standard), border-color var(--motion-instant) var(--ease-standard);
+  }
+  .augur-link[data-hovered] { background: var(--key); border-bottom-color: var(--key-bottom); }
+  .augur-link[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+  /* Search: Key (picked 6 Nov 2026). The one search field: a well with a find mark, matching as you type.
+     While empty, a small key says which key brings you here; once you write, it becomes Esc to clear. */
+  .augur-search { color: var(--ink-muted); }
+  .augur-search .augur-input::-webkit-search-cancel-button { appearance: none; }
+  .augur-search-clear { display: inline-flex; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+  .augur-search-key { display: inline-flex; }
+
+  /* Skeletons: Key (picked 6 Nov 2026). Empty wells in the shape of what comes, breathing slowly. */
+  .augur-skeleton { display: flex; flex-direction: column; gap: var(--space-3); }
+  .augur-skeleton i { display: block; height: var(--space-3); background: var(--well); border-top: var(--well-depth) solid var(--well-edge); animation: augur-breathe var(--motion-ping) var(--ease-standard) infinite; }
+  .augur-skeleton i[data-size='title'] { height: var(--space-5); margin-bottom: var(--space-2); }
+  .augur-skeleton-facts { display: flex; gap: var(--space-3); margin-top: var(--space-2); }
 
   /* Progress: a bar, or a few named steps. */
   .augur-progress { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
@@ -749,6 +792,8 @@
 @keyframes augur-travel { from { left: 0; } to { left: 70%; } }
 @keyframes augur-run { 0% { left: 0; width: 0; } 50% { width: 30%; } 100% { left: 100%; width: 0; } }
 @keyframes augur-open-frame { from { clip-path: inset(50% 0); } to { clip-path: inset(0 0); } }
+@keyframes augur-sweep { to { background-position: 100% 0; } }
+@keyframes augur-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 @keyframes augur-fade { from { opacity: 0; } to { opacity: 1; } }
 /* The see-through letterbox's bars close in from the screen's edges, as the edge rules becoming the bars. */
 @keyframes augur-bar-in-top { from { transform: translateY(-100%); } to { transform: none; } }
@@ -757,24 +802,24 @@
 @keyframes augur-rise { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 /* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
-   loop stops. A spinner stays a still arc and a running bar a still one; each still says it's busy
+   loop stops. A busy key's or field's running line stops where it is; each still says it's busy
    in words. reduced-motion.test.ts checks that every infinite animation is stopped here. */
 @layer components {
   @media (prefers-reduced-motion: reduce) {
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
-    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
+    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-switch::after, .augur-button[data-pending]::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
-    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
+    .augur-progress[data-indeterminate] .augur-bar > i, .augur-skeleton i { animation: none; }
   }
   :root[data-motion='reduce'] {
     .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
-    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
+    .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-switch::after, .augur-button[data-pending]::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
     .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
-    .augur-progress[data-indeterminate] .augur-bar > i { animation: none; }
+    .augur-progress[data-indeterminate] .augur-bar > i, .augur-skeleton i { animation: none; }
   }
 }
 

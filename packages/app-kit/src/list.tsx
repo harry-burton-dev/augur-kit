@@ -25,7 +25,7 @@ import {
   type Selection,
   type SortDescriptor,
 } from 'react-aria-components';
-import { Button, Icon, Status, cx, statusUrgency, type IconName, type StatusName } from '@augur/kit-common';
+import { Button, Icon, SearchField, Status, cx, statusUrgency, type IconName, type StatusName } from '@augur/kit-common';
 import { State } from './states.js';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 import { writeDate, type AppFormats } from './formats.js';
@@ -484,28 +484,25 @@ export function Table<R extends TableRow = TableRow>({
         {actions}
         {filterable ? (
           filtering ? (
-            <label className="quill-table-filter">
-              <Icon name="find" size={16} />
-              <input
-                type="search"
-                aria-label={`Filter ${noun}`}
-                value={filter}
-                autoFocus
-                onChange={(e) => {
-                  setFilter(e.target.value);
+            <SearchField
+              className="quill-table-filter"
+              label={`Filter ${noun}`}
+              value={filter}
+              autoFocus
+              onChange={(next) => {
+                setFilter(next);
+                setPage(0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Escape') return;
+                e.preventDefault();
+                if (filter) {
+                  setFilter('');
                   setPage(0);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Escape') return;
-                  e.preventDefault();
-                  if (filter) {
-                    setFilter('');
-                    setPage(0);
-                  }
-                  else setFiltering(false);
-                }}
-              />
-            </label>
+                }
+                else setFiltering(false);
+              }}
+            />
           ) : (
             <button type="button" className="quill-table-find" aria-label={`Filter ${noun}`} onClick={() => setFiltering(true)}>
               <Icon name="find" size={16} />

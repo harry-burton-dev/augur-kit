@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components';
-import { Icon, type IconName } from '@augur/kit-common';
+import { Icon, SearchField, type IconName } from '@augur/kit-common';
 import { useRack } from './focus.js';
 
 /** One thing the palette can go to or do. */
@@ -65,19 +65,17 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
       <Modal className="quill-palette">
         <AriaDialog aria-label={placeholder} className="outline-none">
           <div className="quill-palette-field">
-            <Icon name="find" size={18} />
-            <input
-              ref={field}
+            <SearchField
+              inputRef={field}
               autoFocus
-              type="search"
               role="combobox"
               aria-expanded
               aria-controls={`${id}-list`}
               aria-activedescendant={chosen ? `${id}-${chosen.id}` : undefined}
               aria-autocomplete="list"
-              placeholder={placeholder}
+              label={placeholder}
               value={query}
-              onChange={(e) => onQuery(e.target.value)}
+              onChange={onQuery}
               onKeyDown={onKey}
             />
           </div>

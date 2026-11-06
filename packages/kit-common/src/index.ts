@@ -39,3 +39,7 @@ export { ComboBox, type ComboBoxProps } from './combo-box.js';
 export { MultiSelect, type MultiSelectProps } from './multi-select.js';
 export { NumberField, type NumberFieldProps } from './number-field.js';
 export { Slider, type SliderProps } from './slider.js';
+export { SearchField, type SearchFieldProps } from './search-field.js';
+export { Link, type LinkProps } from './link.js';
+export { KeyCap, type KeyCapProps } from './key-cap.js';
+export { Skeleton, type SkeletonProps } from './skeleton.js';
