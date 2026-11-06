@@ -31,9 +31,9 @@ export interface SelectProps extends FieldProps {
 const normalise = (options: (SelectOption | string)[]): SelectOption[] => options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
 
 /**
- * Choose one from a short list (up to about 12). It looks like a TextField with
- * a chevron; opened, a raised glass list appears under the line, and the chosen
- * option carries an ink tick. Keys, typing to jump and the list's placement
+ * Choose one from a short list (up to about 12). It is a TextField's well with
+ * a chevron; opened, its list appears under it, and the chosen option carries
+ * an ink tick. Keys, typing to jump and the list's placement
  * come from React Aria; the list opens above everything, so a dialog never clips it.
  */
 export function Select({ label, hint, required, optional, disabled, reason, state, message, className, options, value, defaultValue = null, onChange, placeholder = 'Choose…', empty, name, readOnly, busy }: SelectProps) {

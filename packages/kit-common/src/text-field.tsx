@@ -30,9 +30,10 @@ export interface TextFieldProps extends FieldProps {
 }
 
 /**
- * A line to write on: a label, an optional hint and a hairline that turns the
- * focus blue while you type. A required field left empty asks in green; only
- * content that is wrong turns red, and typing clears either straight away.
+ * Somewhere to write (Well): a label, an optional hint, and a slot a step darker
+ * than the ground, its depth a thicker top line. While you write, the kit's focus
+ * ring sits around it. A required field left empty asks in green; only content
+ * that is wrong turns red, and typing clears either straight away.
  */
 export function TextField({
   label, hint, required, optional, disabled, reason, state, message, className,
