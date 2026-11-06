@@ -4,7 +4,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ms } from '@augur/kit-common';
 import { KindTile } from './tiles.js';
-import { pageActions, placeActions, RING_MORE_ID, RING_TARGETS_MOST, RingMore, RingProvider, useRingTarget, type RingAction, type RingSubject } from './radial-menu.js';
+import { FocusStage } from './focus.js';
+import { pageActions, placeActions, RING_MORE_ID, RING_TARGETS_MOST, RingMore, RingProvider, useRingTarget, useRingTouch, type RingAction, type RingSubject } from './radial-menu.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -460,5 +461,120 @@ describe('RadialMenu two rings', () => {
     act(() => void openWedge.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     settle();
     expect(onAction).toHaveBeenCalledWith('open');
+  });
+});
+
+describe('RadialMenu consequence focus (V6)', () => {
+  const breaks = [
+    { id: 'index', label: 'Policy index', effect: 'Link breaks' },
+    { id: 'pack', label: 'Onboarding pack', effect: 'Loses a source' },
+  ];
+  const remove: RingAction = { id: 'delete', label: 'Delete', icon: 'delete', danger: true, touches: breaks, undo: 'Undo for 30 s' };
+  const rename: RingAction = { id: 'rename', label: 'Rename', icon: 'rename', slot: 'w' };
+  const lettered = () => document.querySelector('.augur-letterbox[data-passive]');
+
+  function Related({ id, children }: { id: string; children: ReactNode }) {
+    return <p {...useRingTouch(id)}>{children}</p>;
+  }
+  /** Opens the menu in a stage, with the policy index on screen and the onboarding pack not on the page. */
+  const openOnPage = (subject: RingSubject) => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      const at = this.dataset.ringTouch === 'index' ? { x: 300, y: 400 } : { x: 10, y: 10 };
+      return { ...at, left: at.x, top: at.y, right: at.x + 200, bottom: at.y + 40, width: 200, height: 40, toJSON() {} } as DOMRect;
+    });
+    draw(
+      <FocusStage>
+        <RingProvider>
+          <Thing subject={subject} />
+          <Related id="index">Policy index</Related>
+        </RingProvider>
+      </FocusStage>,
+    );
+    const thing = document.querySelector('button')!;
+    act(() => void thing.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 })));
+  };
+
+  it('marks a thing on the page by its id', () => {
+    expect(useRingTouch('index')).toEqual({ 'data-ring-touch': 'index' });
+  });
+
+  it('names everything the focused action touches in the readout, on screen or not', () => {
+    open({ label: 'Plan', onAction: () => {}, actions: [remove, rename] });
+    expect(readout()).toContain('Policy index: Link breaks');
+    expect(readout()).toContain('Onboarding pack: Loses a source');
+    key(items()[0]!, 'ArrowDown');
+    expect(readout()).not.toContain('Policy index');
+  });
+
+  it('brings what is on screen forward, framed with its effect, sharp through the rack, with a lead from the subject', () => {
+    openOnPage({ label: 'Plan', onAction: () => {}, actions: [remove, rename] });
+    const framed = [...document.querySelectorAll('.quill-ring-touch')];
+    expect(framed).toHaveLength(1);
+    expect(framed[0]!.textContent).toBe('Link breaks');
+    expect(framed[0]!.hasAttribute('data-danger')).toBe(true);
+    expect(document.querySelectorAll('.quill-ring-lead')).toHaveLength(1);
+    // The subject and the policy index both stay sharp: one mask layer for the whole, one for each.
+    const rack = document.querySelector<HTMLElement>('.quill-rack')!;
+    expect(rack.style.maskPosition.split(', ')).toHaveLength(3);
+    key(document.activeElement!, 'ArrowDown');
+    expect(document.querySelectorAll('.quill-ring-touch')).toHaveLength(0);
+  });
+
+  it('touches nothing while unavailable, and asks a function with the target in focus', () => {
+    const move: RingAction = {
+      id: 'move',
+      label: 'Move',
+      icon: 'folder',
+      touches: (t) => (t === 'people' ? [{ id: 'index', label: 'Policy index', effect: 'Link updated' }] : []),
+      targets: [
+        { id: 'sites', label: 'Sites' },
+        { id: 'people', label: 'People' },
+      ],
+    };
+    open({ label: 'Plan', onAction: () => {}, actions: [move, { ...remove, disabled: true, reason: 'Locked' }] });
+    expect(readout()).not.toContain('Policy index');
+    key(items()[0]!, 'ArrowRight');
+    expect(readout()).not.toContain('Policy index');
+    key(places()[0]!, 'ArrowDown');
+    expect(readout()).toContain('Policy index: Link updated');
+    key(places()[1]!, 'ArrowLeft');
+    key(items()[0]!, 'ArrowDown');
+    expect(readout()).not.toContain('Policy index');
+  });
+
+  it('letterboxes a held action that touches things until it is let go', () => {
+    vi.useFakeTimers();
+    open({ label: 'Plan', onAction: () => {}, actions: [remove, rename] });
+    const item = items()[0]!;
+    expect(lettered()).toBeNull();
+    key(item, 'Enter');
+    const box = lettered()!;
+    expect(box.getAttribute('aria-hidden')).toBe('true');
+    expect(box.querySelector('[role="alertdialog"], button')).toBeNull();
+    expect(box.textContent).toContain('Delete Plan');
+    expect(box.textContent).toContain('Policy indexLink breaks');
+    expect(box.textContent).toContain('2 things break · Let go to cancel · Undo for 30 s');
+    // Focus stays on the action, so letting go is still heard.
+    expect(document.activeElement).toBe(item);
+    key(item, 'Enter', 'keyup');
+    expect(lettered()).toBeNull();
+  });
+
+  it('keeps the hold in the ring when the action touches nothing', () => {
+    vi.useFakeTimers();
+    open({ label: 'Plan', onAction: () => {}, actions: [{ ...remove, touches: [] }] });
+    key(items()[0]!, 'Enter');
+    expect(items()[0]!.hasAttribute('data-holding')).toBe(true);
+    expect(lettered()).toBeNull();
+  });
+
+  it('letterboxes the first of two presses under reduced motion', () => {
+    reduceMotion();
+    const onAction = vi.fn();
+    open({ label: 'Plan', onAction, actions: [remove] });
+    key(items()[0]!, 'Enter');
+    expect(lettered()!.textContent).toContain('Press Enter again to delete, Esc to cancel');
+    key(items()[0]!, 'Enter');
+    expect(onAction).toHaveBeenCalledWith('delete');
   });
 });

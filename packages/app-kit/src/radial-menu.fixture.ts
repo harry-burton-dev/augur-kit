@@ -1,4 +1,4 @@
-import type { RingAction } from './radial-menu.js';
+import type { RingAction, RingTouch } from './radial-menu.js';
 
 /* Sample actions for the radial menu's stories: one document's verbs. Names and counts are examples. Not built. */
 
@@ -51,3 +51,17 @@ export const manyActions: RingAction[] = [
   { id: 'link', label: 'Copy link', icon: 'link' },
   { id: 'download', label: 'Download', icon: 'download' },
 ];
+
+/** The other documents on the page, each marked with `useRingTouch` by its id. */
+export const relatedDocuments: RingTouch[] = [
+  { id: 'index', label: 'Policy index', effect: 'Link breaks' },
+  { id: 'pack', label: 'Onboarding pack', effect: 'Loses a source' },
+  { id: 'handbook', label: 'Staff handbook', effect: 'Link breaks' },
+];
+
+/** The same verbs, where Delete and Move name the other documents they touch, and Delete says how to undo it. */
+export const touchingActions: RingAction[] = documentActions.map((a) => {
+  if (a.id === 'delete') return { ...a, preview: 'Three documents cite this one', touches: relatedDocuments, undo: 'Undo for 30 s' };
+  if (a.id === 'move') return { ...a, touches: (t?: string) => (t ? relatedDocuments.slice(0, 2).map((d) => ({ ...d, effect: 'Link updated' })) : []) };
+  return a;
+});

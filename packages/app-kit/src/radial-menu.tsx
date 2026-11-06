@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { cx, Icon, ms, type IconName } from '@augur/kit-common';
+import { cx, Icon, Letterbox, ms, type IconName } from '@augur/kit-common';
 import { useRack, type Hole } from './focus.js';
 
 /**
@@ -27,6 +27,20 @@ export interface RingTarget {
   current?: boolean;
 }
 
+/**
+ * Something else an action would change: another document that links to it, a team that loses access.
+ * While the action has focus, the thing on the page marked with `useRingTouch(id)` steps forward out of
+ * the rack with its effect beside it, and the readout names it in words either way.
+ */
+export interface RingTouch {
+  /** The id the thing on the page was marked with (`useRingTouch`). Nothing on the page has to carry it. */
+  id: string;
+  /** What it is, as people read it ("Policy index"). */
+  label: string;
+  /** What happens to it, in a few words ("Link breaks"). */
+  effect: string;
+}
+
 /** One thing that can be done with what the menu was opened on. */
 export interface RingAction {
   id: string;
@@ -48,6 +62,15 @@ export interface RingAction {
   preview?: string | ((target?: string) => string);
   /** Needs holding down to confirm, so a slip can't do it. Defaults to `danger`. With reduced motion it is pressed twice instead. */
   hold?: boolean;
+  /**
+   * The other things it would change (consequence focus, V6). While it, or one of its targets, has focus,
+   * each one on the page steps forward with its effect and a lead from the subject; the readout lists
+   * them all. Held to confirm, it is shown in the letterbox until it is let go. A function is given the
+   * target in focus.
+   */
+  touches?: RingTouch[] | ((target?: string) => RingTouch[]);
+  /** What can undo it, in the app's words ("Undo for 30 s"), shown while it is held. The kit never promises an undo itself. */
+  undo?: string;
 }
 
 /** How the actions are laid out. */
@@ -203,6 +226,15 @@ export function useRingTarget(subject: () => RingSubject | undefined) {
   };
 }
 
+/**
+ * Marks something on the page as one a radial menu action can touch (`RingAction.touches`), so it steps
+ * forward, sharp, while that action has focus. Spread what it returns on the element. `id` is the one the
+ * action's touches name.
+ */
+export function useRingTouch(id: string) {
+  return { 'data-ring-touch': id };
+}
+
 export interface RingMoreProps {
   /** What the menu opens on; read when it opens. With nothing to offer, the mark isn't drawn. */
   subject: () => RingSubject | undefined;
@@ -311,6 +343,15 @@ const still = () => typeof window.matchMedia === 'function' && window.matchMedia
 const verb = (label: string) => (/^[A-Z][^A-Z]/.test(label) ? label[0]!.toLowerCase() + label.slice(1) : label);
 const needsHold = (a: RingAction) => a.hold ?? a.danger ?? false;
 const previewOf = (a: RingAction, target?: string) => (typeof a.preview === 'function' ? a.preview(target) : a.preview);
+const touchesOf = (a: RingAction, target?: string) => (typeof a.touches === 'function' ? a.touches(target) : a.touches) ?? [];
+
+/** A touched thing on screen now, and where. */
+interface Seen {
+  touch: RingTouch;
+  box: Hole;
+}
+/** The point of a box nearest to (x, y). */
+const nearest = (b: Hole, x: number, y: number) => ({ x: Math.min(Math.max(x, b.x), b.x + b.width), y: Math.min(Math.max(y, b.y), b.y + b.height) });
 
 /** What is being held or armed: an action, or one of its targets. */
 const keyOf = (a: RingAction, t?: RingTarget) => (t ? `${a.id}\u0000${t.id}` : a.id);
@@ -335,6 +376,14 @@ const keyOf = (a: RingAction, t?: RingTarget) => (t ? `${a.id}\u0000${t.id}` : a
  * focused choice would change (`preview`), read out politely. Danger, or
  * anything marked `hold`, is held down to confirm, filling the hub; with
  * reduced motion it is pressed twice.
+ *
+ * Consequence focus (V6): an action that names what it `touches` brings those
+ * things forward while it has focus. Each one marked on the page with
+ * `useRingTouch` comes out of the rack, sharp and framed in ink (red for what
+ * danger breaks), its effect beside it and a lead from the subject; the readout
+ * lists them all in words, so the ones scrolled away are named too. Held to
+ * confirm, it is letterboxed until it is let go: what it does above, what it
+ * touches in the frame, and how to cancel (and undo, when the app says) below.
  *
  * Keys: arrows (or Tab) go round, Home and End jump, 1 to 8 pick a direction
  * clockwise from the top, a letter jumps to the next action starting with it,
@@ -369,10 +418,30 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
   const items = useRef<(HTMLButtonElement | null)[]>([]);
   const places = useRef<(HTMLButtonElement | null)[]>([]);
   const hold = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useRack(true, { hole: box, returnTo: target });
-
   const opened = into ? list[into.index] : undefined;
   const targets = opened?.targets ?? [];
+
+  // What the focused choice would touch: nothing for an unavailable one, or before a target is chosen
+  // for an action that has them unless it says otherwise.
+  const pick = opened ? targets[aimed] : undefined;
+  const choosing = opened ?? list[focused];
+  const touches = choosing && !choosing.disabled && (!opened || (pick && !pick.disabled && !pick.current)) ? touchesOf(choosing, pick?.id) : [];
+  const touchKey = touches.map((t) => `${t.id}\u0000${t.label}\u0000${t.effect}`).join('\u0001');
+  const [seen, setSeen] = useState<Seen[]>([]);
+  // Find each touched thing on the page; the ones on screen step forward, the rest are only named.
+  useLayoutEffect(() => {
+    const marked = [...document.querySelectorAll<HTMLElement>('[data-ring-touch]')];
+    const next = touches.flatMap((touch): Seen[] => {
+      const r = marked.find((m) => m.dataset.ringTouch === touch.id)?.getBoundingClientRect();
+      if (!r || !r.width || !r.height || r.bottom < 0 || r.right < 0 || r.top > window.innerHeight || r.left > window.innerWidth) return [];
+      return [{ touch, box: { x: r.left, y: r.top, width: r.width, height: r.height } }];
+    });
+    const same = (a: Seen[], b: Seen[]) => a.length === b.length && a.every((s, i) => s.touch === b[i]!.touch || (s.touch.id === b[i]!.touch.id && s.touch.effect === b[i]!.touch.effect && s.box.x === b[i]!.box.x && s.box.y === b[i]!.box.y && s.box.width === b[i]!.box.width && s.box.height === b[i]!.box.height));
+    setSeen((now) => (same(now, next) ? now : next));
+    // Compared by what they say, so a new array of the same touches doesn't measure again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [touchKey, box]);
+  useRack(true, { hole: box, holes: seen.map((s) => s.box), returnTo: target });
 
   // Keep up with the subject if the page scrolls or resizes under the menu.
   useLayoutEffect(() => {
@@ -646,6 +715,10 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
     return `M${at(r1, a - w / 2 + cut1)}L${at(r2, a - w / 2 + cut2)}A${r2} ${r2} 0 ${big} 1 ${at(r2, a + w / 2 - cut2)}L${at(r1, a + w / 2 - cut1)}A${r1} ${r1} 0 ${big} 0 ${at(r1, a - w / 2 + cut1)}Z`;
   };
   const holdingAction = holding ? list.find((a) => holding === a.id || holding.startsWith(`${a.id}\u0000`)) : undefined;
+  /** Held (or armed, with reduced motion) and touching other things: the decision is letterboxed until it is let go (D9). */
+  const lettered = Boolean(now && touches.length && (holding === keyOf(now, aimedAt) || armed === keyOf(now, aimedAt)));
+  // Where the leads start: the subject's edge nearest each thing it touches.
+  const subjectMid = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 
   return createPortal(
     <>
@@ -670,6 +743,26 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
           aria-hidden="true"
           style={{ left: px(box.x), top: px(box.y), width: px(box.width), height: px(box.height) }}
         />
+        {seen.length ? (
+          <svg className="quill-ring-leads" aria-hidden="true" width={vw} height={vh} viewBox={`0 0 ${vw} ${vh}`}>
+            {seen.map(({ touch, box: b }) => {
+              const from = nearest(box, b.x + b.width / 2, b.y + b.height / 2);
+              const to = nearest(b, subjectMid.x, subjectMid.y);
+              return <line key={touch.id} className="quill-ring-lead" data-danger={now?.danger ? '' : undefined} x1={from.x} y1={from.y} x2={to.x} y2={to.y} />;
+            })}
+          </svg>
+        ) : null}
+        {seen.map(({ touch, box: b }) => (
+          <div
+            key={touch.id}
+            className="quill-ring-touch"
+            data-danger={now?.danger ? '' : undefined}
+            aria-hidden="true"
+            style={{ left: px(b.x), top: px(b.y), width: px(b.width), height: px(b.height) }}
+          >
+            <span className="quill-ring-touch-effect">{touch.effect}</span>
+          </div>
+        ))}
         {asList ? null : (
           <svg
             className="quill-ring-disc"
@@ -882,9 +975,45 @@ export function RadialMenu({ label, actions, onAction, onAsk, target, point, sha
         ) : null}
         <span className="quill-ring-status" role="status" aria-live="polite">
           {consequence ? <span className="quill-ring-consequence">{consequence}</span> : null}
+          {touches.length ? (
+            <span className="quill-ring-touches" data-danger={now?.danger ? '' : undefined}>
+              {touches.map((t) => (
+                <span key={t.id} className="quill-ring-touched">
+                  <span>{t.label}</span>
+                  <span className="quill-ring-effect">{`: ${t.effect}`}</span>
+                </span>
+              ))}
+            </span>
+          ) : null}
           {hint ? <span className="quill-ring-hint">{hint}</span> : null}
         </span>
       </div>
+      {now ? (
+        <Letterbox
+          passive
+          open={lettered}
+          heading={`${now.label} ${label}${aimedAt ? ` · ${aimedAt.label}` : ''}`}
+          {...(consequence ? { summary: consequence } : {})}
+          bars={{
+            top: <span>{trail.join(' \u203a ')}</span>,
+            bottom: (
+              <span>
+                {[`${touches.length} ${touches.length === 1 ? 'thing' : 'things'} ${now.danger ? 'break' : 'change'}`, still() ? `Press Enter again to ${verb(now.label)}, Esc to cancel` : 'Let go to cancel', now.undo].filter(Boolean).join(' · ')}
+              </span>
+            ),
+          }}
+        >
+          <ul className="quill-ring-letterbox-list" data-danger={now.danger ? '' : undefined}>
+            {touches.map((t) => (
+              <li key={t.id}>
+                <span>{t.label}</span>
+                <span className="quill-ring-effect">{t.effect}</span>
+              </li>
+            ))}
+          </ul>
+          {holding ? <span key={holding} className="quill-ring-letterbox-fill" /> : null}
+        </Letterbox>
+      ) : null}
     </>,
     document.body,
   );

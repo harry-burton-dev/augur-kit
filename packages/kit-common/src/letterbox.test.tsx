@@ -145,3 +145,25 @@ describe('UrgentEdge', () => {
     expect(document.querySelector('button')!.textContent).toContain('Acknowledged · not resolved');
   });
 });
+
+describe('Letterbox, drawn only', () => {
+  it('is no dialog and has nothing to press, so focus stays where the decision is being made', () => {
+    draw(
+      <>
+        <button type="button">Delete</button>
+        <Letterbox passive open heading="Delete Plan" summary="Two things break" onStepBack={() => {}} onAcknowledge={() => {}} actions={<button type="button">Go</button>} bars={{ bottom: <span>Let go to cancel</span> }} />
+      </>,
+    );
+    const box = document.querySelector('.augur-letterbox[data-passive]')!;
+    expect(box.getAttribute('aria-hidden')).toBe('true');
+    expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(box.querySelector('button')).toBeNull();
+    expect(box.textContent).toContain('Delete Plan');
+    expect(box.textContent).toContain('Let go to cancel');
+  });
+
+  it('draws nothing while closed', () => {
+    draw(<Letterbox passive open={false} heading="Delete Plan" />);
+    expect(document.querySelector('.augur-letterbox')).toBeNull();
+  });
+});

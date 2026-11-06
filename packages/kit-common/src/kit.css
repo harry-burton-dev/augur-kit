@@ -490,6 +490,8 @@
   .augur-letterbox::before { top: 0; background: linear-gradient(to bottom, var(--slate-deep), var(--scrim)); }
   .augur-letterbox::after { bottom: 0; background: linear-gradient(to top, var(--slate-deep), var(--scrim)); }
   .augur-letterbox[data-entering] { animation: augur-fade var(--motion-slow) var(--ease-out); }
+  /* Drawn only (a held decision): in front of the active surfaces such as the radial menu, and the pointer passes through to what is held. */
+  .augur-letterbox[data-passive] { z-index: calc(var(--layer-chrome) + 3); pointer-events: none; animation: augur-fade var(--motion-quick) var(--ease-out); }
   /* Bar, frame, bar: the bars sit in the scrim right against the frame and carry what the item is and where it stands. */
   .augur-letterbox-modal { position: relative; z-index: 1; height: 100%; }
   .augur-letterbox-dialog { height: 100%; display: grid; grid-template-rows: 1fr auto 1fr; overflow: auto; }
