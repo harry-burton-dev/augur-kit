@@ -27,18 +27,21 @@ export interface ButtonProps extends Omit<AriaButtonProps, 'isDisabled' | 'isPen
   confirmLabel?: string;
   /** Danger only: told when a first press arms it (true) and when it goes back, by a second press, Esc, leaving it or the time running out (false). */
   onArmedChange?: (armed: boolean) => void;
+  /** An icon before the label, such as `<Icon name="plus" size={16} />`. Pass any node, so the icon set can change; it is decoration, and the label still names the action. */
+  icon?: ReactNode;
   className?: string;
   /** The label: name it for what it does ("Publish", never "OK"). */
   children?: ReactNode;
 }
 
 /**
- * A labelled action, set in tracked capitals. Its press, focus and keyboard
+ * A labelled action, drawn as a key: flat, with its depth in a thicker bottom line
+ * that closes when pressed (Keycap). Its press, focus and keyboard
  * behaviour come from React Aria. A danger button asks twice: the first press
  * arms it (`confirmLabel`, "Press again to confirm"), a second within `armFor` acts, and Esc,
  * leaving it or the time running out puts it back.
  */
-export function Button({ kind = 'secondary', size = 'md', ai, disabled, reason, busy, busyLabel, once, armFor, confirmLabel, onArmedChange, className, children, onPress, ...rest }: ButtonProps) {
+export function Button({ kind = 'secondary', size = 'md', ai, disabled, reason, busy, busyLabel, once, armFor, confirmLabel, onArmedChange, icon, className, children, onPress, ...rest }: ButtonProps) {
   const [armed, setArmed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const { reasoned, describe, caption } = useReason(disabled, reason);
@@ -96,7 +99,7 @@ export function Button({ kind = 'secondary', size = 'md', ai, disabled, reason, 
         data-armed={armed || undefined}
         data-ai={(ai && (kind === 'primary' || kind === 'secondary')) || undefined}
         data-unavailable={disabled || undefined}
-        className="augur-button relative inline-flex items-center justify-center gap-2 rounded-pill font-sans whitespace-nowrap uppercase cursor-pointer select-none text-meta tracking-caps outline-none"
+        className="augur-button relative inline-flex items-center justify-center gap-2 font-sans whitespace-nowrap cursor-pointer select-none outline-none"
       >
         {busy ? <span className="augur-spinner" aria-hidden="true" /> : null}
         {armed ? (
@@ -107,7 +110,10 @@ export function Button({ kind = 'secondary', size = 'md', ai, disabled, reason, 
         ) : busy && busyLabel ? (
           <span>{busyLabel}</span>
         ) : (
-          children
+          <>
+            {icon && !busy ? <span className="augur-button-icon" aria-hidden="true">{icon}</span> : null}
+            {children}
+          </>
         )}
       </AriaButton>
       {caption}

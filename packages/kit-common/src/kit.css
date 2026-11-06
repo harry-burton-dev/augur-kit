@@ -55,75 +55,104 @@
 @keyframes augur-signal-ember { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
 @layer components {
-  /* Buttons: one shape, five kinds. */
+  /* Buttons: Keycap (picked 6 Nov 2026 from four directions). A key you can press: flat, a small corner, and
+     depth drawn as a thicker bottom line, never a shadow or a glow. Pressed, the line closes to a hairline
+     and the key sinks by the difference. No colour of its own: green means "needs you", red means danger. */
   /* No browser button look: each kind draws its own. */
   .augur-button, .augur-icon-button { margin: 0; padding: 0; border: 0; background: transparent; }
   .augur-button {
+    --key-depth: var(--key-edge);
     min-height: var(--target-md);
+    padding: 0 var(--space-5);
+    border: 1px solid transparent;
+    border-bottom-width: var(--key-depth);
+    border-radius: var(--radius-control);
     color: var(--ink);
-    transition: background var(--motion-instant) var(--ease-standard), box-shadow var(--motion-instant) var(--ease-standard),
-      color var(--motion-instant) var(--ease-standard), transform var(--motion-quick) var(--ease-standard);
+    font-size: var(--type-meta);
+    line-height: var(--leading-meta);
+    font-weight: 500;
+    transition: background var(--motion-instant) var(--ease-standard), border-color var(--motion-instant) var(--ease-standard),
+      color var(--motion-instant) var(--ease-standard), transform var(--motion-instant) var(--ease-standard);
   }
-  .augur-button[data-pressed] { transform: scale(0.97); }
+  .augur-button[data-pressed]:not([data-unavailable]):not([data-pending]) {
+    border-bottom-width: 1px;
+    transform: translateY(calc(var(--key-depth) - 1px));
+  }
   .augur-button[data-focus-visible], .augur-icon-button[data-focus-visible] {
     outline: var(--focus-ring) solid var(--focus);
     outline-offset: var(--focus-gap);
   }
   .augur-button[data-unavailable], .augur-icon-button[data-unavailable] { opacity: 0.4; cursor: default; }
   .augur-button[data-pending] { cursor: progress; }
-  .augur-button[data-size='sm'] { min-height: var(--target-sm); font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-button[data-size='sm'] {
+    --key-depth: var(--key-edge-sm);
+    min-height: var(--target-sm);
+    padding: 0 var(--space-4);
+    font-size: var(--type-small);
+    line-height: var(--leading-small);
+  }
 
-  .augur-button[data-kind='primary'] { font-weight: 600; padding: var(--space-3) var(--space-5); background: var(--green); color: var(--slate-deep); }
-  .augur-button[data-kind='primary'][data-hovered] { box-shadow: 0 0 var(--space-6) color-mix(in srgb, var(--green) 35%, transparent); }
+  .augur-button-icon { display: inline-flex; flex: none; }
 
+  /* Primary: the one light key on the screen. */
+  .augur-button[data-kind='primary'] {
+    font-weight: 600;
+    background: var(--ink);
+    color: var(--slate-deep);
+    border-color: var(--ink);
+    border-bottom-color: color-mix(in srgb, var(--ink) 62%, var(--shade));
+  }
+  .augur-button[data-kind='primary'][data-hovered] {
+    background: color-mix(in srgb, var(--ink) 55%, var(--light));
+    border-color: color-mix(in srgb, var(--ink) 55%, var(--light));
+    border-bottom-color: color-mix(in srgb, var(--ink) 68%, var(--shade));
+  }
+
+  /* Secondary: a grey key. */
   .augur-button[data-kind='secondary'] {
-    padding: calc(var(--space-3) - 1px) calc(var(--space-5) - 1px);
-    border: 1px solid var(--hairline-strong);
+    background: color-mix(in srgb, var(--ink) 10%, var(--slate-deep));
+    border-color: color-mix(in srgb, var(--ink) 16%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--ink) 34%, transparent);
   }
-  .augur-button[data-kind='secondary'][data-hovered] {
-    border-color: color-mix(in srgb, var(--ink) 55%, transparent);
-    background: color-mix(in srgb, var(--ink) 5%, transparent);
+  .augur-button[data-kind='secondary'][data-hovered] { background: color-mix(in srgb, var(--ink) 15%, var(--slate-deep)); }
+
+  /* Ghost: no key until you point at it. */
+  .augur-button[data-kind='ghost'][data-hovered] {
+    background: color-mix(in srgb, var(--ink) 10%, var(--slate-deep));
+    border-color: var(--hairline);
+    border-bottom-color: var(--hairline-strong);
   }
 
+  /* Tertiary: a link in the line of text, underlined so it reads as one without colour. */
   .augur-button[data-kind='tertiary'] {
-    min-height: auto;
-    padding: var(--space-2) 2px;
+    min-height: var(--target-sm);
+    padding: 0 2px;
+    border: 0;
     border-radius: var(--radius-key);
     font-size: var(--type-body);
     line-height: var(--leading-body);
-    letter-spacing: normal;
-    text-transform: none;
+    font-weight: var(--weight-body);
     color: var(--ink-muted);
+    text-decoration: underline;
+    text-decoration-color: var(--hairline-strong);
+    text-underline-offset: var(--space-1);
   }
-  .augur-button[data-kind='tertiary'][data-hovered] { color: var(--ink); }
+  .augur-button[data-kind='tertiary'][data-hovered] { color: var(--ink); text-decoration-color: currentColor; }
+  .augur-button[data-kind='tertiary'][data-pressed] { transform: none; }
 
-  .augur-button[data-kind='ghost'] { padding: var(--space-3) var(--space-5); }
-  .augur-button[data-kind='ghost'][data-hovered] { background: color-mix(in srgb, var(--ink) 8%, transparent); backdrop-filter: blur(var(--surface-blur)); }
-
+  /* Danger: a grey key with red words and a red edge. Armed, it fills red and counts down. */
   .augur-button[data-kind='danger'] {
-    padding: calc(var(--space-3) - 1px) calc(var(--space-5) - 1px);
-    border: 1px dashed var(--danger);
+    background: color-mix(in srgb, var(--ink) 10%, var(--slate-deep));
     color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--danger) 60%, transparent);
   }
-  .augur-button[data-kind='danger']::before {
-    content: '';
-    width: 10px;
-    height: 10px;
-    flex: none;
-    border: var(--focus-ring) solid currentColor;
-    border-radius: 2px;
-    transform: rotate(45deg);
-  }
-  .augur-button[data-kind='danger'][data-hovered] { border-style: solid; background: color-mix(in srgb, var(--danger) 8%, transparent); }
-  .augur-button[data-kind='danger'][data-armed] { background: var(--danger); color: var(--slate-deep); border-style: solid; }
-  .augur-button[data-kind='danger'][data-armed]::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    border: 1px solid var(--danger);
-    animation: augur-ping var(--motion-ping) var(--ease-ping) infinite;
-    pointer-events: none;
+  .augur-button[data-kind='danger'][data-hovered] { background: color-mix(in srgb, var(--danger) 10%, var(--slate-deep)); }
+  .augur-button[data-kind='danger'][data-armed] {
+    background: var(--danger);
+    color: var(--slate-deep);
+    border-color: var(--danger);
+    border-bottom-color: color-mix(in srgb, var(--danger) 70%, var(--shade));
   }
   .augur-count {
     position: absolute;
@@ -576,14 +605,14 @@
    in words. reduced-motion.test.ts checks that every infinite animation is stopped here. */
 @layer components {
   @media (prefers-reduced-motion: reduce) {
-    .augur-button[data-kind='danger'][data-armed]::after, .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
+    .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i { animation: none; width: 100%; opacity: 0.35; }
   }
   :root[data-motion='reduce'] {
-    .augur-button[data-kind='danger'][data-armed]::after, .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
+    .augur-spinner, .augur-field[data-state='attention'] .augur-dot::after,
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-knob::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light { animation: none; }
