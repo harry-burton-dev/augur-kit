@@ -1028,15 +1028,74 @@
   .quill-tree-compact { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); }
 }
 
+/* The first-run guide (Lamp, picked 6 Nov 2026): the page dims, never blurs, and one part stays lit in a
+   square; the words sit on the dim under a rule, with no box. Nothing is green: a guide is an offer. */
+@layer components {
+  .quill-guide {
+    position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); pointer-events: none;
+    --guide-dim: color-mix(in srgb, var(--shade) 72%, transparent);
+    animation: augur-fade var(--motion-base) var(--ease-out);
+  }
+  .quill-guide:not([data-lit]) { background: var(--guide-dim); }
+  .quill-guide-lamp {
+    position: fixed; box-sizing: content-box; padding: var(--space-2); translate: calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+    border-radius: var(--radius-control); background: color-mix(in srgb, var(--ink) 8%, transparent);
+    box-shadow: 0 0 0 100vmax var(--guide-dim);
+    transition: top var(--motion-base) var(--ease-standard), left var(--motion-base) var(--ease-standard), width var(--motion-base) var(--ease-standard), height var(--motion-base) var(--ease-standard);
+  }
+  .quill-guide-words {
+    position: fixed; pointer-events: auto; box-sizing: border-box; width: min(36ch, calc(100vw - var(--space-5) * 2));
+    display: grid; gap: var(--space-1); padding-top: var(--space-3); border-top: 1px solid var(--ink);
+    color: var(--ink); font-family: var(--font-sans);
+  }
+  .quill-guide-words[data-place='below'] { margin-top: var(--space-5); }
+  .quill-guide-words[data-place='above'] { margin-bottom: var(--space-5); }
+  .quill-guide-words[data-place='middle'] { top: 50%; left: 50%; translate: -50% -50%; }
+  .quill-guide-count {
+    margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label);
+    letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .quill-guide-title { margin: 0; font-size: var(--type-heading); line-height: var(--leading-heading); }
+  .quill-guide-line { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); }
+  .quill-guide-keys { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+  .quill-guide-skip, .quill-first-hide {
+    display: inline-flex; align-items: center; gap: var(--space-2); padding: 0; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted);
+  }
+  .quill-guide-skip:hover, .quill-first-hide:hover { color: var(--ink); }
+  .quill-guide-skip:focus-visible, .quill-first-hide:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .quill-guide-skip kbd { font-family: var(--font-mono); font-size: var(--type-label); padding: 0 var(--space-1); border: 1px solid var(--hairline-strong); }
+
+  /* First steps: a section of the start page, label and hairline, not over anything. */
+  .quill-first { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; color: var(--ink); font-family: var(--font-sans); }
+  .quill-first-head {
+    display: flex; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .quill-first-head h2 { margin: 0; font: inherit; letter-spacing: inherit; }
+  .quill-first-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .quill-first-step { display: flex; align-items: center; gap: var(--space-3); min-height: var(--target-md); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .quill-first-label { flex: 1; min-width: 0; }
+  .quill-first-step[data-done] .quill-first-label { color: var(--ink-muted); }
+  .quill-first-check {
+    flex: none; display: grid; place-items: center; width: var(--space-4); height: var(--space-4); box-sizing: border-box;
+    border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); color: var(--ink);
+  }
+  .quill-first-step[data-done] .quill-first-check { background: var(--hairline); border-color: transparent; }
+  .quill-first-hide { align-self: flex-start; margin-top: var(--space-1); }
+}
+
 /* Reduced motion, from the system or AUGUR's own switch (`data-motion="reduce"` on <html>): every
    loop stops (reduced-motion.test.ts in Common checks every kit). */
 @layer components {
   @media (prefers-reduced-motion: reduce) {
     .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after,
     .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+    .quill-guide, .quill-guide-lamp { animation: none; transition: none; }
   }
   :root[data-motion='reduce'] {
     .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after,
     .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
+    .quill-guide, .quill-guide-lamp { animation: none; transition: none; }
   }
 }
