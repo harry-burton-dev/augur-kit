@@ -161,6 +161,11 @@
       "$type": "dimension",
       "$description": "Keycaps, source numbers, small number keys: the smallest rounded things."
     },
+    "radius-control": {
+      "$value": "6px",
+      "$type": "dimension",
+      "$description": "Buttons: a key's corners (PDR: Keycap button). Soft enough to read as something to press, square enough to stay flat."
+    },
     "radius-inset": {
       "$value": "12px",
       "$type": "dimension",
@@ -306,6 +311,16 @@
       "$value": "3px",
       "$type": "dimension",
       "$description": "The gap between a control and its focus outline."
+    },
+    "key-edge": {
+      "$value": "3px",
+      "$type": "dimension",
+      "$description": "A button's bottom line at rest: its depth, drawn as a line, never a shadow. Pressed, it closes to a hairline and the button sinks by the difference."
+    },
+    "key-edge-sm": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "The same bottom line on a small button."
     },
     "letterbox-ratio": {
       "$value": "2.39",
