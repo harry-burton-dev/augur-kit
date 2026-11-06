@@ -13,8 +13,8 @@ export interface ConnectionProps {
 }
 
 const WORDS = {
-  offline: 'You’re offline. What you do stays here and goes when you’re back.',
-  reconnecting: 'Reconnecting. What you do stays here meanwhile.',
+  offline: 'You’re offline. Changes can’t be saved until you’re back.',
+  reconnecting: 'Reconnecting. Changes can’t be saved until it’s back.',
   expired: 'Your session ended. Sign in again to carry on; nothing you were doing is lost.',
 };
 
