@@ -462,20 +462,16 @@
   .augur-tab-panel[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-tab-why { margin: 0; max-width: var(--measure-prose); color: var(--ink-muted); }
 
-  /* Choice: two to four options, each with a line. The chosen one comes up as a key: a light ring and a thicker
-     bottom line. Never green: green means "needs you". */
+  /* Choice: two to four options, each with a line, on level hairline tiles. The chosen tile's outline turns ink
+     and its mark fills; the tile itself stays flat, no raised edge. Never green: green means "needs you". */
   .augur-choices { display: grid; gap: var(--space-2); }
   .augur-choice {
     display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-3); padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--hairline-strong); border-bottom-width: var(--key-edge); border-bottom-color: var(--hairline);
-    border-radius: var(--radius-control); cursor: pointer;
+    border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); cursor: pointer;
     transition: border-color var(--motion-base) var(--ease-standard), background var(--motion-base) var(--ease-standard);
   }
-  .augur-choice[data-hovered] { border-color: color-mix(in srgb, var(--ink) 40%, transparent); border-bottom-color: var(--hairline-strong); }
-  .augur-choice[data-selected] {
-    border-color: color-mix(in srgb, var(--ink) 55%, transparent); border-bottom-color: color-mix(in srgb, var(--ink) 40%, transparent);
-    background: color-mix(in srgb, var(--ink) 7%, var(--slate-deep));
-  }
+  .augur-choice[data-hovered] { border-color: color-mix(in srgb, var(--ink) 40%, transparent); }
+  .augur-choice[data-selected] { border-color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, var(--slate-deep)); }
   .augur-choice[data-disabled] { cursor: default; }
   .augur-choice[data-disabled] .augur-choice-dot, .augur-choice[data-disabled] .augur-choice-label { opacity: 0.4; }
   .augur-choice[data-readonly] { cursor: default; }

@@ -3,7 +3,7 @@ import { Choice, Segmented } from './choice.js';
 
 /**
  * Pick one of two to four options, each with a line on what picking it means (the kit's radios). Each option
- * is a tile; the chosen one comes up as a key, in ink, with its mark filled. Never green: green means "needs
+ * is a level hairline tile; the chosen one's outline turns ink and its mark fills. Never green: green means "needs
  * you". An option that can't be picked stays, dimmed, and says why in place of its line. Arrows move and pick.
  * More than four is a Select; ways of seeing the same thing are a Segmented.
  */
