@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components';
-import { Icon, SearchField, type IconName } from '@augur/kit-common';
+import { Icon, type IconName } from '@augur/kit-common';
 import { useRack } from './focus.js';
 
 /** One thing the palette can go to or do. */
@@ -29,16 +29,20 @@ export interface PaletteProps {
   onPick: (item: PaletteItem) => void;
   /** What it says when nothing matches. */
   none?: string;
+  /** A word or two before the field, in small capitals ("Go to"); left out, a find icon. */
+  lead?: string;
+  /** How many were found, after the field: given the count, say it ("4 found"). Left out, nothing shows. */
+  found?: (count: number) => string;
 }
 
 /**
  * Find and go, from anywhere in an app: press `/` (the app wires the key) and
- * type. Focus racks to the palette (PDR-010): the app stays where it is,
+ * type. It drops as a ruled strip and gets out of the way once you've gone. Focus racks to the palette (PDR-010): the app stays where it is,
  * out of focus, behind it. ↑ ↓ move, Enter goes, Esc closes and gives focus
  * back. The field keeps focus throughout and points at the chosen row, so a
  * screen reader hears each one.
  */
-export function Palette({ open, onClose, placeholder, query, onQuery, items, onPick, none = 'Nothing matches. Try fewer words.' }: PaletteProps) {
+export function Palette({ open, onClose, placeholder, query, onQuery, items, onPick, none = 'Nothing matches. Try fewer words.', lead, found }: PaletteProps) {
   const [at, setAt] = useState(0);
   const id = useId();
   const field = useRef<HTMLInputElement>(null);
@@ -65,19 +69,26 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
       <Modal className="quill-palette">
         <AriaDialog aria-label={placeholder} className="outline-none">
           <div className="quill-palette-field">
-            <SearchField
-              inputRef={field}
+            {lead ? <span className="quill-palette-lead">{lead}</span> : <Icon name="find" size={18} />}
+            <input
+              ref={field}
               autoFocus
+              type="search"
               role="combobox"
               aria-expanded
               aria-controls={`${id}-list`}
               aria-activedescendant={chosen ? `${id}-${chosen.id}` : undefined}
               aria-autocomplete="list"
-              label={placeholder}
+              placeholder={placeholder}
               value={query}
-              onChange={onQuery}
+              onChange={(e) => onQuery(e.target.value)}
               onKeyDown={onKey}
             />
+            {found && query.trim() ? (
+              <span className="quill-palette-found" aria-live="polite">
+                {found(items.length)}
+              </span>
+            ) : null}
           </div>
           <ul id={`${id}-list`} role="listbox" aria-label={placeholder} className="quill-palette-list">
             {items.map((item, i) => (

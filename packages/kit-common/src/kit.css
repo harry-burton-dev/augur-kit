@@ -694,16 +694,17 @@
   .augur-choice-label { font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink); }
   .augur-choice-detail { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
 
-  /* Segmented: ways of seeing the same thing. */
-  .augur-segmented { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--radius-pill); background: var(--surface-inset); border: 1px solid var(--hairline); }
+  /* Segmented: ways of seeing the same thing. Rail (picked 6 Nov 2026): the words on a hairline, the chosen one in
+     ink with an ink bar under it that moves calmly to the next. */
+  .augur-segmented { display: inline-flex; border-bottom: 1px solid var(--hairline-strong); }
   .augur-segment {
-    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 28px; padding: var(--space-1) var(--space-3);
-    border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted);
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--target-sm); padding: var(--space-1) var(--space-3);
+    border: 0; border-radius: 0; background: transparent; color: var(--ink-muted);
     font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; outline: none;
-    transition: background var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard);
+    transition: box-shadow var(--motion-calm) var(--ease-out), color var(--motion-quick) var(--ease-standard);
   }
   .augur-segment[data-hovered] { color: var(--ink); }
-  .augur-segment[data-selected] { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+  .augur-segment[data-selected] { color: var(--ink); box-shadow: inset 0 calc(var(--key-edge) * -1) 0 var(--ink); }
 
   /* People (Disc, PDR-018): the one true circle left. A flat grey disc with Instrument Sans initials, ringed
      in the floor's colour; you are ringed in plain ink, because green only means "needs you". Someone away
