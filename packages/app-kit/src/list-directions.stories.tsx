@@ -34,7 +34,7 @@ type Story = StoryObj<typeof meta>;
 const directions = [
   { id: 'today', name: 'Today', summary: 'What ships now, for reference.' },
   { id: 'rule', name: 'A · Rule', summary: 'Hairlines and mono capitals; an ink line at the start of the row you are on.' },
-  { id: 'key', name: 'B · Key', summary: 'Rows in a sunken tray, split by grooves; the row you point at or pick rises as a key.' },
+  { id: 'key', name: 'B · Key', summary: 'Rows in a well, like the fields, with no lines between; the row you pick comes up as a soft key.' },
   { id: 'dim', name: 'C · Dim', summary: 'No lines: space splits rows, all sit back in muted ink, and what matters comes forward.' },
 ] as const;
 type DirectionId = (typeof directions)[number]['id'];

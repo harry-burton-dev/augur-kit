@@ -14,6 +14,8 @@
     --ld-groove: color-mix(in srgb, var(--shade) 50%, transparent);
     --ld-groove-lit: color-mix(in srgb, var(--ink) 9%, transparent);
     --ld-point: color-mix(in srgb, var(--ink) 4%, transparent);
+    --ld-soft-key: color-mix(in srgb, var(--ink) 7%, var(--well));
+    --ld-soft-key-bottom: color-mix(in srgb, var(--ink) 18%, transparent);
     min-height: 100vh;
     box-sizing: border-box;
     padding: var(--space-5) var(--edge);
@@ -75,38 +77,37 @@
   [data-direction='rule'] .quill-rows li span:last-child { color: var(--ink); }
   [data-direction='rule'] .ld-pager { border-top-color: var(--hairline-strong); }
 
-  /* ---- B · Key: a sunken tray split by grooves; the row you point at or pick is a raised key ---- */
-  [data-direction='key'] :is(.quill-list, .quill-table) {
-    padding: var(--space-1); background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control);
+  /* ---- B · Key (Harry's pick, 6 Nov, second pass): a well holds the rows, like the fields' Well; no
+     lines between rows; the row you point at lightens and the row you pick comes up as a soft key. ---- */
+  [data-direction='key'] :is(.quill-list, .quill-table, .quill-rows, .ld-plain, .ld-expand) {
+    padding: var(--space-1); background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge);
+    border-radius: var(--radius-control);
   }
-  [data-direction='key'] :is(.quill-list-bar, .quill-list-group, .quill-table-head) { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); font-weight: 400; }
-  [data-direction='key'] .quill-list-bar { border-bottom: 1px solid var(--ld-groove); box-shadow: 0 1px 0 var(--ld-groove-lit); }
-  [data-direction='key'] .quill-list-group { padding-inline: var(--space-3); }
-  [data-direction='key'] .quill-list-row { border-bottom: 1px solid var(--ld-groove); border-radius: var(--radius-key); }
-  [data-direction='key'] :is(.quill-list-row[data-hovered], .ld-hover-second .quill-list > div:nth-child(2) .quill-list-row:nth-child(2)) {
-    background: var(--ld-key); border-bottom-color: transparent;
-    box-shadow: inset 0 0 0 1px var(--ld-key-side), inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom);
-  }
-  [data-direction='key'] .quill-list-row[data-focus-visible] { box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom), 0 0 0 var(--focus-ring) var(--focus); }
+  [data-direction='key'] :is(.quill-list-bar, .quill-list-group, .quill-table-head, .ld-expand th) { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); font-weight: 400; border: 0; }
+  [data-direction='key'] :is(.quill-list-bar, .quill-list-group) { padding-inline: var(--space-3); }
+  [data-direction='key'] .quill-list-row { border: 0; border-radius: var(--radius-key); }
+  [data-direction='key'] :is(.quill-list-row[data-hovered], .ld-hover-second .quill-list > div:nth-child(2) .quill-list-row:nth-child(2)) { background: var(--ld-point); }
+  [data-direction='key'] .quill-list-row[data-focus-visible] { box-shadow: 0 0 0 var(--focus-ring) var(--focus); }
   [data-direction='key'] .quill-list-lead { border-radius: var(--radius-key); }
   [data-direction='key'] .quill-list-meta { font-family: var(--font-mono); font-size: var(--type-label); }
   [data-direction='key'] .quill-table-bar { padding-inline: var(--space-3); }
-  [data-direction='key'] .quill-table-head { background: var(--ld-tray); border-bottom: 1px solid var(--ld-groove); box-shadow: 0 1px 0 var(--ld-groove-lit); }
-  [data-direction='key'] .quill-table-sort[data-on] {
-    padding-inline: var(--space-2); margin-inline: calc(var(--space-2) * -1); background: var(--ld-key); border-radius: var(--radius-key);
-    box-shadow: inset 0 0 0 1px var(--ld-key-side), inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom);
-  }
-  [data-direction='key'] .quill-table-cell { border-bottom-color: var(--ld-groove); }
-  [data-direction='key'] :is(.quill-table-row[data-hovered], .ld-hover-fourth tbody .quill-table-row:nth-child(4)) { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  [data-direction='key'] .quill-table-head { background: var(--well); }
+  [data-direction='key'] .quill-table-sort[data-on] { box-shadow: 0 1px 0 var(--ink-muted); }
+  [data-direction='key'] .quill-table .quill-table-row .quill-table-cell { border: 0; }
+  [data-direction='key'] :is(.quill-table-row[data-hovered], .ld-hover-fourth tbody .quill-table-row:nth-child(4)) { background: var(--ld-point); }
+  /* Picked: a soft key, a step lighter than the well with a thin bottom line, no outline. */
   [data-direction='key'] .quill-table-row[data-selected] { background: none; }
-  [data-direction='key'] .quill-table-row[data-selected] > * { background: var(--ld-key); color: var(--ink); box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom); }
+  [data-direction='key'] .quill-table-row[data-selected] > * { background: var(--ld-soft-key); color: var(--ink); box-shadow: inset 0 -1px 0 var(--ld-soft-key-bottom); }
   [data-direction='key'] .quill-table-row[data-selected] > :first-child { border-radius: var(--radius-key) 0 0 var(--radius-key); }
   [data-direction='key'] .quill-table-row[data-selected] > :last-child { border-radius: 0 var(--radius-key) var(--radius-key) 0; }
   [data-direction='key'] .quill-table-cell[data-num] { font-family: var(--font-mono); font-size: var(--type-meta); }
-  [data-direction='key'] .quill-check-box { border-bottom-width: var(--key-edge-sm); }
-  [data-direction='key'] .quill-rows { padding: var(--space-1) var(--space-3); background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); }
-  [data-direction='key'] .quill-rows li { border-bottom-color: var(--ld-groove); }
+  [data-direction='key'] .quill-rows { padding-inline: var(--space-3); }
+  [data-direction='key'] .quill-rows li { border: 0; }
   [data-direction='key'] .quill-rows li span:last-child { font-family: var(--font-mono); font-size: var(--type-label); color: var(--ink); }
+  [data-direction='key'] .ld-plain li, [data-direction='key'] .ld-expand :is(th, td) { border: 0; }
+  [data-direction='key'] .ld-expand { border-collapse: separate; border-spacing: 0; }
+  [data-direction='key'] .ld-expand :is(tr[data-open], .ld-expand-more) td { background: var(--ld-soft-key); color: var(--ink); }
+  [data-direction='key'] .ld-expand .ld-expand-more td { box-shadow: inset 0 -1px 0 var(--ld-soft-key-bottom); }
 
   /* ---- C · Dim: no lines; space splits rows; all sit back, what matters comes forward ---- */
   [data-direction='dim'] :is(.quill-list-bar, .quill-list-group, .quill-table-head) { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); font-weight: 400; border: 0; }
@@ -158,13 +159,6 @@
   [data-direction='rule'] .ld-expand th { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); border-bottom-color: var(--hairline-strong); }
   [data-direction='rule'] .ld-expand tr[data-open] td:first-child, [data-direction='rule'] .ld-expand-more td:first-child { box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); }
 
-  [data-direction='key'] .ld-plain { padding: var(--space-1); background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); }
-  [data-direction='key'] .ld-plain li { border-bottom-color: var(--ld-groove); }
-  [data-direction='key'] .ld-expand { background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); border-collapse: separate; border-spacing: 0; overflow: hidden; }
-  [data-direction='key'] .ld-expand :is(th, td) { border-bottom-color: var(--ld-groove); }
-  [data-direction='key'] .ld-expand th { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
-  [data-direction='key'] .ld-expand tr[data-open] td { background: var(--ld-key); color: var(--ink); }
-  [data-direction='key'] .ld-expand-more td { box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom); background: var(--ld-key); }
 
   [data-direction='dim'] .ld-plain li { border: 0; color: var(--ink-muted); }
   [data-direction='dim'] .ld-plain li:first-child { color: var(--ink); }
