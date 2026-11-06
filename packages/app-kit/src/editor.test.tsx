@@ -95,6 +95,13 @@ describe('the editor on Tiptap', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('doesn’t hold a Dialog’s primary when it is required, disabled and empty', async () => {
+    const onSubmit = vi.fn();
+    await draw(<Dialog open heading="Note" actionLabel="Save" onClose={() => {}} onSubmit={onSubmit} fields={<Editor label="Brief" required disabled />} />);
+    await act(async () => [...document.querySelectorAll('button')].find((b) => b.textContent === 'Save')!.click());
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
   it('counts against its guide without stopping anyone', async () => {
     await draw(<Editor label="Brief" guide="1 sentence" defaultValue="One. Two. Three." />);
     expect(document.querySelector('[data-over]')!.textContent).toBe('3 sentences · aim for 1');

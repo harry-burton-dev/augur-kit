@@ -50,7 +50,7 @@ export function Select({ label, hint, required, optional, disabled, reason, stat
   const picking = useRef(false);
   useFieldCheck({
     check: () => {
-      if (!required || picked != null || reasoned || readOnly) return true;
+      if (!required || picked != null || disabled || readOnly) return true;
       setOwn({ state: 'attention', message: NEEDS_YOU });
       return false;
     },

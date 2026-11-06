@@ -325,7 +325,7 @@ export default function EditorEngine({
 
   useFieldCheck({
     check: () => {
-      if (required && editor?.isEmpty) {
+      if (required && !disabled && editor?.isEmpty) {
         setCheck({ state: 'attention', message: NEEDS_YOU });
         return false;
       }

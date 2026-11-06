@@ -180,7 +180,7 @@ export function DateField({ label, hint, required, optional, disabled, reason, s
   };
   useFieldCheck({
     check: () => {
-      if (reasoned) return true;
+      if (disabled) return true;
       const day = typing ? commit() : latest.current;
       if (day === null) return false;
       if (required && !day) {

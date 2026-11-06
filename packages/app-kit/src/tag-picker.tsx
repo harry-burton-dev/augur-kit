@@ -48,7 +48,7 @@ export function TagPicker({ label, hint, required, optional, disabled, reason, c
   const { describedBy, line } = useMessage(gap ? NEEDS_YOU : undefined);
   useFieldCheck({
     check: () => {
-      if (!required || chosen.length || reasoned) return true;
+      if (!required || chosen.length || disabled) return true;
       setAsked(true);
       return false;
     },

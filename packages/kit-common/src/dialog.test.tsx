@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Checkbox, CheckboxGroup } from './checkbox.js';
 import { Dialog } from './dialog.js';
+import { Select } from './select.js';
 import { TextField } from './text-field.js';
 import { Toggle } from './toggle.js';
 
@@ -123,6 +124,19 @@ describe('Dialog', () => {
       expect(document.body.textContent).not.toContain('Needs you.');
       await act(async () => primary().click());
       expect(onSubmit).toHaveBeenCalledWith({ kinds: 'a' });
+    });
+  });
+
+  describe('a field that can’t be used', () => {
+    it.each([
+      ['TextField', <TextField key="f" label="Name" name="f" required disabled />],
+      ['Select', <Select key="f" label="Floor" name="f" options={['One']} required disabled />],
+      ['CheckboxGroup', <CheckboxGroup key="f" label="Kinds" name="f" required disabled><Checkbox value="a">A</Checkbox></CheckboxGroup>],
+    ])('a required, disabled, empty %s doesn’t hold the primary', async (_name, field) => {
+      const onSubmit = vi.fn();
+      draw(<Dialog open heading="Share" actionLabel="Create" onClose={() => {}} onSubmit={onSubmit} fields={field} />);
+      await act(async () => primary().click());
+      expect(onSubmit).toHaveBeenCalledOnce();
     });
   });
 });

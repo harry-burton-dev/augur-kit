@@ -85,6 +85,7 @@ export function TimeField({ label, hint, required, optional, disabled, state, me
   };
   useFieldCheck({
     check: () => {
+      if (disabled) return true;
       const time = typing ? commit() : latest.current;
       if (time === null) return false;
       if (required && !time) {

@@ -58,7 +58,7 @@ export function TextField({
     return result?.state !== 'error';
   };
   const input = useRef<HTMLInputElement>(null);
-  useFieldCheck({ check: () => reasoned || readOnly || check(text), focus: () => (area.current ?? input.current)?.focus(), name, value: () => text });
+  useFieldCheck({ check: () => disabled || readOnly || check(text), focus: () => (area.current ?? input.current)?.focus(), name, value: () => text });
 
   const grow = () => {
     const el = area.current;

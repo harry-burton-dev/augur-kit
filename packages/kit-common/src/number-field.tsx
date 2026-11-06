@@ -56,7 +56,7 @@ export function NumberField({
     setCheck(result ? { state: result.state, message: result.message } : { state: 'idle' });
     return result?.state !== 'error';
   };
-  useFieldCheck({ check: () => reasoned || readOnly || run(current), focus: () => input.current?.focus(), name, value: () => (current == null ? '' : String(current)) });
+  useFieldCheck({ check: () => disabled || readOnly || run(current), focus: () => input.current?.focus(), name, value: () => (current == null ? '' : String(current)) });
 
   return (
     <AriaNumberField

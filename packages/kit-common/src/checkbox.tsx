@@ -91,7 +91,7 @@ export function CheckboxGroup({ label, hint, required, optional, disabled, reaso
   const boxes = useRef<HTMLDivElement>(null);
   useFieldCheck({
     check: () => {
-      if (!required || values.length || reasoned) return true;
+      if (!required || values.length || disabled) return true;
       setAsked(true);
       return false;
     },

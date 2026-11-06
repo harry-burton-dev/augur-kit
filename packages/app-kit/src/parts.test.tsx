@@ -513,6 +513,17 @@ describe('fields in a Dialog', () => {
     expect(onChange.mock.calls).toEqual([['2026-11-13']]);
   });
 
+  it.each([
+    ['TagPicker', <TagPicker key="f" label="Tags" name="f" required disabled options={[{ value: 'a', label: 'A' }]} />],
+    ['DateField', <DateField key="f" label="Due" name="f" quick={[]} required disabled />],
+    ['TimeField', <TimeField key="f" label="At" name="f" required disabled />],
+  ])('a required, disabled, empty %s doesn’t hold the primary', async (_name, field) => {
+    const onSubmit = vi.fn();
+    draw(<Dialog open heading="Tag" actionLabel="Go" onClose={() => {}} onSubmit={onSubmit} fields={field} />);
+    await act(async () => primary().click());
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
   it('holds the primary until a required TagPicker has a tag, and says so', async () => {
     const onSubmit = vi.fn();
     const Form = () => {
