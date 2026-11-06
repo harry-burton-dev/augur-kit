@@ -21,7 +21,6 @@ const waiting = new Set([
   'Contents',
   'FilterBar',
   'DataView',
-  'RadialMenu',
   'Lifecycle',
 ]);
 
