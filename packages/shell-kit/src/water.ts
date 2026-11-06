@@ -1,3 +1,4 @@
+import { tokens, type TokenName } from '@augur/kit-common';
 import { reducedMotion } from './motion.js';
 
 /**
@@ -45,9 +46,24 @@ export interface WaveConfig {
   waves: WaveBand[];
 }
 
+/** A token's colour, following a reference (`{navy}`) to the colour it names. */
+const tokenColour = (name: TokenName): string => {
+  const v: string = tokens[name];
+  const ref = /^\{([a-z0-9-]+)\}$/.exec(v);
+  return ref ? tokenColour(ref[1] as TokenName) : v;
+};
+
+/** A preset's colours, all from the shell's tokens (Calm Tide's are Common's navy, green, slate and slate-deep). */
+const waveColours = (navy: TokenName, green: TokenName, slate: TokenName, slateDeep: TokenName): WaveColours => ({
+  navy: tokenColour(navy),
+  green: tokenColour(green),
+  slate: tokenColour(slate),
+  slateDeep: tokenColour(slateDeep),
+});
+
 export const wavePresets = {
   'Calm Tide': {
-    colors: { navy: '#1E40AF', green: '#34D399', slate: '#2A3240', slateDeep: '#1C222C' },
+    colors: waveColours('navy', 'green', 'slate', 'slate-deep'),
     global: { speed: 1, blur: 18, sat: 1.15, res: 0.35, grain: 0.06, breathe: 0.2 },
     waves: [
       { group: 'navy', y: 0.62, amp: 0.1, len: 1.3, speed: 0.8, thick: 0.22, alpha: 0.85, phase: 0 },
@@ -57,7 +73,7 @@ export const wavePresets = {
     ],
   },
   'Deep Ocean': {
-    colors: { navy: '#1D4ED8', green: '#10B981', slate: '#1F2733', slateDeep: '#0F141B' },
+    colors: waveColours('water-deep-ocean-navy', 'water-deep-ocean-green', 'water-deep-ocean-slate', 'water-deep-ocean-slate-deep'),
     global: { speed: 0.5, blur: 34, sat: 1.0, res: 0.25, grain: 0.05, breathe: 0.15 },
     waves: [
       { group: 'navy', y: 0.72, amp: 0.14, len: 1.8, speed: 0.5, thick: 0.4, alpha: 0.9, phase: 0 },
@@ -66,7 +82,7 @@ export const wavePresets = {
     ],
   },
   Aurora: {
-    colors: { navy: '#2563EB', green: '#34D399', slate: '#26303D', slateDeep: '#151A22' },
+    colors: waveColours('water-aurora-navy', 'green', 'water-aurora-slate', 'water-aurora-slate-deep'),
     global: { speed: 1.4, blur: 26, sat: 1.35, res: 0.3, grain: 0.07, breathe: 0.35 },
     waves: [
       { group: 'green', y: 0.3, amp: 0.12, len: 0.9, speed: 1.2, thick: 0.16, alpha: 0.75, phase: 0 },
@@ -76,7 +92,7 @@ export const wavePresets = {
     ],
   },
   'Sonar Line': {
-    colors: { navy: '#3B82F6', green: '#34D399', slate: '#2A3240', slateDeep: '#1A2029' },
+    colors: waveColours('water-sonar-line-navy', 'green', 'slate', 'water-sonar-line-slate-deep'),
     global: { speed: 0.8, blur: 6, sat: 1.2, res: 0.6, grain: 0.04, breathe: 0.4 },
     waves: [
       { group: 'navy', y: 0.55, amp: 0.06, len: 1.0, speed: 0.9, thick: 0.02, alpha: 0.9, phase: 0 },
@@ -85,7 +101,7 @@ export const wavePresets = {
     ],
   },
   Minimal: {
-    colors: { navy: '#1E40AF', green: '#34D399', slate: '#2E3644', slateDeep: '#252C38' },
+    colors: waveColours('navy', 'green', 'water-minimal-slate', 'water-minimal-slate-deep'),
     global: { speed: 0.4, blur: 40, sat: 1.0, res: 0.2, grain: 0.03, breathe: 0.1 },
     waves: [
       { group: 'navy', y: 0.75, amp: 0.06, len: 2.0, speed: 0.4, thick: 0.3, alpha: 0.55, phase: 0 },
@@ -93,7 +109,7 @@ export const wavePresets = {
     ],
   },
   'Split Field': {
-    colors: { navy: '#1E40AF', green: '#34D399', slate: '#2A3240', slateDeep: '#1C222C' },
+    colors: waveColours('navy', 'green', 'slate', 'slate-deep'),
     global: { speed: 0.9, blur: 22, sat: 1.2, res: 0.3, grain: 0.06, breathe: 0.25 },
     waves: [
       { group: 'green', y: 0.18, amp: 0.06, len: 1.2, speed: 0.8, thick: 0.18, alpha: 0.55, phase: 0 },
@@ -149,6 +165,10 @@ const channels = (hex: string): [number, number, number] => {
   const n = parseInt(h.slice(0, 6), 16) || 0;
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
+
+/** A colour as eight-digit hex from its channels and an opacity from 0 to 1, for the canvas. */
+const withAlpha = (rgb: number[], alpha: number): string =>
+  `#${[...rgb, Math.max(0, Math.min(1, alpha)) * 255].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
 
 /** How a change of floor moves the water: the bands come in from above when you go up, from below when you go down. */
 export type WaveMove = 'up' | 'down' | 'across';
@@ -373,7 +393,7 @@ export class Water {
     const b = this.config.global.breathe;
     const a = Math.max(0, w.alpha * (1 - b + b * Math.sin(t * 0.7 + w.phase)) * (1 + 0.55 * this.boost));
     const shown = this.shown!;
-    const colour = shown[w.group].map(Math.round).join(',');
+    const rgb = shown[w.group];
     const off = H * (shown.level + shown.shift);
     ctx.beginPath();
     for (let x = -step; x <= W + step; x += step) ctx.lineTo(x, waveY(w, x, t, W, H) + off - half);
@@ -382,9 +402,9 @@ export class Water {
     const cy = H * w.y + off;
     const ext = half + H * w.amp * 1.5;
     const g = ctx.createLinearGradient(0, cy - ext, 0, cy + ext);
-    g.addColorStop(0, `rgba(${colour},0)`);
-    g.addColorStop(0.5, `rgba(${colour},${a})`);
-    g.addColorStop(1, `rgba(${colour},0)`);
+    g.addColorStop(0, withAlpha(rgb, 0));
+    g.addColorStop(0.5, withAlpha(rgb, a));
+    g.addColorStop(1, withAlpha(rgb, 0));
     ctx.fillStyle = g;
     ctx.fill();
   }
