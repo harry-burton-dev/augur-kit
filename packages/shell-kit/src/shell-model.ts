@@ -1,6 +1,7 @@
 import { animate, motionMode, tokenEasing, tokenValue } from './motion.js';
 import { floorBeside, floorDirection, floorKindOf, floorMeaning, type FloorDirection, type ShellFloor } from './floors.js';
 import type { Water } from './water.js';
+import { arcOrder, arcSlot } from './shell-menu.js';
 
 export type NotificationLevel = 'needs' | 'info' | 'running' | 'done' | 'failed';
 
@@ -689,9 +690,7 @@ export class ShellModel extends EventTarget {
 
   /** Dome order, left to right: the stream sits at the top of the arc. */
   get order(): string[] {
-    const ids = this.functions.map((f) => f.id);
-    const left = Math.floor(ids.length / 2);
-    return [...ids.slice(0, left), 'stream', ...ids.slice(left)];
+    return arcOrder(this.functions.map((f) => f.id));
   }
 
   get streamSlot() {
@@ -700,12 +699,7 @@ export class ShellModel extends EventTarget {
 
   /** Where item i sits on the arc: both sides reach the same width, so an odd number of functions stays balanced. */
   arcSlot(i: number) {
-    const left = this.streamSlot;
-    const right = this.order.length - 1 - left;
-    const reach = Math.max(left, right);
-    if (i < left) return -(left - i) * (reach / left);
-    if (i > left) return (i - left) * (reach / right);
-    return 0;
+    return arcSlot(i, this.streamSlot, this.order.length);
   }
 
   focusDome(i: number) {

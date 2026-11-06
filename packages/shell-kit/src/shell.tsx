@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorLevel, floorMeaning, floorStack, floorTone } from './floors.js';
 import { Water } from './water.js';
-import { agentUrgency, ago, streamWords, type AgentStatus, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
+import { agentUrgency, ago, streamWords, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
+import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu, unavailableNames } from './shell-menu.js';
 
 export interface ShellProps {
   /** What the Shell knows and does; the host keeps it and listens on it. */
@@ -18,20 +19,6 @@ const isTyping = (e: Event) => {
   const el = e.composedPath()[0] as HTMLElement | undefined;
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 };
-
-/** An icon-only control's name, shown under it on hover and focus (Common's hover name), so an icon is never the only clue. The control carries the name itself, so this is hidden from screen readers. */
-function HoverName({ children }: { children: ReactNode }) {
-  return (
-    <span className="augur-reason augur-name" aria-hidden="true">
-      {children}
-    </span>
-  );
-}
-
-/** The names of a control that can't be used now: its label carries the reason, and its hover name shows it, so it stays and says why. */
-const unavailableNames = (label: string, unavailable: string) => ({ label: `${label}. ${unavailable}`, hover: `${label}: ${unavailable}` });
-
-const agentWords: Record<AgentStatus, string> = { needs: 'Needs you', failed: 'Failed', running: 'Running', waiting: 'Waiting', done: 'Done', idle: 'Idle' };
 
 /**
  * The frame every app runs inside (Aerie, ADR 0015). It holds who you are,
@@ -116,6 +103,7 @@ export function Shell({ model, children }: ShellProps) {
   const cap = model.caption();
   const capMood = !model.view || model.view === 'stream' ? mood : 'quiet';
   const tab = model.isOpen ? -1 : 0;
+  const back = () => (model.view ? model.closeView() : model.close());
 
   const onSkyKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') {
@@ -174,47 +162,25 @@ export function Shell({ model, children }: ShellProps) {
       <main ref={stage} className="aerie-stage" aria-label={model.openNow?.name || undefined}>
         {children}
       </main>
-      <div
-        className={`aerie-sky aerie-${mood}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Shell"
-        aria-hidden={model.isOpen ? 'false' : 'true'}
-        inert={!model.isOpen}
-        onKeyDown={onSkyKey}
-        onClick={(e) => (e.target as HTMLElement).classList?.contains('aerie-fade') && (model.view ? model.closeView() : model.close())}
-      >
-        <div className="aerie-fade" />
-        <div className="aerie-stars" />
-        <Dome model={model} mood={mood} />
-        {model.view && model.view !== 'stream' ? (
-          <p className="aerie-caption">
-            <b>{cap.title}</b>
-          </p>
-        ) : (
-          <p className={`aerie-caption aerie-${capMood}`}>
-            <b>{cap.title}</b>
-            {cap.line ? <span>{cap.line}</span> : null}
-          </p>
-        )}
+      <ShellMenu open={model.isOpen} mood={mood} onKeyDown={onSkyKey} onDismiss={back}>
+        <MenuArc
+          items={model.functions}
+          lit={model.view}
+          focusIndex={model.focusIndex}
+          mood={mood}
+          streamLabel={`Notifications: ${model.online ? streamWords(model.heard) : 'offline'}`}
+          onFocusItem={(i) => (model.focusIndex = i)}
+          onOpen={(id) => model.openView(id)}
+        />
+        {model.view && model.view !== 'stream' ? <MenuCaption title={cap.title} /> : <MenuCaption title={cap.title} line={cap.line} mood={capMood} />}
         {model.view ? (
-          <section className="aerie-view" aria-label={cap.title}>
+          <MenuView label={cap.title}>
             <View model={model} />
-          </section>
+          </MenuView>
         ) : null}
-        {model.undo ? (
-          <div className="aerie-undo" role="status">
-            {model.undo.label}
-            <button className="aerie-link" onClick={() => model.restore()}>
-              Undo
-            </button>
-          </div>
-        ) : null}
-        <button className="aerie-esc" tabIndex={-1} onClick={() => (model.view ? model.closeView() : model.close())}>
-          <kbd>Esc</kbd>
-          {model.view ? 'Back' : 'Close'}
-        </button>
-      </div>
+        {model.undo ? <MenuUndo label={model.undo.label} onUndo={() => model.restore()} /> : null}
+        <MenuEsc back={!!model.view} onPress={back} />
+      </ShellMenu>
       <div className="aerie-live" aria-live="polite">
         {model.isOpen ? `${cap.title}. ${cap.line}` : model.said}
       </div>
@@ -393,56 +359,6 @@ function Gauge({ model, tab }: { model: ShellModel; tab: number }) {
   );
 }
 
-function Dome({ model, mood }: { model: ShellModel; mood: string }) {
-  return (
-    <div className="aerie-dome">
-      {model.order.map((id, i) => {
-        const slot = model.arcSlot(i);
-        const style = { '--x': `calc(${slot} * min(112px, 15vw))`, '--y': `${Math.round(slot * slot * 10)}px`, '--i': Math.abs(i - model.streamSlot) } as CSSProperties;
-        const lit = model.view === id;
-        const tabIndex = i === model.focusIndex ? 0 : -1;
-        const onFocus = () => (model.focusIndex = i);
-        if (id === 'stream') {
-          return (
-            <button
-              key={id}
-              className={`aerie-stream augur-control${lit ? ' aerie-lit' : ''}`}
-              style={style}
-              tabIndex={tabIndex}
-              aria-label={`Notifications: ${model.online ? streamWords(model.heard) : 'offline'}`}
-              onFocus={onFocus}
-              onClick={() => model.openView('stream')}
-            >
-              <span className="aerie-thread" />
-              <span className={`aerie-orb aerie-${mood}`}>
-                <i />
-              </span>
-              <HoverName>Notifications</HoverName>
-            </button>
-          );
-        }
-        const fn = model.functions.find((f) => f.id === id);
-        if (!fn) return null;
-        return (
-          <button
-            key={id}
-            className={`aerie-fn augur-control${lit ? ' aerie-lit' : ''}`}
-            style={style}
-            tabIndex={tabIndex}
-            aria-label={fn.unavailable ? unavailableNames(fn.label, fn.unavailable).label : fn.label}
-            aria-disabled={fn.unavailable ? 'true' : undefined}
-            onFocus={onFocus}
-            onClick={() => !fn.unavailable && model.openView(fn.id)}
-          >
-            <Icon name={fn.icon} />
-            <HoverName>{fn.unavailable ? unavailableNames(fn.label, fn.unavailable).hover : fn.label}</HoverName>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function View({ model }: { model: ShellModel }) {
   switch (model.view) {
     case 'stream':
@@ -466,32 +382,26 @@ function Stream({ model }: { model: ShellModel }) {
   if (model.streamLoading) {
     return (
       <>
-        <p className="aerie-note" aria-busy="true">
-          Catching up…
-        </p>
-        <span className="aerie-skel" />
-        <span className="aerie-skel" />
+        <MenuNote tone="busy">Catching up…</MenuNote>
+        <MenuSkeleton />
+        <MenuSkeleton />
       </>
     );
   }
   if (model.streamError) {
     return (
       <>
-        <p className="aerie-note aerie-error" role="alert">
-          {model.streamError}
-        </p>
-        <button className="aerie-retry" data-first="" onClick={() => model.emit('ui-retry', { what: 'stream' })}>
-          Try again
-        </button>
+        <MenuNote tone="error">{model.streamError}</MenuNote>
+        <MenuRetry first onPress={() => model.emit('ui-retry', { what: 'stream' })} />
       </>
     );
   }
   const list = model.notifications;
   if (!list.length) {
     return (
-      <p className="aerie-note" tabIndex={0} data-first="">
+      <MenuNote focusable first>
         All quiet. Nothing needs you.
-      </p>
+      </MenuNote>
     );
   }
   const groups = model.streamGroups();
@@ -501,30 +411,30 @@ function Stream({ model }: { model: ShellModel }) {
   return (
     <>
       {list.some((n) => n.level !== 'needs') ? (
-        <div className="aerie-tools">
-          <button className="aerie-link" onClick={() => model.clear()}>
-            Clear the quiet ones
-          </button>
-        </div>
+        <MenuTools>
+          <MenuLink onPress={() => model.clear()}>Clear the quiet ones</MenuLink>
+        </MenuTools>
       ) : null}
       {groups.map(({ app, list: g, muted, needs }) => {
         const name = model.appName(app);
         return (
           <div key={app}>
-            <div className={`aerie-group aerie-label${needs && !muted ? ' aerie-needs' : ''}`}>
-              <span className="aerie-name">
-                {name} <b>{g.length}</b>
-                {muted ? <span className="aerie-quiet">Muted</span> : null}
-              </span>
-              <Menu
-                label="App notifications"
-                placement="bottom end"
-                items={[muted ? { id: 'unmute', label: `Unmute ${name}`, icon: 'bell' } : { id: 'mute', label: `Mute ${name}`, icon: 'mute' }]}
-                onAction={(id) => model.setMuted(app, id === 'mute')}
-              >
-                <IconButton icon="more" label={`${name}: more`} size="sm" />
-              </Menu>
-            </div>
+            <MenuGroup
+              name={name}
+              count={g.length}
+              needs={needs && !muted}
+              muted={muted}
+              end={
+                <Menu
+                  label="App notifications"
+                  placement="bottom end"
+                  items={[muted ? { id: 'unmute', label: `Unmute ${name}`, icon: 'bell' } : { id: 'mute', label: `Mute ${name}`, icon: 'mute' }]}
+                  onAction={(id) => model.setMuted(app, id === 'mute')}
+                >
+                  <IconButton icon="more" label={`${name}: more`} size="sm" />
+                </Menu>
+              }
+            />
             <ul aria-label={name}>
               {g.map((n) => (
                 <Row key={n.id} model={model} n={n} muted={muted || !!n.quiet} first={n.id === firstId} pinging={n.id === pinging} />
@@ -538,36 +448,20 @@ function Stream({ model }: { model: ShellModel }) {
 }
 
 function Row({ model, n, muted, first, pinging }: { model: ShellModel; n: ShellNotification; muted: boolean; first: boolean; pinging: boolean }) {
-  const actions = (n.actions ?? []).slice(0, 2);
   return (
-    <li className={`aerie-item${muted ? ' aerie-muted' : ''}`}>
-      <button
-        className={`aerie-row aerie-${n.level}${pinging ? ' aerie-first' : ''}`}
-        data-first={first ? '' : undefined}
-        onClick={() => model.openNotification(n)}
-        onKeyDown={(e) => {
-          if (e.key.toLowerCase() !== 'x') return;
-          e.preventDefault();
-          model.dismiss(n.id);
-        }}
-      >
-        <span className="aerie-lead" />
-        <span className="aerie-text">
-          <b>{n.title}</b>
-          <span>{[model.floorTag(n), n.detail].filter(Boolean).join(' · ')}</span>
-        </span>
-        <span className="aerie-meta">{ago(n.time, model.now)}</span>
-      </button>
-      {actions.map((a, i) => (
-        <button key={a.label} className={`aerie-act${i === 0 && n.level === 'needs' ? ' aerie-main' : ''}`} onClick={() => model.actOn(n, i)}>
-          {a.label}
-        </button>
-      ))}
-      <button className="aerie-x augur-control" aria-label={`Dismiss ${n.title}`} onClick={() => model.dismiss(n.id)}>
-        <Icon name="close" size={16} />
-        <HoverName>Dismiss</HoverName>
-      </button>
-    </li>
+    <NotificationRow
+      title={n.title}
+      detail={[model.floorTag(n), n.detail].filter(Boolean).join(' · ')}
+      when={ago(n.time, model.now)}
+      level={n.level}
+      muted={muted}
+      first={first}
+      pinging={pinging}
+      actions={n.actions}
+      onOpen={() => model.openNotification(n)}
+      onAct={(i) => model.actOn(n, i)}
+      onDismiss={() => model.dismiss(n.id)}
+    />
   );
 }
 
@@ -579,32 +473,13 @@ function Apps({ model }: { model: ShellModel }) {
     ...model.recent.filter((id) => id !== current && byId.has(id)),
     ...model.apps.map((a) => a.id).filter((id) => id !== current && !model.recent.includes(id)),
   ].map((id) => byId.get(id)!);
-  if (!ordered.length) return <p className="aerie-note">No apps yet.</p>;
-  const moveInGrid = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
-    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    if (!step) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const items = [...(e.currentTarget.parentElement?.querySelectorAll<HTMLElement>('.aerie-app') ?? [])];
-    const at = items.indexOf(e.currentTarget);
-    items[(at + step + items.length) % items.length]?.focus();
-  };
+  if (!ordered.length) return <MenuNote>No apps yet.</MenuNote>;
   return (
-    <div className="aerie-apps" role="list">
+    <AppTiles>
       {ordered.map((a, i) => (
-        <button key={a.id} className="aerie-app" role="listitem" data-first={i === 0 ? '' : undefined} onClick={() => model.openApp(a.id)} onKeyDown={moveInGrid}>
-          {a.ai ? (
-            <span className="aerie-bubble">
-              <Icon name={a.icon ?? 'apps'} size={28} />
-            </span>
-          ) : (
-            <Icon name={a.icon ?? 'apps'} size={32} />
-          )}
-          <b>{a.name}</b>
-          {a.id === current ? <em>Open now</em> : a.line ? <span>{a.line}</span> : null}
-        </button>
+        <AppTile key={a.id} name={a.name} icon={a.icon} line={a.line} ai={a.ai} now={a.id === current} first={i === 0} onPress={() => model.openApp(a.id)} />
       ))}
-    </div>
+    </AppTiles>
   );
 }
 
@@ -619,49 +494,32 @@ function Find({ model }: { model: ShellModel }) {
   const waiting = grouped.some((g) => g.state === 'looking');
   const row = (r: ShellFindResult) => (
     <li key={`${r.kind}:${r.id}`}>
-      <button className="aerie-row" onClick={() => model.pick(r)}>
-        <span className="aerie-text">
-          <b>{r.title}</b>
-          <span>{r.detail ?? r.kind}</span>
-        </span>
-      </button>
+      <MenuRow title={r.title} detail={r.detail ?? r.kind} onPress={() => model.pick(r)} />
     </li>
   );
   return (
     <>
-      <div className="aerie-search">
-        <Icon name="find" size={20} />
-        <input
-          type="search"
-          aria-label="Find across apps, notifications and agents"
-          placeholder="Find apps, notifications, agents…"
-          value={q}
-          onChange={(e) => model.setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && results[0] && model.pick(results[0])}
-        />
-      </div>
-      {q && !results.length && !waiting ? <p className="aerie-note">Nothing matches "{q}".</p> : null}
+      <MenuSearch
+        label="Find across apps, notifications and agents"
+        placeholder="Find apps, notifications, agents…"
+        value={q}
+        onChange={(v) => model.setQuery(v)}
+        onEnter={() => results[0] && model.pick(results[0])}
+      />
+      {q && !results.length && !waiting ? <MenuNote>Nothing matches "{q}".</MenuNote> : null}
       <ul>{loose.map(row)}</ul>
       {grouped.map((g) => {
         const found = inGroup(g.name);
         if (!found.length && g.state === 'done') return null;
         return (
           <div key={g.name}>
-            <div className="aerie-group aerie-label">
-              {g.name}
-              {found.length ? (
-                <>
-                  {' '}
-                  <b>{found.length}</b>
-                </>
-              ) : null}
-            </div>
+            <MenuGroup name={g.name} count={found.length} />
             {found.length ? (
               <ul aria-label={g.name}>{found.map(row)}</ul>
             ) : (
-              <p className={`aerie-note aerie-small aerie-${g.state}`} aria-busy={g.state === 'looking' ? 'true' : undefined}>
+              <MenuNote small tone={g.state as keyof typeof findSaid}>
                 {findSaid[g.state as keyof typeof findSaid]}
-              </p>
+              </MenuNote>
             )}
           </div>
         );
@@ -677,56 +535,36 @@ function Agents({ model }: { model: ShellModel }) {
   if (model.agentsLoading) {
     return (
       <>
-        <p className="aerie-note" aria-busy="true">
-          Catching up…
-        </p>
-        <span className="aerie-skel" />
+        <MenuNote tone="busy">Catching up…</MenuNote>
+        <MenuSkeleton />
       </>
     );
   }
   if (model.agentsError) {
     return (
       <>
-        <p className="aerie-note aerie-error" role="alert">
-          {model.agentsError}
-        </p>
-        <button className="aerie-retry" onClick={() => model.emit('ui-retry', { what: 'agents' })}>
-          Try again
-        </button>
+        <MenuNote tone="error">{model.agentsError}</MenuNote>
+        <MenuRetry onPress={() => model.emit('ui-retry', { what: 'agents' })} />
       </>
     );
   }
-  if (!model.agents.length) {
-    return (
-      <p className="aerie-note" tabIndex={0}>
-        No agents are running.
-      </p>
-    );
-  }
+  if (!model.agents.length) return <MenuNote focusable>No agents are running.</MenuNote>;
   const sorted = [...model.agents].sort((a, b) => agentUrgency.indexOf(a.status) - agentUrgency.indexOf(b.status));
   const firstNeeds = sorted.findIndex((a) => a.status === 'needs');
   return (
     <ul>
       {sorted.map((a, i) => (
         <li key={a.id}>
-          <button className="aerie-row" onClick={() => (a.app ? model.openApp(a.app) : model.emit('ui-function', { id: `agent:${a.id}` }))}>
-            <span className="aerie-text">
-              <b>{a.name}</b>
-              {a.detail ? <span>{a.detail}</span> : null}
-            </span>
-            <span className="aerie-agent" data-status={a.status} data-next={i === firstNeeds ? '' : undefined}>
-              <i aria-hidden="true">{a.status === 'done' ? <Icon name="check" size={14} /> : a.status === 'failed' ? <Icon name="error" size={14} /> : null}</i>
-              {agentWords[a.status] ?? a.status}
-            </span>
-          </button>
+          <MenuRow
+            title={a.name}
+            detail={a.detail}
+            end={<AgentMark status={a.status} next={i === firstNeeds} />}
+            onPress={() => (a.app ? model.openApp(a.app) : model.emit('ui-function', { id: `agent:${a.id}` }))}
+          />
         </li>
       ))}
     </ul>
   );
-}
-
-function Switch({ id, on, onToggle }: { id: string; on: boolean; onToggle: () => void }) {
-  return <button className="aerie-switch" role="switch" aria-labelledby={id} aria-checked={on ? 'true' : 'false'} onClick={onToggle} />;
 }
 
 function Account({ model }: { model: ShellModel }) {
@@ -734,27 +572,18 @@ function Account({ model }: { model: ShellModel }) {
   const waiting = model.waitingByFloor();
   return (
     <>
-      <div className="aerie-who">
-        <b>{model.user?.name ?? 'Signed in'}</b>
-        {model.user?.email ? <span>{model.user.email}</span> : null}
-      </div>
+      <MenuWho name={model.user?.name ?? 'Signed in'} detail={model.user?.email} />
       {here ? (
         <>
-          <div className="aerie-group aerie-label">Floors</div>
+          <MenuGroup name="Floors" />
           <ul className="aerie-floors">
             {model.floors.map((f) => (
               <li key={f.id}>
-                <button
-                  className="aerie-row"
-                  aria-current={f.id === model.floor ? 'location' : undefined}
-                  onClick={() => {
-                    model.goToFloor(f.id);
-                    model.close();
-                  }}
-                >
-                  <Icon name={floorIconOf(f)} />
-                  <span className="aerie-text">
-                    <b>
+                <MenuRow
+                  icon={floorIconOf(f)}
+                  current={f.id === model.floor}
+                  title={
+                    <>
                       {f.kind === 'personal' ? 'Your own floor' : f.name}
                       {f.path.length > 1 ? (
                         <i>
@@ -766,95 +595,66 @@ function Account({ model }: { model: ShellModel }) {
                             .join(' / ')}
                         </i>
                       ) : null}
-                    </b>
-                    <span>
-                      {f.kind === 'team' ? `${floorKindOf(f)}. ` : ''}
-                      {floorMeaning(f)}
-                    </span>
-                  </span>
-                  {f.id === model.floor ? <span className="aerie-meta">You’re here</span> : waiting.get(f.id) ? <span className="aerie-meta">{waiting.get(f.id)} waiting</span> : null}
-                </button>
+                    </>
+                  }
+                  detail={`${f.kind === 'team' ? `${floorKindOf(f)}. ` : ''}${floorMeaning(f)}`}
+                  meta={f.id === model.floor ? 'You’re here' : waiting.get(f.id) ? `${waiting.get(f.id)} waiting` : undefined}
+                  onPress={() => {
+                    model.goToFloor(f.id);
+                    model.close();
+                  }}
+                />
               </li>
             ))}
           </ul>
         </>
       ) : (
-        <div className="aerie-pair">
-          <span>Workspace</span>
-          <b>{model.workspace || '—'}</b>
-        </div>
+        <MenuPair label="Workspace" value={model.workspace || '—'} />
       )}
-      <div className="aerie-pair">
-        <span id="aerie-away">Show me as away</span>
-        <Switch id="aerie-away" on={model.away} onToggle={() => model.setAway(!model.away)} />
-      </div>
-      <div className="aerie-pair">
-        {model.canSwitchWorkspace && !here ? (
-          <button className="aerie-link" onClick={() => model.emit('ui-function', { id: 'switch-workspace' })}>
-            Switch workspace
-          </button>
-        ) : (
-          <span />
-        )}
-        <button className="aerie-link" onClick={() => model.emit('ui-function', { id: 'sign-out' })}>
-          Sign out
-        </button>
-      </div>
+      <MenuPair label="Show me as away" labelId="aerie-away">
+        <MenuSwitch labelledBy="aerie-away" on={model.away} onToggle={() => model.setAway(!model.away)} />
+      </MenuPair>
+      <MenuPair>
+        {model.canSwitchWorkspace && !here ? <MenuLink onPress={() => model.emit('ui-function', { id: 'switch-workspace' })}>Switch workspace</MenuLink> : <span />}
+        <MenuLink onPress={() => model.emit('ui-function', { id: 'sign-out' })}>Sign out</MenuLink>
+      </MenuPair>
     </>
   );
 }
 
+/** The keys the menu answers to, said in Settings. */
+const shellKeys = (floors: boolean) => [
+  { keys: '`', does: 'Open or close the shell (also Ctrl or ⌘ K)' },
+  { keys: '← →', does: 'Move along the arc' },
+  { keys: 'Enter', does: 'Open' },
+  { keys: 'x', does: 'Dismiss a notification' },
+  { keys: 'Esc', does: 'Back, then close' },
+  ...(floors ? [{ keys: 'Alt PgUp PgDn', does: 'Up or down a floor' }] : []),
+];
+
+const densities = [
+  { id: 'comfortable', label: 'Comfortable' },
+  { id: 'compact', label: 'Compact' },
+];
+
 function Settings({ model }: { model: ShellModel }) {
   const s = model.settings;
+  const toggle = (id: string, label: string, on: boolean, flip: () => void) => (
+    <MenuPair label={label} labelId={id}>
+      <MenuSwitch labelledBy={id} on={on} onToggle={flip} />
+    </MenuPair>
+  );
   return (
     <>
-      <div className="aerie-pair">
-        <span id="aerie-rm">Reduce motion</span>
-        <Switch id="aerie-rm" on={!!s.reduceMotion} onToggle={() => model.setSetting('reduceMotion', !s.reduceMotion)} />
-      </div>
-      <div className="aerie-pair">
-        <span id="aerie-at">Area titles</span>
-        <Switch id="aerie-at" on={s.areaTitles !== false} onToggle={() => model.setSetting('areaTitles', s.areaTitles === false)} />
-      </div>
-      <div className="aerie-pair">
-        <span id="aerie-ts">Toasts for new notifications</span>
-        <Switch id="aerie-ts" on={!!s.toasts} onToggle={() => model.setSetting('toasts', !s.toasts)} />
-      </div>
-      <div className="aerie-pair">
-        <span>Density</span>
-        <div className="aerie-seg" role="group" aria-label="Density">
-          {(['comfortable', 'compact'] as const).map((d) => (
-            <button key={d} aria-pressed={(s.density ?? 'comfortable') === d ? 'true' : 'false'} onClick={() => model.setSetting('density', d)}>
-              {d[0]!.toUpperCase() + d.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-      {model.version ? (
-        <div className="aerie-pair aerie-version">
-          <span>Version</span>
-          <b>{model.version}</b>
-        </div>
-      ) : null}
-      <div className="aerie-group aerie-label">Keys</div>
-      <div className="aerie-keys">
-        <kbd>`</kbd>
-        <span>Open or close the shell (also Ctrl or ⌘ K)</span>
-        <kbd>← →</kbd>
-        <span>Move along the arc</span>
-        <kbd>Enter</kbd>
-        <span>Open</span>
-        <kbd>x</kbd>
-        <span>Dismiss a notification</span>
-        <kbd>Esc</kbd>
-        <span>Back, then close</span>
-        {model.floors.length ? (
-          <>
-            <kbd>Alt PgUp PgDn</kbd>
-            <span>Up or down a floor</span>
-          </>
-        ) : null}
-      </div>
+      {toggle('aerie-rm', 'Reduce motion', !!s.reduceMotion, () => model.setSetting('reduceMotion', !s.reduceMotion))}
+      {toggle('aerie-at', 'Area titles', s.areaTitles !== false, () => model.setSetting('areaTitles', s.areaTitles === false))}
+      {toggle('aerie-ts', 'Toasts for new notifications', !!s.toasts, () => model.setSetting('toasts', !s.toasts))}
+      <MenuPair label="Density">
+        <MenuChoice label="Density" options={densities} value={s.density ?? 'comfortable'} onChange={(d) => model.setSetting('density', d as 'comfortable' | 'compact')} />
+      </MenuPair>
+      {model.version ? <MenuPair label="Version" value={model.version} version /> : null}
+      <MenuGroup name="Keys" />
+      <MenuKeys keys={shellKeys(model.floors.length > 0)} />
     </>
   );
 }
