@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Button, Letterbox, Person, UrgentEdge } from '@augur/kit-common';
-import { AppUnavailable } from './app-unavailable.js';
-import { Connection } from './connection.js';
+import { Button, Letterbox, UrgentEdge } from '@augur/kit-common';
 import { Toasts, type ToastItem } from './toast.js';
 
 function ToastDemo() {
@@ -49,13 +47,3 @@ type Story = StoryObj<typeof meta>;
 export const Toast: Story = {};
 /** Urgent is letterboxed (PDR-009). This frame comes from Common, so apps get the same one. */
 export const Urgent: Story = { render: () => <LetterboxDemo /> };
-export const Unavailable: Story = {
-  render: () => (
-    <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
-      <AppUnavailable app={{ name: 'Data Atlas', icon: 'atlas' }} state="limited" reason="It’s only on department floors. Move to a department’s floor to open it." who={<Person name="Lee Park" detail="Organisation admin, can change this" tone="org" />} />
-      <AppUnavailable app={{ name: 'Mandate', icon: 'compass' }} state="failed" reason="Its files didn’t load from the server." onRetry={() => {}} />
-    </div>
-  ),
-};
-export const Offline: Story = { render: () => <Connection state="offline" /> };
-export const SessionEnded: Story = { render: () => <Connection state="expired" onSignIn={() => {}} /> };

@@ -1065,19 +1065,46 @@
   .quill-editor-input strong { font-weight: 600; }
   .quill-editor-input p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
   .quill-editor-input[aria-disabled='true'] { color: var(--ink-muted); cursor: default; }
-  .quill-mention { display: inline-block; padding: 0 var(--space-1); border: 1px solid var(--hairline); border-radius: var(--radius-key); background: var(--surface-pane); color: var(--ink); line-height: var(--leading-small); white-space: nowrap; }
-  .quill-mention.ProseMirror-selectednode { border-color: var(--focus); }
-  .quill-editor-bar { position: absolute; bottom: calc(100% + var(--space-1)); right: 0; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: var(--radius-key); background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline); box-shadow: var(--shadow-raised); }
-  .quill-editor-bar button { all: unset; cursor: pointer; min-width: 28px; height: 26px; padding: 0 var(--space-2); box-sizing: border-box; display: grid; place-items: center; border-radius: var(--radius-key); font-size: var(--type-small); color: var(--ink); }
-  .quill-editor-bar button:hover { background: var(--hairline); }
-  .quill-editor-bar button[aria-pressed='true'] { background: var(--hairline-strong); }
-  .quill-editor-bar button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+  /* Sheet on select (picked 6 Nov 2026): a mention is a square chip in the Key look, with its kind's icon. */
+  .quill-mention-view { display: inline; }
+  .quill-mention {
+    display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-1); vertical-align: baseline;
+    background: var(--key); border: 1px solid var(--key-side); border-radius: var(--radius-key);
+    color: var(--ink); font-size: 0.92em; line-height: var(--leading-small); white-space: nowrap;
+  }
+  .quill-mention svg { flex: none; color: var(--ink-muted); }
+  .quill-mention.ProseMirror-selectednode { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+  .quill-editor {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --sheet-drop: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
+  /* The format bar: a small Sheet of keys over where the selection starts. */
+  .quill-editor-bar {
+    --bar-at: 0px; --bar-top: 0px;
+    position: absolute; bottom: calc(100% - var(--bar-top) + var(--space-1)); left: min(var(--bar-at), calc(100% - var(--target-sm) * 5 - var(--space-1) * 6)); z-index: 2;
+    display: flex; gap: var(--space-1); padding: var(--space-1);
+    background: var(--sheet); border: 1px solid var(--sheet-edge); border-radius: var(--radius-card); box-shadow: var(--sheet-drop);
+  }
+  .quill-editor-bar button {
+    all: unset; box-sizing: border-box; cursor: pointer; display: grid; place-items: center;
+    min-width: var(--target-sm); height: var(--target-sm); padding: 0 var(--space-2);
+    background: var(--key); color: var(--ink); font-size: var(--type-small);
+    border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key);
+  }
+  .quill-editor-bar button:hover { background: color-mix(in srgb, var(--ink) 14%, var(--slate-deep)); }
+  .quill-editor-bar button[aria-pressed='true'] { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge-sm) - 1px)); background: var(--key-tray); }
+  .quill-editor-bar button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-editor-bar b { font-weight: 700; }
   .quill-editor-bar i { font-style: italic; }
-  .quill-editor-found { margin: var(--space-1) 0 0; padding: var(--space-2); list-style: none; display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--hairline); border-radius: var(--radius-inset); background: var(--surface-pane); max-height: 260px; overflow: auto; }
-  .quill-editor-group { padding: var(--space-2) var(--space-2) var(--space-1); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-muted); }
-  .quill-editor-option { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius-key); cursor: pointer; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); }
-  .quill-editor-option[aria-selected='true'] { background: var(--hairline); }
+  .quill-editor-quote { font-family: var(--font-mono); }
+  /* People and things found after @ or #: a Sheet under the field. */
+  .quill-editor-found {
+    margin: var(--space-1) 0 0; padding: var(--space-1); list-style: none; display: flex; flex-direction: column;
+    background: var(--sheet); border: 1px solid var(--sheet-edge); border-radius: var(--radius-card); box-shadow: var(--sheet-drop);
+  }
+  .quill-editor-group { padding: var(--space-2) var(--space-2) var(--space-1); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
+  .quill-editor-option { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius-key); cursor: pointer; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); }
+  .quill-editor-option[aria-selected='true'] { background: var(--hairline); box-shadow: inset 2px 0 0 var(--ink); }
   .quill-editor-option svg { color: var(--ink-muted); }
   .quill-editor-option small { margin-left: auto; color: var(--ink-muted); font-size: var(--type-small); }
   .quill-editor-none { padding: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
@@ -1089,7 +1116,8 @@
   .quill-prose ol { list-style: decimal; }
   .quill-prose blockquote { padding-left: var(--space-4); border-left: 2px solid var(--hairline-strong); color: var(--ink-muted); }
   .quill-prose strong { font-weight: 600; }
-  .quill-prose .quill-ref { vertical-align: baseline; }
+  .quill-prose .quill-ref { vertical-align: baseline; background: var(--key); border-color: var(--key-side); font-size: 0.92em; }
+  .quill-prose .quill-ref button { padding: 0 var(--space-1); gap: var(--space-1); }
 
   /* Reader: a document in the kit's reading type, one measure, one rhythm. */
   .quill-reader { --reader-type: 18px; --reader-leading: 30px; display: block; max-width: var(--measure-read); margin: 0 auto; font-size: var(--reader-type); line-height: var(--reader-leading); color: var(--ink); overflow-wrap: break-word; hyphens: auto; }
@@ -1137,6 +1165,41 @@
   .quill-contents a[aria-current='location'] { color: var(--ink); border-left-color: var(--ink); }
   .quill-contents [data-level='2'] a { padding-left: var(--space-4); }
   .quill-contents [data-level='3'] a { padding-left: var(--space-5); font-size: var(--type-small); line-height: var(--leading-small); }
+  .quill-contents a { display: flex; align-items: baseline; gap: var(--space-2); }
+  .quill-contents-text { min-width: 0; }
+  /* As a ledger beside leaves: a dotted rule to each heading's leaf, in mono. */
+  .quill-contents-rule { flex: 1; min-width: var(--space-3); border-bottom: 1px dotted var(--hairline-strong); }
+  .quill-contents-leaf { flex: none; font-family: var(--font-mono); font-size: var(--type-label); font-variant-numeric: tabular-nums; }
+
+  /* Flows (picked 6 Nov 2026). Horizon: the section you're in at full ink, the rest dimmed back. */
+  .quill-reader { --reader-dim: 0.4; }
+  .quill-reader[data-flow='horizon'] > [data-block] { transition: opacity var(--motion-calm) var(--ease-standard); }
+  .quill-reader[data-flow='horizon'] > [data-block]:not([data-here]) { opacity: var(--reader-dim); }
+  /* Leaves: columns a leaf wide that fill the height they're given; turning moves a spread along, nothing scrolls. */
+  .quill-reader[data-flow='leaves'] {
+    position: relative; box-sizing: border-box; height: 100%; overflow: hidden; column-gap: var(--space-7); column-fill: auto; outline: none;
+  }
+  .quill-reader[data-flow='leaves'][data-spread='2'] { max-width: calc(var(--measure-read) * 2 + var(--space-7)); column-rule: 1px solid var(--hairline); }
+  .quill-reader[data-flow='leaves']:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-reader[data-flow='leaves'] :is(h1, h2, h3, h4) { break-after: avoid; }
+  .quill-reader-end { break-before: column; height: 1px; margin: 0; }
+  .quill-reader[data-flow='leaves'] :is(li, tr, img, pre, blockquote) { break-inside: avoid; }
+
+  /* ReadingView: a bar of switches, the horizon line, contents and the document, and in leaves a foot to turn. */
+  .quill-reading { display: flex; flex-direction: column; height: 100%; min-height: 0; color: var(--ink); }
+  .quill-reading-bar { flex: none; display: flex; align-items: center; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--hairline); }
+  .quill-reading-title { margin: 0; min-width: 0; font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quill-reading-switches { margin-left: auto; display: flex; gap: var(--space-3); }
+  .quill-reading-horizon { flex: none; display: flex; gap: 2px; height: 2px; margin-top: -1px; }
+  .quill-reading-horizon > span { flex-basis: 0; background: var(--hairline-strong); transition: background-color var(--motion-calm) var(--ease-standard); }
+  .quill-reading-horizon > [data-done] { background: var(--ink-muted); }
+  .quill-reading-horizon > [data-at] { background: var(--ink); }
+  .quill-reading-body { flex: 1; min-height: 0; display: flex; gap: var(--space-6); padding-top: var(--space-5); }
+  .quill-reading-contents { flex: none; width: var(--measure-rail); padding-right: var(--space-4); border-right: 1px solid var(--hairline); overflow-y: auto; }
+  .quill-reading-pane { flex: 1; min-width: 0; min-height: 0; }
+  .quill-reading[data-flow='horizon'] .quill-reading-pane { overflow-y: auto; padding-bottom: var(--space-8); }
+  .quill-reading-foot { flex: none; display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--hairline); }
+  .quill-reading-count { font-family: var(--font-mono); font-size: var(--type-label); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
   .quill-tree { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
   .quill-tree-heading { padding: var(--space-2) var(--space-3) var(--space-1); }
   .quill-tree-item { outline: none; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
