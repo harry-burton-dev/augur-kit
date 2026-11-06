@@ -89,7 +89,8 @@ repository against the kit's current exports, and only the shell's Title and Orb
   `well-edge`, `well-depth`, `key-edge`, `scrollbar` and `measure-table-virtual`. No token was removed.
 - **Looks that change under apps:** buttons are keys and the primary is light, not green; fields, lists,
   tables and rows sit in wells; dialogs, menus and tips are solid sheets with no blur; `State` is a line, not
-  a box. Green now means only "needs you" (PDR-015), and depth is dimming, never blur.
+  a box; `FilterBar`, `Palette`, the `DateField` calendar and `TagPicker` are ruled lines (#68, with new
+  optional props). Green now means only "needs you" (PDR-015), and depth is dimming, never blur.
 
 ## What each repository does
 
