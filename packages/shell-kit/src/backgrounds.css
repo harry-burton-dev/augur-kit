@@ -1,0 +1,39 @@
+/* The desktop's backgrounds, a set to choose from (background.tsx). Each is its own part and knows
+   nothing of what sits on it. Greys, hairlines and one colour of light. Every value is a token. */
+
+/* An app is open: whichever background it is steps out of the way. */
+.aerie-horizon, .aerie-flat, .aerie-water { position: absolute; inset: 0; overflow: hidden; pointer-events: none; transition: opacity var(--motion-calm) var(--ease-standard), background var(--motion-calm) var(--ease-standard); }
+.aerie-horizon[data-away], .aerie-flat[data-away], .aerie-water[data-away] { opacity: 0; }
+
+/* The floor's colours, for the backgrounds that take them. */
+.aerie-horizon, .aerie-flat { --ground-low: var(--floor-you-low); --ground-mark: var(--floor-you-high); }
+:is(.aerie-horizon, .aerie-flat)[data-floor='department'] { --ground-low: var(--floor-department-low); --ground-mark: var(--floor-department-high); }
+:is(.aerie-horizon, .aerie-flat)[data-floor='team'] { --ground-low: var(--floor-team-low); --ground-mark: var(--floor-team-high); }
+:is(.aerie-horizon, .aerie-flat)[data-floor='org'] { --ground-low: var(--floor-org-low); --ground-mark: var(--floor-org-high); }
+
+/* ── The still horizon: a line that nothing moves, with level rules above and below ── */
+.aerie-horizon {
+  --line-at: 50%;
+  --horizon-ground: color-mix(in srgb, var(--grey-3), var(--ground-low) 16%);
+  background: linear-gradient(to bottom, var(--grey-0), var(--horizon-ground) var(--line-at), var(--grey-0));
+}
+.aerie-horizon i { position: absolute; left: 0; right: 0; height: 1px; }
+/* bands become rules: above the line for intent, below for knowledge, all level, each fainter further out */
+.aerie-horizon-rule { top: var(--at); }
+.aerie-horizon-above { background: color-mix(in srgb, var(--grey-7) var(--rule), transparent); }
+.aerie-horizon-below { background: color-mix(in srgb, var(--grey-5) var(--rule), transparent); }
+.aerie-horizon-line { top: var(--line-at); background: color-mix(in srgb, var(--grey-9) 62%, transparent); }
+/* floors change the light around the line, never the line */
+.aerie-horizon .aerie-horizon-glow {
+  top: calc(var(--line-at) - var(--space-7)); height: calc(var(--space-7) * 2);
+  background: radial-gradient(60% 50% at 50% 50%, color-mix(in srgb, var(--ground-mark) 9%, transparent), transparent);
+}
+
+/* ── Flat: one grey, nothing on it ── */
+.aerie-flat { background: var(--grey-1); }
+.aerie-flat[data-tinted] { background: color-mix(in srgb, var(--grey-1), var(--ground-low) 10%); }
+
+/* ── The water: its canvases fill the ground ── */
+.aerie-water { border-radius: inherit; }
+.aerie-water-ground, .aerie-water-bands, .aerie-water-grain { position: absolute; inset: 0; width: 100%; height: 100%; }
+.aerie-water-bands { display: block; mix-blend-mode: screen; }

@@ -284,11 +284,6 @@
   .aerie-skel, .aerie-agent[data-status='needs'][data-next] i::after, .aerie-agent[data-status='running'] i::before { animation: none; }
 }
 
-/* the water, inside the ground */
-.aerie-water { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
-.aerie-water-ground, .aerie-water-bands, .aerie-water-grain { position: absolute; inset: 0; width: 100%; height: 100%; }
-.aerie-water-bands { display: block; mix-blend-mode: screen; }
-
 /* an AI app's icon carries the bubble: a soft ring round it */
 .aerie-bubble { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); box-shadow: 0 0 var(--space-4) color-mix(in srgb, var(--green) 25%, transparent); }
 

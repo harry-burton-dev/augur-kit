@@ -7,6 +7,7 @@
 @import './shell.css' layer(components);
 @import './centre-menu.css' layer(components);
 @import './app-bar.css' layer(components);
+@import './backgrounds.css' layer(components);
 @source './';
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
