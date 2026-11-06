@@ -84,6 +84,7 @@ export const RING_MORE_ID = '\u0000more';
 export interface RingSubject {
   /** What it is, read aloud and shown in the middle ("Policy & Guidance"). */
   label: string;
+  /** What can be done with it, in the order the keys go round. Up to eight sit in fixed directions; leave none out, mark the unavailable ones. */
   actions: RingAction[];
   /** An action was chosen; `target` is the place chosen, for an action with targets. */
   onAction: (id: string, target?: string) => void;
@@ -92,6 +93,7 @@ export interface RingSubject {
 }
 
 interface Opened extends RingSubject {
+  /** The thing it was opened on: kept sharp and ringed while the rest racks back, and given focus back when it closes. */
   target: HTMLElement;
   /** Where the pointer was, when it was opened by a pointer. */
   point?: { x: number; y: number };
@@ -106,9 +108,11 @@ interface Ring {
 const RingContext = createContext<Ring | null>(null);
 
 export interface RingProviderProps {
+  /** How every menu inside lays out its actions: `auto` (a ring, a list past eight) unless the app chose. */
   shape?: RingShape;
   /** What a ring does past eight actions. `list` unless the app chose `more`. */
   overflow?: RingOverflow;
+  /** The part of the app whose things open this menu. */
   children: ReactNode;
 }
 
@@ -292,9 +296,11 @@ export function pageActions(actions: RingAction[]): { first: Placed[]; rest: Rin
 }
 
 export interface RadialMenuProps extends Opened {
+  /** How the actions are laid out: a ring, a list, or a ring up to eight and a list past that (`auto`). */
   shape?: RingShape;
   /** What the ring does past eight actions. */
   overflow?: RingOverflow;
+  /** The menu has closed, chosen or not. Focus has gone back to the thing it was opened on. */
   onClose: () => void;
 }
 
