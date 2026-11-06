@@ -79,13 +79,12 @@ describe('a chunk that fails to load', () => {
       const mounted: string[] = [];
       vi.doMock('./editor-engine.js', async () => {
         const { useEffect } = await import('react');
-        return {
-          default: ({ label }: { label: string }) => {
-            useEffect(() => void mounted.push(label), [label]);
-            if (label === 'Bad') throw new Error('Broke');
-            return <p>Writing in {label}</p>;
-          },
+        const Engine = ({ label }: { label: string }) => {
+          useEffect(() => void mounted.push(label), [label]);
+          if (label === 'Bad') throw new Error('Broke');
+          return <p>Writing in {label}</p>;
         };
+        return { default: Engine };
       });
       const { Editor } = await import('./editor.js');
       const error = silent();
