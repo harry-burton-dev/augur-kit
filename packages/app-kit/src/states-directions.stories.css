@@ -159,6 +159,14 @@
 @keyframes st-breathe { from { opacity: 1; } to { opacity: 0.45; } }
 @keyframes st-light { 0% { background: var(--ink-muted); } 34% { background: color-mix(in srgb, var(--ink) 14%, transparent); } }
 
+/* Reduced motion, from the system or AUGUR's own switch: every loop stops, for the very same selectors. */
 @media (prefers-reduced-motion: reduce) {
-  [data-direction] .st-skel, [data-direction] .st-dashes, [data-direction] .st-spin > i, [data-direction] .st-cells > i, [data-direction] .st-track > i { animation: none; }
+  .st-progress[data-indeterminate] .st-track > i, [data-direction='well'] .st-skel, [data-direction='well'] .st-spin > i,
+  [data-direction='horizon'] .st-skel, [data-direction='horizon'] .st-spin > i:first-child,
+  [data-direction='readout'] .st-progress[data-indeterminate] .st-cells > i, [data-direction='readout'] .st-dashes, [data-direction='readout'] .st-spin > i { animation: none; }
+}
+:root[data-motion='reduce'] {
+  .st-progress[data-indeterminate] .st-track > i, [data-direction='well'] .st-skel, [data-direction='well'] .st-spin > i,
+  [data-direction='horizon'] .st-skel, [data-direction='horizon'] .st-spin > i:first-child,
+  [data-direction='readout'] .st-progress[data-indeterminate] .st-cells > i, [data-direction='readout'] .st-dashes, [data-direction='readout'] .st-spin > i { animation: none; }
 }
