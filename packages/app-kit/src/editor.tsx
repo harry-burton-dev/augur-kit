@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import type { Token } from 'markdown-it';
 import { FieldHead, FieldHint, cx, type FieldProps } from '@augur/kit-common';
 import { loadMarkdown, loadedMarkdown } from './markdown.js';
+import { StateBoundary } from './states.js';
 import { Ref, type RefKind, type RefShown } from './things.js';
 
 /** One thing named in the text: how it reads there ("@Nora Briggs") and what it points at. */
@@ -68,7 +69,9 @@ export interface EditorProps extends FieldProps {
   autoFocus?: boolean;
 }
 
-const Engine = lazy(() => import('./editor-engine.js'));
+const loadEngine = () => import('./editor-engine.js');
+// A lazy part keeps a failed load for good, so trying again takes a new one.
+let Engine = lazy(loadEngine);
 
 /** While the engine loads: the field's head and an empty box of the same height, so nothing moves when it arrives. */
 function Loading({ label, hint, required, optional, rows = 3, className }: EditorProps) {
@@ -94,10 +97,22 @@ function Loading({ label, hint, required, optional, rows = 3, className }: Edito
  * first time a page shows one.
  */
 export function Editor(props: EditorProps) {
+  const [, redraw] = useState(0);
   return (
-    <Suspense fallback={<Loading {...props} />}>
-      <Engine {...props} />
-    </Suspense>
+    <StateBoundary
+      heading={`${props.label} didn’t load`}
+      body="Check your connection and try again."
+      action="Try again"
+      size="line"
+      onReset={() => {
+        Engine = lazy(loadEngine);
+        redraw((n) => n + 1);
+      }}
+    >
+      <Suspense fallback={<Loading {...props} />}>
+        <Engine {...props} />
+      </Suspense>
+    </StateBoundary>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from 'react';
 import type MarkdownIt from 'markdown-it';
 import { cx } from '@augur/kit-common';
+import { State } from './states.js';
 
 /** A heading in what the reader shows, for a contents list. */
 export interface OutlineItem {
@@ -111,7 +112,15 @@ const markdown = (Md: typeof import('markdown-it').default) => {
 let shared: MarkdownIt | undefined;
 let loading: Promise<MarkdownIt> | undefined;
 /** Markdown-it, loaded the first time a reader shows something, since only a few screens read. */
-export const loadReader = () => (loading ??= import('markdown-it').then(({ default: Md }) => (shared = markdown(Md))));
+export const loadReader = () =>
+  (loading ??= import('markdown-it').then(
+    ({ default: Md }) => (shared = markdown(Md)),
+    (err: unknown) => {
+      // One failed fetch mustn't blank every reader until a reload: the next one asks again.
+      loading = undefined;
+      throw err;
+    },
+  ));
 
 const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -147,6 +156,9 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
   const article = useRef<HTMLElement>(null);
   const atTop = useRef('');
   const [html, setHtml] = useState(() => (shared ? shared.render(source) : undefined));
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const plain = failed && html === undefined;
   const latest = useRef({ onOutline, onPosition, onLeaf });
   latest.current = { onOutline, onPosition, onLeaf };
   const leaves = flow === 'leaves';
@@ -158,12 +170,15 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
     if (shared) setHtml(shared.render(source));
     else {
       let gone = false;
-      void loadReader().then((md) => !gone && setHtml(md.render(source)));
+      void loadReader().then(
+        (md) => !gone && setHtml(md.render(source)),
+        () => !gone && setFailed(true),
+      );
       return () => {
         gone = true;
       };
     }
-  }, [source]);
+  }, [source, attempt]);
 
   const blocks = () => [...(article.current?.querySelectorAll<HTMLElement>('[data-block]') ?? [])];
   const outline = (): OutlineItem[] =>
@@ -351,7 +366,7 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
       data-width={width}
       data-flow={flow}
       data-spread={leaves ? spread : undefined}
-      aria-busy={html === undefined || undefined}
+      aria-busy={(html === undefined && !plain) || undefined}
       tabIndex={leaves ? 0 : undefined}
       aria-roledescription={leaves ? 'leaves' : undefined}
       onKeyDown={(e) => {
@@ -366,7 +381,21 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
         if (href?.startsWith('#') && goTo(decodeURIComponent(href.slice(1)))) e.preventDefault();
       }}
       // markdown-it runs with html: false, so the document's own HTML arrives escaped.
-      dangerouslySetInnerHTML={{ __html: html ?? '' }}
+      {...(plain
+        ? {
+            children: (
+              <>
+                <State kind="error" size="line" heading="Showing plain text: the formatting didn’t load." action="Try again" onAction={() => setAttempt((n) => n + 1)} />
+                {source
+                  .split(/\n{2,}/)
+                  .filter((p) => p.trim())
+                  .map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+              </>
+            ),
+          }
+        : { dangerouslySetInnerHTML: { __html: html ?? '' } })}
     />
   );
 }
