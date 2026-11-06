@@ -24,7 +24,10 @@ export { FieldChecks, useFieldCheck, FieldHead, FieldHint, StateMark, useMessage
 export { Menu, type MenuAction, type MenuEntry, type MenuProps } from './menu.js';
 export { Tabs, TabList, Tab, TabPanel, type TabsProps, type TabProps } from './tabs.js';
 export { Choice, Segmented, type ChoiceOption, type ChoiceProps, type SegmentOption, type SegmentedProps } from './choice.js';
-export { Person, People, initials, type PersonProps, type PeopleProps, type PersonTone } from './person.js';
+export { Person, People, Presence, initials, type PersonProps, type PeopleProps, type PersonTone, type PresenceProps } from './person.js';
+export { Comments, type CommentsProps, type CommentEntry, type CommentPoint, type Author } from './comments.js';
+export { Activity, type ActivityProps, type ActivityEvent } from './activity.js';
+export { Notifications, NotificationItem, type NotificationsProps, type NotificationItemProps, type NotificationEntry } from './notifications.js';
 export { Tip, type TipProps } from './tip.js';
 export { Badge, type BadgeProps } from './badge.js';
 export { Divider, type DividerProps } from './divider.js';

@@ -1,6 +1,9 @@
 import { cx } from './cx.js';
 
-/** The floor a person is shown on: their colour comes from that floor's token. */
+/**
+ * The floor a person is shown on, as a thin ring in that floor's colour. You are drawn in plain ink:
+ * green only ever means "needs you", never a person (PDR-018).
+ */
 export type PersonTone = 'you' | 'team' | 'department' | 'org';
 
 export interface PersonProps {
@@ -10,6 +13,8 @@ export interface PersonProps {
   /** A picture; initials show when it's missing or fails. */
   picture?: string;
   tone?: PersonTone;
+  /** Presence: true while they're here now, false when they're away (dimmed back). Left out, nothing is said. */
+  here?: boolean;
   /** Only the round mark, with the name read aloud. */
   markOnly?: boolean;
   className?: string;
@@ -23,28 +28,36 @@ export const initials = (name: string) => {
   return pick.map((w) => [...w][0]!.toUpperCase()).join('');
 };
 
-function Mark({ name, picture, tone = 'team' }: Pick<PersonProps, 'name' | 'picture' | 'tone'>) {
+export function Mark({ name, picture, tone, size }: Pick<PersonProps, 'name' | 'picture' | 'tone'> & { size?: 'sm' }) {
   return (
-    <span className="augur-avatar" data-tone={tone} aria-hidden="true">
+    <span className="augur-avatar" data-tone={tone} data-size={size} aria-hidden="true">
       {picture ? <img src={picture} alt="" onError={(e) => (e.currentTarget.hidden = true)} /> : null}
       <span>{initials(name)}</span>
     </span>
   );
 }
 
-/** Someone: an owner, who did something, or who to ask. A round mark with their initials, then their name. */
-export function Person({ name, detail, picture, tone, markOnly, className }: PersonProps) {
+const presence = (here?: boolean) => (here === undefined ? '' : here ? ', here now' : ', away');
+
+/**
+ * Someone: an owner, who did something, or who to ask. A round mark (Disc) with their initials, ringed in
+ * their floor's colour, then their name. With `here`, someone away is dimmed back, mark and name.
+ */
+export function Person({ name, detail, picture, tone, here, markOnly, className }: PersonProps) {
   if (markOnly)
     return (
-      <span className={cx('augur-person', className)} role="img" aria-label={name} title={name}>
+      <span className={cx('augur-person', className)} data-away={here === false || undefined} role="img" aria-label={name + presence(here)} title={name}>
         <Mark name={name} picture={picture} tone={tone} />
       </span>
     );
   return (
-    <span className={cx('augur-person', className)}>
+    <span className={cx('augur-person', className)} data-away={here === false || undefined}>
       <Mark name={name} picture={picture} tone={tone} />
       <span className="augur-person-text">
-        <span>{name}</span>
+        <span>
+          {name}
+          {here === undefined ? null : <span className="sr-only">{presence(here)}</span>}
+        </span>
         {detail ? <small>{detail}</small> : null}
       </span>
     </span>
@@ -52,7 +65,7 @@ export function Person({ name, detail, picture, tone, markOnly, className }: Per
 }
 
 export interface PeopleProps {
-  people: Pick<PersonProps, 'name' | 'picture' | 'tone'>[];
+  people: Pick<PersonProps, 'name' | 'picture' | 'tone' | 'here'>[];
   /** How many marks before "+N". */
   max?: number;
   /** Read aloud for the group ("Shared with"). The names follow. */
@@ -64,11 +77,13 @@ export interface PeopleProps {
 export function People({ people, max = 4, label, className }: PeopleProps) {
   const shown = people.slice(0, max);
   const rest = people.length - shown.length;
-  const names = people.map((p) => p.name).join(', ');
+  const names = people.map((p) => p.name + presence(p.here)).join(', ');
   return (
     <span className={cx('augur-people', className)} role="img" aria-label={`${label}: ${names}`} title={names}>
       {shown.map((p, i) => (
-        <Mark key={`${p.name}-${i}`} {...p} />
+        <span key={`${p.name}-${i}`} className="augur-people-one" data-away={p.here === false || undefined}>
+          <Mark name={p.name} picture={p.picture} tone={p.tone} />
+        </span>
       ))}
       {rest > 0 ? (
         <span className="augur-avatar augur-avatar-more" aria-hidden="true">
@@ -76,5 +91,33 @@ export function People({ people, max = 4, label, className }: PeopleProps) {
         </span>
       ) : null}
     </span>
+  );
+}
+
+export interface PresenceProps {
+  /** Who could be here, each with whether they are now. */
+  people: (Pick<PersonProps, 'name' | 'picture' | 'tone' | 'detail'> & { here: boolean })[];
+  /** Read aloud and shown above them ("On this page"). */
+  label: string;
+  className?: string;
+}
+
+/** Who is here now: the ones here at full ink first, the ones away dimmed back after them. No dot and no colour: presence is the kit's one depth move. */
+export function Presence({ people, label, className }: PresenceProps) {
+  const sorted = [...people.filter((p) => p.here), ...people.filter((p) => !p.here)];
+  const count = people.filter((p) => p.here).length;
+  return (
+    <section className={cx('augur-presence', className)} aria-label={label}>
+      <p className="augur-people-label">
+        {label} · {count} here
+      </p>
+      <ul>
+        {sorted.map((p, i) => (
+          <li key={`${p.name}-${i}`}>
+            <Person {...p} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
