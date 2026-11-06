@@ -19,6 +19,8 @@ there before changing what the kit promises.
 - Colours, durations and distances come only from the token files in `packages/kit-common/tokens/`
   (`common`, `shell`, `app`). `tokens-only.test.ts` fails on a raw one. New `floor-*` tokens must also be
   copied into the design tool (tell Harry). Icons come from Lucide.
+- Avoid anything needing to scroll. Where something must, it uses the kit's thin scroll bar (Common's
+  `kit.css`, token `scrollbar`), never the browser default. Don't hide a bar that can scroll either.
 - Quill and Common keep the SDK's promise: within a major, add, never remove or rename. A kit major is
   an SDK major. Aerie is the shell's own and only the shell uses it.
 - Every pull request carries a changeset (`pnpm changeset`). Merging the Version packages pull request

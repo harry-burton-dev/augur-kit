@@ -19,6 +19,7 @@
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/**/*.stories.tsx",
-    "src/**/*.fixture.ts"
+    "src/**/*.fixture.ts",
+    "src/**/*.fixture.tsx"
   ]
 }
