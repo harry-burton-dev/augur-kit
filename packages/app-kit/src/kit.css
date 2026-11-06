@@ -308,6 +308,25 @@
   .quill-ring-said { color: var(--ink-muted); }
   .quill-ring-status { display: flex; flex-direction: column; gap: var(--space-1); }
   .quill-ring-status:empty { display: none; }
+  .quill-ring-touches { display: flex; flex-direction: column; gap: var(--space-1); }
+  .quill-ring-touches[data-danger] .quill-ring-effect, .quill-ring-letterbox-list[data-danger] .quill-ring-effect { color: var(--danger); }
+  .quill-ring-effect { color: var(--ink-muted); }
+  /* Consequence focus: what the focused action touches stands out of the rack, framed, with a lead from the subject. */
+  .quill-ring-leads { position: fixed; left: 0; top: 0; overflow: visible; pointer-events: none; animation: quill-fade var(--motion-quick) var(--ease-out) both; }
+  .quill-ring-lead { stroke: var(--ink); stroke-width: 1; stroke-dasharray: var(--space-1) var(--space-1); }
+  .quill-ring-lead[data-danger] { stroke: var(--danger); }
+  .quill-ring-touch { position: fixed; border: 1px solid var(--ink); border-radius: var(--radius-inset); pointer-events: none; animation: quill-fade var(--motion-quick) var(--ease-out) both; }
+  .quill-ring-touch[data-danger] { border-color: var(--danger); }
+  .quill-ring-touch-effect {
+    position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%); padding: 0 var(--space-2); white-space: nowrap;
+    background: var(--slate-deep); border: 1px solid var(--hairline-strong); color: var(--ink); font-size: var(--type-label); line-height: var(--leading-label);
+  }
+  .quill-ring-touch[data-danger] .quill-ring-touch-effect { color: var(--danger); border-color: var(--danger); }
+  /* The held decision's letterbox: what it touches, and the hold filling under them. */
+  .quill-ring-letterbox-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-5); color: var(--ink); }
+  .quill-ring-letterbox-list > li { display: contents; }
+  .quill-ring-letterbox-fill { display: block; height: var(--focus-ring); background: var(--ink); transform-origin: left; animation: quill-ring-bar var(--motion-run) linear both; }
+  .quill-ring-letterbox-list[data-danger] + .quill-ring-letterbox-fill { background: var(--danger); }
   .quill-ring-hint { color: var(--ink-muted); font-size: var(--type-label); line-height: var(--leading-label); }
   /* The visible way into the menu: shown while its parent is hovered or holds focus, and always on a touch screen. */
   .quill-ring-more {
@@ -488,7 +507,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .quill-plane, .quill-rack, .quill-focus-item, .quill-tile, .quill-reel-card, .quill-tree-row, .quill-ring-wedge, .quill-ring-more { transition: none; }
-    .quill-reel-landing, .quill-ring, .quill-ring-disc, .quill-ring-wedge, .quill-ring-target, .quill-ring-targets, .quill-ring-readout, .quill-ring-hold, .quill-reel-light[data-live] .quill-reel-slit { animation: none; }
+    .quill-reel-landing, .quill-ring, .quill-ring-disc, .quill-ring-wedge, .quill-ring-target, .quill-ring-targets, .quill-ring-readout, .quill-ring-hold, .quill-ring-leads, .quill-ring-touch, .quill-ring-letterbox-fill, .quill-reel-light[data-live] .quill-reel-slit { animation: none; }
     .quill-plane { transform: none !important; }
   }
 }
@@ -498,6 +517,7 @@
 @keyframes quill-ring-open { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes quill-ring-fill { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes quill-ring-hold { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes quill-ring-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes quill-trail { from { transform: scaleY(0); } to { transform: none; } }
 @keyframes quill-breathe { 0%, 100% { opacity: 0.6; transform: scaleY(0.94); } 50% { opacity: 1; transform: scaleY(1); } }
 @keyframes quill-summon {

@@ -53,12 +53,12 @@ export interface Hole {
 interface Racking {
   id: string;
   plane: Plane;
-  hole?: Hole;
+  holes: Hole[];
 }
 
 interface Stage {
   depth: Depth;
-  rack: (id: string, plane: Plane, hole?: Hole) => void;
+  rack: (id: string, plane: Plane, holes: Hole[]) => void;
   /** Ends a rack; `returnTo` takes focus back once the plane is in focus (and focusable) again. */
   release: (id: string, returnTo?: HTMLElement) => void;
 }
@@ -104,7 +104,7 @@ export function FocusStage({ depth: asked, children, className }: FocusStageProp
   const stage = useMemo<Stage>(
     () => ({
       depth,
-      rack: (id, plane, hole) => setRacks((now) => [...now.filter((r) => r.id !== id), { id, plane, ...(hole ? { hole } : {}) }]),
+      rack: (id, plane, holes) => setRacks((now) => [...now.filter((r) => r.id !== id), { id, plane, holes }]),
       release: (id, to) => {
         if (to) returnTo.current = to;
         setRacks((now) => now.filter((r) => r.id !== id));
@@ -121,9 +121,24 @@ export function FocusStage({ depth: asked, children, className }: FocusStageProp
     returnTo.current = undefined;
   }, [top]);
   // A hole needs the veil: the lens blurs the plane itself, so nothing in it could stay sharp.
-  const drawn: Depth = top?.hole && depth === 'lens' ? 'veil' : depth;
-  const hole: CSSProperties | undefined = top?.hole
-    ? ({ '--hole-x': `${top.hole.x}px`, '--hole-y': `${top.hole.y}px`, '--hole-w': `${top.hole.width}px`, '--hole-h': `${top.hole.height}px` } as CSSProperties)
+  const holes = top?.holes ?? [];
+  const first = holes[0];
+  const drawn: Depth = first && depth === 'lens' ? 'veil' : depth;
+  const hole: CSSProperties | undefined = first
+    ? ({
+        '--hole-x': `${first.x}px`,
+        '--hole-y': `${first.y}px`,
+        '--hole-w': `${first.width}px`,
+        '--hole-h': `${first.height}px`,
+        // More than one box kept sharp: one mask layer each, cut out of the whole.
+        ...(holes.length > 1
+          ? {
+              maskImage: Array(holes.length + 1).fill('linear-gradient(var(--shade) 0 0)').join(', '),
+              maskSize: ['100% 100%', ...holes.map((h) => `${h.width}px ${h.height}px`)].join(', '),
+              maskPosition: ['0 0', ...holes.map((h) => `${h.x}px ${h.y}px`)].join(', '),
+            }
+          : {}),
+      } as CSSProperties)
     : undefined;
   return (
     <StageContext.Provider value={stage}>
@@ -131,7 +146,7 @@ export function FocusStage({ depth: asked, children, className }: FocusStageProp
         <div className="quill-plane" inert={top ? true : undefined}>
           {children}
         </div>
-        <div className="quill-rack" aria-hidden="true" data-hole={top?.hole ? '' : undefined} style={hole} />
+        <div className="quill-rack" aria-hidden="true" data-hole={first ? '' : undefined} style={hole} />
       </div>
     </StageContext.Provider>
   );
@@ -155,6 +170,8 @@ export const useDepth = (): Depth => useContext(StageContext)?.depth ?? 'veil';
 export interface RackOptions {
   /** A box that stays sharp while the rest racks out: the thing a radial menu was opened on. */
   hole?: Hole;
+  /** More boxes that stay sharp beside `hole`: the things a radial menu action would touch. */
+  holes?: Hole[];
   /** Gets focus back when the rack ends, once the plane is in focus again. */
   returnTo?: HTMLElement;
   /** The plane the calling surface stands on. `active` unless it says otherwise; `work` racks the app soft. */
@@ -167,17 +184,18 @@ export interface RackOptions {
  * portal), above the rack. Outside a stage it does nothing.
  */
 export function useRack(active: boolean, options: RackOptions = {}) {
-  const { hole, returnTo, plane = 'active' } = options;
+  const { hole, holes: more, returnTo, plane = 'active' } = options;
   const stage = useContext(StageContext);
   const id = useId();
-  const key = hole ? `${hole.x},${hole.y},${hole.width},${hole.height}` : '';
+  const holes = [...(hole ? [hole] : []), ...(more ?? [])];
+  const key = holes.map((h) => `${h.x},${h.y},${h.width},${h.height}`).join(';');
   const back = useRef(returnTo);
   back.current = returnTo;
   useEffect(() => {
     if (!stage || !active) return;
-    stage.rack(id, plane, hole);
+    stage.rack(id, plane, holes);
     return () => stage.release(id, back.current);
-    // The hole is compared by value, so a new object for the same box doesn't re-rack.
+    // The holes are compared by value, so new objects for the same boxes don't re-rack.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, active, id, key, plane]);
 }
