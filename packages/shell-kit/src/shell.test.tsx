@@ -42,7 +42,7 @@ describe('Shell landmarks and names', () => {
 
   it('names every icon-only control and shows the name on hover and focus', () => {
     const body = draw(exampleShell('stream'));
-    const iconOnly = [...body.querySelectorAll<HTMLButtonElement>('.aerie-nav, .aerie-handle, .aerie-fn, .aerie-stream, .aerie-x')];
+    const iconOnly = [...body.querySelectorAll<HTMLButtonElement>('.aerie-handle, .aerie-fn, .aerie-stream, .aerie-x')];
     expect(iconOnly.length).toBeGreaterThan(5);
     for (const b of iconOnly) {
       expect(b.getAttribute('aria-label')).toBeTruthy();
@@ -157,5 +157,60 @@ describe('quiet notifications', () => {
     expect(model.heard.length).toBe(before);
     model.notify({ id: 'l1', app: 'docs', level: 'needs', title: 'An approval', time: Date.now() });
     expect(model.heard.length).toBe(before + 1);
+  });
+});
+
+describe('Shell app bar and background', () => {
+  it('docks the app bar as the rail with the open app’s pages, lit down to what needs you', () => {
+    const body = draw(exampleShell());
+    expect(body.querySelector('.aerie-shell')!.getAttribute('data-bar')).toBe('app');
+    const bar = body.querySelector('.aerie-bar')!;
+    expect(bar.getAttribute('data-mode')).toBe('app');
+    expect(bar.getAttribute('aria-label')).toBe('App bar: Documents');
+    expect(body.querySelector('.aerie-band .aerie-nav')).toBeNull();
+    const shared = [...bar.querySelectorAll<HTMLElement>('.aerie-bar-tile')].find((t) => t.textContent?.includes('Shared'));
+    expect(shared).toBeTruthy();
+  });
+
+  it('goes home, pages and closes apps through the model', () => {
+    const model = exampleShell();
+    const heard: string[] = [];
+    for (const e of ['ui-home', 'ui-page', 'ui-close-app']) model.addEventListener(e, () => heard.push(e));
+    draw(model);
+    act(() => model.openPage('recent'));
+    expect(model.page).toBe('recent');
+    act(() => model.goHome());
+    expect(model.current).toBe('');
+    expect(model.running).toEqual(['docs']);
+    expect(document.querySelector('.aerie-shell')!.getAttribute('data-bar')).toBe('desk');
+    act(() => model.closeApp('docs'));
+    expect(model.running).toEqual([]);
+    expect(heard).toEqual(['ui-page', 'ui-home', 'ui-close-app']);
+  });
+
+  it('opening an app adds it to the open ones', () => {
+    const model = exampleShell(undefined, '');
+    model.running = [];
+    model.openApp('mandate');
+    expect(model.running).toEqual(['mandate']);
+    expect(model.current).toBe('mandate');
+  });
+
+  it('lights what needs you, newest first, leaving muted apps dark', () => {
+    const model = exampleShell();
+    expect(model.needs).toEqual([{ app: 'docs', page: 'shared' }]);
+    model.muted = ['docs'];
+    expect(model.needs).toEqual([]);
+  });
+
+  it('draws the chosen background on the desktop and steps it away for an app', () => {
+    const model = exampleShell(undefined, '');
+    const body = draw(model);
+    const horizon = body.querySelector('.aerie-horizon')!;
+    expect(horizon.hasAttribute('data-away')).toBe(false);
+    expect(horizon.getAttribute('data-floor')).toBe('department');
+    act(() => model.openApp('docs'));
+    expect(body.querySelector('.aerie-horizon')!.hasAttribute('data-away')).toBe(true);
+    expect(body.querySelector('.aerie-ground .aerie-flat')).not.toBeNull();
   });
 });
