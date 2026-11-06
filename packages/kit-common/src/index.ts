@@ -36,3 +36,4 @@ export { Notice, Toast, Toasts, type NoticeTone, type NoticeProps, type ToastIte
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
 export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
 export { Tag, Tags, type TagProps, type TagItem, type TagsProps } from './tag.js';
+export { State, StateBoundary, type StateKind, type StateProps, type StateBoundaryProps } from './state.js';

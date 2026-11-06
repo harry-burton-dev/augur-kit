@@ -541,44 +541,6 @@
   .quill-fold:hover { color: var(--ink); }
   .quill-fold:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
 
-  /* State: on the horizon. No box; the sentence sits on a groove, with the line running out to either
-     side. Loading draws the line across; an error turns it red and marks it with a diamond; offline is
-     amber. `line` sits under a line of its own inside a tile; `page` stands in for a whole page. */
-  .quill-state {
-    --state-line: var(--groove); --state-lit: var(--groove-lit);
-    display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-6) 0; text-align: center; color: var(--ink-muted);
-  }
-  .quill-state[data-kind='error'] { --state-line: var(--danger); --state-lit: transparent; }
-  .quill-state[data-kind='offline'] { --state-line: var(--warning); --state-lit: transparent; }
-  .quill-state[data-hidden] { visibility: hidden; }
-  .quill-state-title { display: flex; align-items: center; align-self: stretch; justify-content: center; gap: var(--space-3); margin: 0; font-size: var(--type-body); line-height: var(--leading-body); font-weight: 400; color: var(--ink); }
-  .quill-state-title > span { order: 2; }
-  .quill-state-title::before, .quill-state-title::after { content: ''; flex: 1; min-width: var(--space-5); border-top: 1px solid var(--state-line); box-shadow: 0 1px 0 var(--state-lit); }
-  .quill-state-title::after { order: 3; }
-  .quill-state-mark { flex: none; order: 1; margin-right: calc(var(--space-1) * -1); color: var(--state-line); }
-  .quill-state[data-kind='loading'] .quill-state-title { color: var(--ink-muted); }
-  .quill-state[data-kind='loading'] .quill-state-title::before, .quill-state[data-kind='loading'] .quill-state-title::after { content: none; }
-  .quill-state-body { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); max-width: var(--measure-read); }
-  .quill-state-action { display: flex; margin-top: var(--space-1); }
-  .quill-run { position: relative; display: block; align-self: stretch; height: var(--key-edge-sm); background: var(--groove); box-shadow: 0 1px 0 var(--groove-lit); overflow: hidden; }
-  .quill-run::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: var(--ink-muted); animation: quill-travel var(--motion-run) var(--ease-standard) infinite alternate; }
-
-  .quill-state[data-size='line'] {
-    flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-2) 0 0; text-align: left;
-    border-top: 1px solid var(--state-line); box-shadow: inset 0 1px 0 var(--state-lit);
-  }
-  .quill-state[data-size='line'] .quill-state-title { align-self: auto; justify-content: flex-start; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
-  .quill-state[data-size='line'] .quill-state-title::before, .quill-state[data-size='line'] .quill-state-title::after { content: none; }
-  .quill-state[data-size='line'] .quill-state-mark { margin-right: 0; }
-  .quill-state[data-size='line'] .quill-state-body { flex-basis: 100%; }
-  .quill-state[data-size='line'] .quill-state-action { margin-top: 0; }
-  .quill-state[data-size='line'][data-kind='loading'] { border-top: 0; box-shadow: none; padding-top: 0; }
-  .quill-state[data-size='line'] .quill-run { order: -1; align-self: center; width: var(--space-5); }
-
-  .quill-state[data-size='page'] { justify-content: center; min-height: 60vh; padding: var(--space-8) 0; gap: var(--space-3); }
-  .quill-state[data-size='page'] .quill-state-title { font-size: var(--type-heading); line-height: var(--leading-heading); }
-  .quill-state[data-size='page'] .quill-state-body { font-size: var(--type-meta); line-height: var(--leading-meta); }
-
   /* Facts and rows */
   .quill-facts { display: flex; flex-wrap: wrap; gap: var(--space-5) var(--space-7); margin: 0; }
   .quill-fact { display: flex; flex-direction: column-reverse; }
@@ -884,11 +846,10 @@
   .quill-surface[data-kind='bar'] { background: var(--surface-bar); }
 
   @media (prefers-reduced-motion: reduce) {
-    .quill-skel, .quill-list-skel, .quill-run::after, .quill-list-lead::after { animation: none; }
+    .quill-skel, .quill-list-skel, .quill-list-lead::after { animation: none; }
   }
 }
 
-@keyframes quill-travel { from { left: 0; } to { left: 70%; } }
 @keyframes quill-skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 
 /* Editor, prose and tree (PER-243). */
@@ -997,11 +958,11 @@
    loop stops (reduced-motion.test.ts in Common checks every kit). */
 @layer components {
   @media (prefers-reduced-motion: reduce) {
-    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after,
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel,
     .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
   }
   :root[data-motion='reduce'] {
-    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel, .quill-run::after,
+    .quill-reel-light[data-live] .quill-reel-slit, .quill-skel,
     .quill-list-lead[data-status='needs'][data-first]::after, .quill-list-skel { animation: none; }
   }
 }

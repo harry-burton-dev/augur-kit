@@ -29,9 +29,9 @@ describe('the parts apps took from the Lit kit', () => {
   it('waits before showing a load, and offers one thing to do after an error', () => {
     vi.useFakeTimers();
     draw(<State kind="loading" heading="Loading plans" />);
-    expect(document.querySelector('.quill-state')!.hasAttribute('data-hidden')).toBe(true);
+    expect(document.querySelector('.augur-state')!.hasAttribute('data-hidden')).toBe(true);
     act(() => vi.advanceTimersByTime(300));
-    expect(document.querySelector('.quill-state')!.hasAttribute('data-hidden')).toBe(false);
+    expect(document.querySelector('.augur-state')!.hasAttribute('data-hidden')).toBe(false);
     vi.useRealTimers();
     const retry = vi.fn();
     draw(<State kind="error" heading="Couldn’t load" action="Try again" onAction={retry} />);
