@@ -239,3 +239,52 @@ export const LongTableReach: Story = {
     </div>
   ),
 };
+
+/* ---- Plain list and expanding row (mock-ups: neither is a part yet) ---- */
+
+/** A plain contained list of words, and a table row opened to show more under it. Neither is a part yet: drawn here so the pick covers them. */
+export const PlainAndExpanding: Story = {
+  name: 'Plain list and expanding row',
+  render: () => (
+    <Board part="Plain list and expanding row" summary="Two kinds that aren’t parts yet: a plain list of things, and a table row opened to show more under it. Drawn from markup so the pick covers them.">
+      {() => (
+        <div className="ld-pair">
+          <ul className="ld-plain" aria-label="Steps">
+            <li>Check the roster against leave</li>
+            <li>Ask Ops about the two swaps</li>
+            <li>Send the roster to the floor</li>
+          </ul>
+          <table className="ld-expand">
+            <thead>
+              <tr>
+                <th scope="col" aria-label="Open" />
+                <th scope="col">Name</th>
+                <th scope="col">Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-open="">
+                <td>
+                  <Icon name="chevron-down" size={14} />
+                </td>
+                <td>Leave policy</td>
+                <td>People</td>
+              </tr>
+              <tr className="ld-expand-more">
+                <td />
+                <td colSpan={2}>Four pages. Changed by Sam 4 min ago; two people still to read it.</td>
+              </tr>
+              <tr>
+                <td>
+                  <Icon name="chevron-down" size={14} />
+                </td>
+                <td>Travel and expenses</td>
+                <td>Finance</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Board>
+  ),
+};

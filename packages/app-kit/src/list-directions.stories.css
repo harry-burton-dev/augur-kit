@@ -133,4 +133,44 @@
   [data-direction='dim'] .quill-rows li { border: 0; padding-block: var(--space-2); }
   [data-direction='dim'] .quill-rows li span:first-child { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); }
   [data-direction='dim'] .quill-rows li span:last-child { color: var(--ink); }
+
+  /* ---- Plain list and expanding row: mock-ups drawn from markup in each direction ---- */
+  .ld-pair { display: flex; flex-direction: column; gap: var(--space-5); }
+  .ld-plain { margin: 0; padding: 0; list-style: none; font-size: var(--type-body); line-height: var(--leading-body); }
+  .ld-plain li { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--hairline); }
+  .ld-plain li:last-child { border-bottom: 0; }
+  .ld-expand { width: 100%; border-collapse: collapse; font-size: var(--type-body); line-height: var(--leading-body); }
+  .ld-expand th { height: var(--target-md); padding: 0 var(--space-3); text-align: left; font-weight: 400; font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-muted); border-bottom: 1px solid var(--hairline); }
+  .ld-expand td { height: var(--target-md); padding: 0 var(--space-3); color: var(--ink-muted); border-bottom: 1px solid var(--hairline); }
+  .ld-expand td:first-child, .ld-expand th:first-child { width: var(--space-4); padding-right: 0; }
+  .ld-expand td:nth-child(2) { color: var(--ink); }
+  .ld-expand td svg { transform: rotate(-90deg); transition: transform var(--motion-quick) var(--ease-standard); }
+  .ld-expand tr[data-open] td svg { transform: none; }
+  .ld-expand .ld-expand-more td { height: auto; padding-block: var(--space-2) var(--space-4); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+  .ld-expand tr[data-open] td { border-bottom: 0; }
+  [data-direction='today'] .ld-plain { border: 1px solid var(--hairline); border-radius: var(--radius-key); }
+  [data-direction='today'] .ld-expand tr[data-open], [data-direction='today'] .ld-expand-more { background: var(--ld-point); }
+
+  [data-direction='rule'] .ld-plain { border-top: 1px solid var(--hairline-strong); counter-reset: ld-step; }
+  [data-direction='rule'] .ld-plain li { padding-left: var(--space-4); counter-increment: ld-step; display: flex; gap: var(--space-3); }
+  [data-direction='rule'] .ld-plain li::before { content: counter(ld-step, decimal-leading-zero); font-family: var(--font-mono); font-size: var(--type-label); color: var(--ink-muted); }
+  [data-direction='rule'] .ld-plain li:last-child { border-bottom: 1px solid var(--hairline); }
+  [data-direction='rule'] .ld-expand th { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); border-bottom-color: var(--hairline-strong); }
+  [data-direction='rule'] .ld-expand tr[data-open] td:first-child, [data-direction='rule'] .ld-expand-more td:first-child { box-shadow: inset var(--key-edge-sm) 0 0 var(--ink); }
+
+  [data-direction='key'] .ld-plain { padding: var(--space-1); background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); }
+  [data-direction='key'] .ld-plain li { border-bottom-color: var(--ld-groove); }
+  [data-direction='key'] .ld-expand { background: var(--ld-tray); border: 1px solid var(--hairline); border-radius: var(--radius-control); border-collapse: separate; border-spacing: 0; overflow: hidden; }
+  [data-direction='key'] .ld-expand :is(th, td) { border-bottom-color: var(--ld-groove); }
+  [data-direction='key'] .ld-expand th { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
+  [data-direction='key'] .ld-expand tr[data-open] td { background: var(--ld-key); color: var(--ink); }
+  [data-direction='key'] .ld-expand-more td { box-shadow: inset 0 calc(var(--key-edge-sm) * -1) 0 var(--ld-key-bottom); background: var(--ld-key); }
+
+  [data-direction='dim'] .ld-plain li { border: 0; color: var(--ink-muted); }
+  [data-direction='dim'] .ld-plain li:first-child { color: var(--ink); }
+  [data-direction='dim'] .ld-expand :is(th, td) { border: 0; }
+  [data-direction='dim'] .ld-expand th { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
+  [data-direction='dim'] .ld-expand td:nth-child(2) { color: var(--ink-muted); }
+  [data-direction='dim'] .ld-expand tbody tr:not([data-open], .ld-expand-more) { opacity: 0.6; }
+  [data-direction='dim'] .ld-expand tr[data-open] td { color: var(--ink); }
 }
