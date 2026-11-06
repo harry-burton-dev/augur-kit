@@ -9,6 +9,13 @@
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
 
+/* Scrolling (Harry's rule): avoid anything needing to scroll. Where something must, its scroll bar is thin
+   and drawn in the kit's own colour, never the browser default. Every element, at no specificity, so a part
+   that needs a different bar can still say so. */
+@layer base {
+  :where(*) { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+}
+
 /* Signal: the light language (streak, bloom, flicker, ember, beacon, shadow). The light is decoration and
    the words carry the meaning, so nothing here is the only cue. Loops stop under reduced motion. */
 @layer components {

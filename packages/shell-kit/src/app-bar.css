@@ -53,7 +53,7 @@
 .aerie-bar .aerie-bar-grip:focus-visible { outline: 2px solid var(--grey-9); outline-offset: -2px; }
 
 .aerie-bar-tiles {
-  flex: 1; min-width: 0; display: flex; align-items: stretch; overflow: auto; scrollbar-width: none;
+  flex: 1; min-width: 0; display: flex; align-items: stretch; overflow: hidden;
   transition: opacity var(--motion-quick) var(--ease-standard);
 }
 .aerie-bar[data-mode='app'] .aerie-bar-tiles { flex-direction: column; overflow: hidden; }
