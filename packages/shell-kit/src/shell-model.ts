@@ -2,6 +2,7 @@ import { animate, motionMode, tokenEasing, tokenValue } from './motion.js';
 import { floorBeside, floorDirection, floorKindOf, floorMeaning, type FloorDirection, type ShellFloor } from './floors.js';
 import type { Water } from './water.js';
 import { arcOrder, arcSlot } from './shell-menu.js';
+import { backgrounds, type BackgroundChoice } from './background.js';
 
 export type NotificationLevel = 'needs' | 'info' | 'running' | 'done' | 'failed';
 
@@ -20,6 +21,8 @@ export interface ShellNotification {
   actions?: ShellNotificationAction[];
   /** The person made this kind of notification quiet: it lands in the stream like a muted app's, without a pulse and uncounted. */
   quiet?: boolean;
+  /** The page of its app it's on, by id: the app bar lights the way down to it. */
+  page?: string;
 }
 
 export interface ShellNotificationAction {
@@ -36,6 +39,34 @@ export interface ShellApp {
   ai?: boolean;
   /** It shows the same on every floor, so the gauge rests while it's open and says why. */
   sameOnEveryFloor?: boolean;
+  /** The group it sits in on the app bar, by id (see `ShellModel.groups`). Apps with none go in Apps. */
+  group?: string;
+  /** Why it can't open here: it stays in its start menu, greyed, with this as its small print. */
+  off?: string;
+  /** Its pages, in the rail when it's open. With none, the rail shows only the fixed block. */
+  pages?: ShellPage[];
+}
+
+/** One of an app's pages, a tile in the rail while the app is open. */
+export interface ShellPage {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+/** A group of apps: one tile on the desktop's app bar, whose start menu lists them. */
+export interface ShellAppGroup {
+  id: string;
+  name: string;
+  icon: string;
+  /** What's in it, in a few words. */
+  line?: string;
+}
+
+/** What needs you, as a way down the app bar: the app and, when it says, the page. */
+export interface ShellNeed {
+  app: string;
+  page?: string;
 }
 
 /** How an agent is doing, most urgent first. */
@@ -60,9 +91,8 @@ export interface ShellFunction {
 }
 
 /**
- * A way to go that works from every screen, drawn as a round button top left
- * beside the floor: Home, Title. The one you're on is marked, and one that
- * can't be used stays and says why.
+ * A way to go that works from every screen. No longer drawn: the app bar's Home and Apps replace
+ * the round buttons. Kept so a host that still sets `navs` builds.
  */
 export interface ShellNav {
   id: string;
@@ -100,6 +130,8 @@ export interface ShellSettings {
   density?: 'comfortable' | 'compact';
   /** On unless false: an area title card on arriving at a floor or opening an app. */
   areaTitles?: boolean;
+  /** Where the app bar rests on the desktop: under the band (0), upper (1, the default), lower (2) or at the bottom (3). */
+  barStop?: 0 | 1 | 2 | 3;
   /** Off unless true: the host says each new notification once as a toast; the Shell itself still only pulses. */
   toasts?: boolean;
 }
@@ -152,7 +184,7 @@ function travel(direction: FloorDirection, way: 1 | -1): string {
 const DRAWN = [
   'product', 'workspace', 'user', 'online', 'statusLabel', 'apps', 'recent', 'agents', 'agentsLoading', 'agentsError', 'functions',
   'streamLoading', 'streamError', 'findResults', 'findGroups', 'settings', 'away', 'canSwitchWorkspace', 'navs', 'backTo', 'area',
-  'floors', 'version', 'background',
+  'floors', 'version', 'background', 'backgroundOptions', 'backgroundSet', 'groups', 'barHolds', 'barHint', 'running', 'page',
 ] as const;
 
 /** The elements the drawn Shell hands its model, so moves and focus can reach them. */
@@ -170,7 +202,8 @@ export interface ShellParts {
  * person asks (`ui-*` events on it, the same names the Lit `ui-shell` fired);
  * `<Shell>` draws it and redraws on every change.
  *
- * Events: ui-toggle `{ open }`, ui-open-app `{ id }`, ui-nav `{ id }`, ui-back,
+ * Events: ui-toggle `{ open }`, ui-open-app `{ id }`, ui-home, ui-page `{ app, id }`,
+ * ui-close-app `{ id }`, ui-bar-hint,
  * ui-open-notification `{ notification }`, ui-notification-action
  * `{ notification, index }`, ui-notifications `{ notifications, muted }`,
  * ui-mute `{ app, muted }`, ui-dismiss `{ ids }`, ui-restore `{ ids }`,
@@ -201,10 +234,20 @@ export class ShellModel extends EventTarget {
   away = false;
   /** Whether Account offers Switch workspace; a host with one workspace turns it off. Floors replace it. */
   canSwitchWorkspace = true;
-  /** The ways to go from anywhere, top left beside the floor (see `ShellNav`). */
+  /** No longer drawn: the app bar replaces them (see `ShellNav`). */
   navs: ShellNav[] = [];
-  /** Where Back goes, in words; empty hides Back. Kept for hosts that still set it: `navs` replaces it. */
+  /** No longer drawn: the app bar's Home replaces Back. */
   backTo = '';
+  /** The app bar's groups, one tile each on the desktop, in order. Apps name theirs with `group`. */
+  groups: ShellAppGroup[] = [];
+  /** Groups as tiles on the desktop bar, or one Apps tile holding them as folders. */
+  barHolds: 'groups' | 'folder' = 'groups';
+  /** One line by the bar, the first time, saying what the tiles are; empty for none. Cleared once read (ui-bar-hint). */
+  barHint = '';
+  /** The apps that are open, in the order they opened: tiles after the divider on the desktop, and in the rail. */
+  running: string[] = [];
+  /** The open app's page, by id; empty is its first. */
+  page = '';
   /** The part of the open app you're in, said under its name; empty says only the app. */
   area = '';
   /**
@@ -216,8 +259,16 @@ export class ShellModel extends EventTarget {
   floors: ShellFloor[] = [];
   /** What's running, shown in Settings; the host sets it. */
   version = '';
-  /** The water's preset (Calm Tide unless a screen has a reason), or `none` for the still ground: the flat slate apps sit on. */
-  background = 'Calm Tide';
+  /**
+   * The desktop's background, by id from `backgroundSet`: `horizon` (the default), `flat`, `water`,
+   * or `none`. A water preset's name ("Calm Tide") still works and means the water in that preset.
+   * With an app open the background steps away and the app sits on flat ground.
+   */
+  background = 'horizon';
+  /** The background's own options, such as the horizon's `line` or the water's `preset`. */
+  backgroundOptions: Record<string, unknown> = {};
+  /** The backgrounds to choose from: the kit's, and any the deployment adds. */
+  backgroundSet: BackgroundChoice[] = backgrounds;
 
   /* the sky's own state */
   isOpen = false;
@@ -715,9 +766,54 @@ export class ShellModel extends EventTarget {
   }
 
   openApp(id: string) {
+    if (!this.running.includes(id)) this.running = [...this.running, id];
+    if (id !== this.current) this.page = '';
     this.setCurrent(id);
     this.emit('ui-open-app', { id });
     this.close();
+  }
+
+  /** Back to the desktop: no app open, the bar back across the screen. Open apps stay open. */
+  goHome() {
+    this.current = '';
+    this.page = '';
+    this.emit('ui-home', {});
+    this.close();
+  }
+
+  /** One of the open app's pages, from the rail. */
+  openPage(id: string) {
+    this.page = id;
+    this.emit('ui-page', { app: this.current, id });
+  }
+
+  /** Closes an open app; if it was the one in front, the last one opened before it comes forward, or the desktop. */
+  closeApp(id: string) {
+    this.running = this.running.filter((a) => a !== id);
+    if (this.current === id) {
+      this.current = this.running[this.running.length - 1] ?? '';
+      this.page = '';
+    }
+    this.emit('ui-close-app', { id });
+  }
+
+  /** The bar was moved: kept in settings, so the host can remember it. */
+  setBarStop(stop: 0 | 1 | 2 | 3) {
+    this.setSetting('barStop', stop);
+  }
+
+  /** The first-run line was read. */
+  doneBarHint() {
+    this.barHint = '';
+    this.emit('ui-bar-hint', {});
+  }
+
+  /** What needs you, as ways down the app bar, most recent first; the first one leads. Muted apps and quiet notifications don't light anything. */
+  get needs(): ShellNeed[] {
+    return this.heard
+      .filter((n) => n.level === 'needs')
+      .sort((a, b) => toTime(b.time) - toTime(a.time))
+      .map((n) => ({ app: n.app, page: n.page }));
   }
 
   openNotification(n: ShellNotification) {

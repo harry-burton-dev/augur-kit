@@ -10,6 +10,8 @@ export interface WaterGroundProps extends HTMLAttributes<HTMLDivElement> {
   away?: boolean;
   /** Which of the water's presets. */
   preset?: WavePreset;
+  /** Handed the water's engine once it's drawn (and null when it goes), so the shell can move it between floors. */
+  onWater?: (water: Water | null) => void;
 }
 
 /** Where the water sits on each floor: your own high and close, the org low. */
@@ -20,14 +22,19 @@ const LEVEL: Record<FloorTone, number> = { you: -0.06, department: 0, team: 0, o
  * into a glow with a fine grain, from the Wave Background Tuner. It moves, so it stops when motion
  * is reduced.
  */
-export function WaterGround({ floor = 'you', away, preset = DEFAULT_WAVE, className, ...rest }: WaterGroundProps) {
+export function WaterGround({ floor = 'you', away, preset = DEFAULT_WAVE, onWater, className, ...rest }: WaterGroundProps) {
   const host = useRef<HTMLDivElement>(null);
   const water = useRef<Water | null>(null);
+  const told = useRef(onWater);
+  told.current = onWater;
 
   useLayoutEffect(() => {
     const el = host.current;
     if (!el) return;
-    water.current ??= new Water(el);
+    if (!water.current) {
+      water.current = new Water(el);
+      told.current?.(water.current);
+    }
     let colors: { navy: string; green: string } | undefined;
     if (floor !== 'you') {
       const cs = getComputedStyle(el);
@@ -42,6 +49,7 @@ export function WaterGround({ floor = 'you', away, preset = DEFAULT_WAVE, classN
     () => () => {
       water.current?.destroy();
       water.current = null;
+      told.current?.(null);
     },
     [],
   );
