@@ -4,6 +4,7 @@ import { Button } from './button.js';
 import { FieldChecks, type FieldChecker } from './field.js';
 import type { DialogSubmit } from './dialog.js';
 import { IconButton } from './icon-button.js';
+import { KeyCap } from './key-cap.js';
 
 export interface SideSheetProps {
   open: boolean;
@@ -210,7 +211,7 @@ export function SideSheet({
                 </Button>
               ) : null}
               <button ref={cancel} type="button" className="augur-dialog-cancel" disabled={busy} onClick={() => close(null)}>
-                <kbd>Esc</kbd>
+                <KeyCap>Esc</KeyCap>
                 {cancelLabel}
               </button>
             </footer>

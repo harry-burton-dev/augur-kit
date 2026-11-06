@@ -455,9 +455,6 @@
   .augur-dialog-cancel:hover { color: var(--ink); }
   .augur-dialog-cancel:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-dialog-cancel:disabled { opacity: 0.4; cursor: default; }
-  .augur-dialog-cancel kbd {
-    font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
-  }
 
   /* Side sheets: Leaf (picked 6 Nov 2026). Create and edit work too big for a dialog: a Sheet from the right
      edge, full height, over the dimmed page. The heading on its own strip, the work, a ruled footer. A sheet
