@@ -116,7 +116,7 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
   );
   if (loading)
     return wrap(
-      <div aria-busy="true" aria-label={label}>
+      <div role="status" aria-busy="true" aria-label={label}>
         <span className="quill-list-skel" />
         <span className="quill-list-skel" />
         <span className="quill-list-skel" />
@@ -272,6 +272,12 @@ export interface TableProps<R extends TableRow = TableRow> {
    * and empty states look the same either way.
    */
   virtual?: boolean;
+  /**
+   * For long tables that shouldn't scroll: show this many rows at a time, with the count and Back and On
+   * keys under them. Filtering and sorting cover every row; a new filter or sort goes back to the first
+   * page. Takes the place of `virtual` when both are set.
+   */
+  pageSize?: number;
   className?: string;
 }
 
@@ -354,6 +360,7 @@ export function Table<R extends TableRow = TableRow>({
   onRetry,
   actions,
   virtual,
+  pageSize,
   className,
 }: TableProps<R>) {
   const [sort, setSort] = useState<TableSort | null>(initialSort);
@@ -363,6 +370,12 @@ export function Table<R extends TableRow = TableRow>({
   const selected = selectedIds ? new Set(selectedIds) : own;
   const q = filter.trim().toLowerCase();
   const visible = useShownRows(rows, columns, sort, q);
+  const [page, setPage] = useState(0);
+  const paged = Boolean(pageSize && pageSize > 0);
+  const size = paged ? Math.floor(pageSize!) || 1 : visible.length;
+  const pages = paged ? Math.max(1, Math.ceil(visible.length / size)) : 1;
+  const at = Math.min(page, pages - 1);
+  const shown = paged ? visible.slice(at * size, (at + 1) * size) : visible;
   const sortBy = (key: string) => {
     const c = columns.find((x) => x.key === key);
     if (!c) return;
@@ -370,6 +383,7 @@ export function Table<R extends TableRow = TableRow>({
     const second = first === 'asc' ? 'desc' : 'asc';
     const next: TableSort | null = !sort || sort.key !== key ? { key, dir: first } : sort.dir === first ? { key, dir: second } : null;
     setSort(next);
+    setPage(0);
     onSort?.(next);
   };
   const select = (keys: Selection) => {
@@ -381,6 +395,13 @@ export function Table<R extends TableRow = TableRow>({
   const span = columns.length + (selectable ? 1 : 0);
   const end = (c: TableColumn<R>) => c.align === 'end' || c.kind === 'number';
   const formats = useFormats();
+  const count = (n: number) => {
+    try {
+      return n.toLocaleString(formats.locale);
+    } catch {
+      return n.toLocaleString();
+    }
+  };
   const cell = (c: TableColumn<R>, row: R): ReactNode => {
     const value = row[c.key];
     if (c.format) return c.format(value, row);
@@ -434,7 +455,7 @@ export function Table<R extends TableRow = TableRow>({
         </Button>
       </>,
     );
-  const virtualRows = Boolean(virtual && !loading && !error && visible.length);
+  const virtualRows = Boolean(virtual && !paged && !loading && !error && visible.length);
   const renderRow = (row: R) => (
     <AriaRow key={row.id} id={row.id} className="quill-table-row">
       {selectable ? (
@@ -453,7 +474,7 @@ export function Table<R extends TableRow = TableRow>({
       ))}
     </AriaRow>
   );
-  if (!body && !virtualRows) body = visible.map(renderRow);
+  if (!body && !virtualRows) body = shown.map(renderRow);
   return (
     <div className={cx('quill-table', className)} data-density={density} data-virtual={virtualRows ? '' : undefined}>
       <div className="quill-table-bar">
@@ -470,11 +491,17 @@ export function Table<R extends TableRow = TableRow>({
                 aria-label={`Filter ${noun}`}
                 value={filter}
                 autoFocus
-                onChange={(e) => setFilter(e.target.value)}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                  setPage(0);
+                }}
                 onKeyDown={(e) => {
                   if (e.key !== 'Escape') return;
                   e.preventDefault();
-                  if (filter) setFilter('');
+                  if (filter) {
+                    setFilter('');
+                    setPage(0);
+                  }
                   else setFiltering(false);
                 }}
               />
@@ -534,6 +561,19 @@ export function Table<R extends TableRow = TableRow>({
           </AriaTable>
         </Virtualized>
       </div>
+      {paged && !loading && !error && visible.length > size ? (
+        <div className="quill-table-pager">
+          <span className="quill-table-pages" aria-live="polite">
+            {count(at * size + 1)}–{count(at * size + shown.length)} of {count(visible.length)}
+          </span>
+          <Button kind="secondary" size="sm" icon={<Icon name="back" size={16} />} disabled={at === 0} reason="This is the first page." aria-label={`Back: the ${noun} before these`} onPress={() => setPage(at - 1)}>
+            Back
+          </Button>
+          <Button kind="secondary" size="sm" icon={<Icon name="arrow" size={16} />} disabled={at === pages - 1} reason="This is the last page." aria-label={`On: the next ${noun}`} onPress={() => setPage(at + 1)}>
+            On
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

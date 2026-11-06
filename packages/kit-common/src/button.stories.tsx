@@ -8,7 +8,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 );
 
 /**
- * A labelled action, drawn as a key (Keycap): flat, with a small corner, and its depth in a thicker
+ * A labelled action, drawn as a key (Keycap): flat, square, and its depth in a thicker
  * bottom line rather than a shadow or a glow. Pressed, the line closes and the key sinks. Buttons have
  * no colour of their own: green means "needs you" and red means danger, so the primary is the one light
  * key on a screen.
