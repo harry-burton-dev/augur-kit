@@ -382,34 +382,52 @@
   .augur-heading[data-size='l'] .augur-title { font-size: var(--type-display); line-height: var(--leading-display); font-weight: 200; }
   .augur-summary { margin: var(--space-3) 0 0; max-width: var(--measure-prose); font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink-muted); }
 
-  /* Dialogs: one decision or one small task, over everything, on the veil. */
+  /* Dialogs: Sheet (picked 6 Nov 2026). One decision or one small task, over everything, on the veil. The
+     page behind is dimmed, never blurred (PDR-015). The dialog is a solid square sheet with one edge: the
+     heading on its own strip with the eyebrow in mono, and the actions on a ruled footer, primary last. */
   .augur-veil {
     position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); display: flex; justify-content: center; align-items: flex-start; overflow: auto;
-    background: radial-gradient(ellipse 60% 60% at 50% 46%, color-mix(in srgb, var(--slate-deep) 45%, transparent), var(--veil));
-    backdrop-filter: blur(var(--focus-far-blur));
+    background: color-mix(in srgb, var(--shade) 55%, transparent);
   }
   .augur-veil[data-entering] { animation: augur-fade var(--motion-slow) var(--ease-out); }
   .augur-veil[data-exiting] { animation: augur-fade var(--motion-quick) var(--ease-out) reverse; }
+  .augur-dialog, .augur-notice, .augur-toast {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --sheet-line: color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    --sheet-drop: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+  }
   .augur-dialog {
     width: min(var(--measure-decision), calc(100% - 2 * var(--edge)));
     margin: max(var(--space-6), calc(46vh - 180px)) auto var(--space-6);
-    padding: var(--space-5); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: var(--radius-card);
-    background: var(--surface-overlay); backdrop-filter: blur(22px) saturate(1.25);
-    box-shadow: var(--shadow-overlay), inset 0 1px 0 color-mix(in srgb, var(--light) 6%, transparent);
-    color: var(--ink); font-family: var(--font-sans);
+    border: 1px solid var(--sheet-line); border-radius: var(--radius-control); background: var(--sheet); box-shadow: var(--sheet-drop);
+    color: var(--ink); font-family: var(--font-sans); overflow: hidden;
   }
   .augur-dialog[data-entering] { animation: augur-rise-far var(--motion-slow) var(--ease-out); }
   .augur-dialog[data-size='glance'] { width: min(var(--measure-glance), calc(100% - 2 * var(--edge))); }
   .augur-dialog[data-size='read'] { width: min(var(--measure-read), calc(100% - 2 * var(--edge))); }
-  .augur-dialog-body { display: flex; flex-direction: column; gap: var(--space-4); }
-  .augur-dialog-error {
-    margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset);
-    background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); font-size: var(--type-meta); line-height: var(--leading-meta);
+  .augur-dialog-body { display: flex; flex-direction: column; }
+  .augur-dialog-body > * { padding-inline: var(--space-5); }
+  .augur-dialog-body > .augur-heading { padding-block: var(--space-4); border-bottom: 1px solid var(--hairline); }
+  .augur-dialog .augur-eyebrow {
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
   }
-  .augur-dialog-text { display: flex; flex-direction: column; gap: var(--space-4); color: var(--ink-muted); }
+  /* What went wrong, stamped like a notice: the word in mono, printed solid in red. */
+  .augur-dialog-error {
+    display: flex; align-items: baseline; gap: var(--space-3); margin: var(--space-4) 0 0;
+    color: var(--danger); font-size: var(--type-meta); line-height: var(--leading-meta);
+  }
+  .augur-dialog-error::before {
+    content: 'Not done'; flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--danger); color: var(--slate-deep);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  }
+  .augur-dialog-text { display: flex; flex-direction: column; gap: var(--space-4); padding-block: var(--space-5); color: var(--ink-muted); }
   .augur-dialog-text p { margin: 0; }
-  .augur-dialog-fields { display: flex; flex-direction: column; gap: var(--space-5); }
-  .augur-dialog-actions { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; padding-top: var(--space-2); }
+  .augur-dialog-fields { display: flex; flex-direction: column; gap: var(--space-5); padding-block: var(--space-5); }
+  .augur-dialog-text + .augur-dialog-fields { padding-top: 0; }
+  .augur-dialog-actions {
+    display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: var(--space-5); flex-wrap: wrap;
+    padding-block: var(--space-3); border-top: 1px solid var(--hairline); background: color-mix(in srgb, var(--shade) 18%, transparent);
+  }
   .augur-dialog-cancel {
     display: inline-flex; align-items: center; gap: var(--space-2); border: 0; background: none; color: var(--ink-muted);
     font: inherit; font-size: var(--type-body); cursor: pointer; padding: var(--space-2) 2px; border-radius: var(--radius-key);
@@ -418,8 +436,50 @@
   .augur-dialog-cancel:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-dialog-cancel:disabled { opacity: 0.4; cursor: default; }
   .augur-dialog-cancel kbd {
-    font: inherit; font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
+    font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
   }
+
+  /* Notices: Sheet. One sentence in a page that needs attention, on a solid square strip. The tone is a word
+     in mono stamped at the start, printed solid in the tone (green only for needs you); a note is outlined. */
+  .augur-notice {
+    --tone: var(--ink-muted);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    background: var(--sheet); border: 1px solid var(--hairline); border-radius: var(--radius-control); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+  }
+  .augur-notice[data-tone='needs'] { --tone: var(--needs-you); }
+  .augur-notice[data-tone='warning'] { --tone: var(--warning); }
+  .augur-notice[data-tone='refused'] { --tone: var(--danger); }
+  .augur-notice[data-tone='info'] { background: none; }
+  .augur-notice-tone {
+    flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--tone); color: var(--slate-deep); white-space: nowrap;
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  }
+  .augur-notice[data-tone='info'] .augur-notice-tone { background: none; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+  .augur-notice-text { flex: 1 1 220px; min-width: 0; margin: 0; }
+  .augur-notice-text b { font-weight: 500; }
+  .augur-notice-more { color: var(--ink-muted); }
+
+  /* Toasts: Sheet. A small square sheet at the bottom, the kind of news in mono, and its time left as a line
+     draining along the bottom edge; the line stops while the toast is held. */
+  .augur-toasts {
+    position: fixed; left: 50%; bottom: var(--anchor-ask); z-index: var(--layer-toast); transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-2); margin: 0; padding: 0; list-style: none;
+  }
+  .augur-toast {
+    position: relative; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+    background: var(--sheet); border: 1px solid var(--sheet-line); border-radius: var(--radius-control); overflow: hidden; box-shadow: var(--sheet-drop); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+  }
+  .augur-toast { animation: augur-rise-far var(--motion-base) var(--ease-out); }
+  .augur-toast-kind {
+    padding-right: var(--space-3); border-right: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
+  }
+  .augur-toast-text { white-space: nowrap; }
+  .augur-toast-time {
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--key-edge-sm); background: var(--ink-muted); transform-origin: left;
+    animation: augur-count var(--motion-toast) linear forwards;
+  }
+  .augur-toast[data-held] .augur-toast-time { animation-play-state: paused; }
 
   /* Menus: a short list of actions from a button, on a near-opaque surface. */
   .augur-menu { min-width: 200px; max-width: 320px; padding: var(--space-1); background: var(--surface-overlay); border-color: var(--hairline-strong); border-radius: var(--radius-card); box-shadow: var(--shadow-overlay); }
