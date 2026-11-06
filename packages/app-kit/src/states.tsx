@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Button, Icon, cx, type IconName } from '@augur/kit-common';
+import { Icon, cx, type IconName } from '@augur/kit-common';
 
 export type StateKind = 'empty' | 'loading' | 'error' | 'offline';
 
@@ -54,45 +54,6 @@ export function State({ kind = 'empty', heading, body, action, onAction, size = 
         </button>
       ) : null}
     </div>
-  );
-}
-
-export type StatusName = 'needs' | 'running' | 'queued' | 'paused' | 'done' | 'failed' | 'warning';
-
-export const statusWords: Record<StatusName, string> = {
-  needs: 'Needs you',
-  running: 'Running',
-  queued: 'Queued',
-  paused: 'Paused',
-  done: 'Done',
-  failed: 'Failed',
-  warning: 'Check',
-};
-
-/** Urgency order used when sorting by status: what needs you first, finished last. */
-export const statusUrgency: StatusName[] = ['needs', 'failed', 'running', 'queued', 'paused', 'warning', 'done'];
-
-export interface StatusProps {
-  status: StatusName;
-  /** Overrides the default word. */
-  label?: string;
-  markOnly?: boolean;
-  /** The first one on screen that needs you pings. */
-  next?: boolean;
-  className?: string;
-}
-
-/** One mark and a word for where a thing is. Only `needs` is green; every mark keeps its shape without colour. */
-export function Status({ status, label, markOnly, next, className }: StatusProps) {
-  const word = label || statusWords[status] || status;
-  const glyph = status === 'done' ? 'check' : status === 'failed' ? 'error' : status === 'warning' ? 'warning' : undefined;
-  return (
-    <span className={cx('quill-status', className)} data-status={status} data-next={next ? '' : undefined}>
-      <span className="quill-status-mark" aria-hidden={markOnly ? undefined : true} role={markOnly ? 'img' : undefined} aria-label={markOnly ? word : undefined}>
-        {glyph ? <Icon name={glyph} size={14} /> : null}
-      </span>
-      {markOnly ? null : <span className="quill-status-word">{word}</span>}
-    </span>
   );
 }
 
@@ -199,50 +160,8 @@ export function Rows({ items = [], loading, count = 3, empty, error, className }
   );
 }
 
-export type NoticeTone = 'needs' | 'warning' | 'refused' | 'info';
-
-export interface NoticeProps {
-  tone?: NoticeTone;
-  /** The part that matters, in bold. */
-  heading?: string;
-  /** The one thing to do, as a word or two. */
-  action?: string;
-  onAction?: () => void;
-  /** How many more notices there are in this region, said at the end. */
-  more?: number;
-  /** The rest of the sentence, after the heading. */
-  children?: ReactNode;
-  className?: string;
-}
-
-/**
- * One sentence inside a page that needs attention, with at most one thing to
- * do. One per region; say how many more with `more` instead of stacking them.
- * The mark's shape says the tone as well as its colour.
- */
-export function Notice({ tone = 'info', heading, action, onAction, more = 0, children, className }: NoticeProps) {
-  return (
-    <div className={cx('quill-notice', className)} data-tone={tone}>
-      {tone === 'info' ? (
-        <span className="quill-notice-mark" aria-hidden="true">
-          <Icon name="info" size={14} />
-        </span>
-      ) : (
-        <span className="quill-notice-mark" aria-hidden="true" />
-      )}
-      <p>
-        {heading ? <b>{heading} </b> : null}
-        {children}
-        {more ? <span className="quill-notice-more"> {more} more {tone === 'needs' ? `${more === 1 ? 'needs' : 'need'} you` : 'here'}.</span> : null}
-      </p>
-      {action ? (
-        <Button kind={tone === 'info' ? 'tertiary' : 'secondary'} size="sm" onPress={onAction}>
-          {action}
-        </Button>
-      ) : null}
-    </div>
-  );
-}
+/** Notice moved to Common (6 Nov 2026), drawn as a Sheet; Quill keeps exporting it under the same name. */
+export { Notice, type NoticeTone, type NoticeProps } from '@augur/kit-common';
 
 export interface NoteProps {
   /** The longer reason, up to two sentences, shown when the line is pressed. */
