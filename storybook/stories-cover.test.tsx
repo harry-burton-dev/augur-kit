@@ -11,17 +11,8 @@ const kits = ['kit-common', 'app-kit', 'shell-kit'];
 
 /** Parts with no story yet. Remove a name when its story lands; never add one. */
 const waiting = new Set([
-  'FieldHead',
-  'StateMark',
-  'Reel',
-  'Ref',
-  'Tree',
-  'TagPicker',
-  'Reader',
-  'Contents',
   'FilterBar',
   'DataView',
-  'Lifecycle',
 ]);
 
 /** Parts being replaced: no stories. Title and Orbit (CentreMenu) have gone to the archive. */
