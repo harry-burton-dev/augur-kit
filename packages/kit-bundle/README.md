@@ -7,7 +7,7 @@ The kit as a deployment serves it (ADR 0048 in the AUGUR repository). `pnpm buil
 | `<module>.js`, `chunks/` | One ES module for each shared specifier: `react`, `react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom`, `react-dom/client`, `@augur/kit-common`, `@augur/app-kit` |
 | `dev/` | The same with React's development build, for a shell's dev server |
 | `tokens.css`, `fonts.css`, `kit-common.css`, `app-kit.css` | The CSS every page links, in that order. `tokens.css` carries the reduced-motion values, `fonts.css` the typefaces |
-| `fonts/` | The font files `fonts.css` names (Jost and Nunito, from Fontsource) |
+| `fonts/` | The font files `fonts.css` names (Instrument Sans, IBM Plex Mono and Nunito, from Fontsource) |
 | `kit.json` | The version, what is in it, the import map entries, the stylesheets and every file's hash |
 | `kit.json.sigstore.json` | In a released package only: the cosign keyless signature of `kit.json`, naming this repository's Release workflow on `main` |
 

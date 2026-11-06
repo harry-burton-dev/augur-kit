@@ -154,7 +154,10 @@ importers:
 
   packages/kit-common:
     dependencies:
-      '@fontsource/jost':
+      '@fontsource/ibm-plex-mono':
+        specifier: 5.2.7
+        version: 5.2.7
+      '@fontsource/instrument-sans':
         specifier: 5.2.8
         version: 5.2.8
       '@fontsource/nunito':
@@ -243,7 +246,10 @@ importers:
       '@augur/shell-kit':
         specifier: workspace:*
         version: link:../packages/shell-kit
-      '@fontsource/jost':
+      '@fontsource/ibm-plex-mono':
+        specifier: 5.2.7
+        version: 5.2.7
+      '@fontsource/instrument-sans':
         specifier: 5.2.8
         version: 5.2.8
       '@fontsource/nunito':
@@ -660,8 +666,11 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@fontsource/jost@5.2.8':
-    resolution: {integrity: sha512-PEK7oGJL8r+YZm6BriWhmCql9DhVYTMt0iEQbZHo8mqfIPIZo67Tm68xEIaRA0yB3wsHA7Tm66yMQDIxq3Bjqw==}
+  '@fontsource/ibm-plex-mono@5.2.7':
+    resolution: {integrity: sha512-MKAb8qV+CaiMQn2B0dIi1OV3565NYzp3WN5b4oT6LTkk+F0jR6j0ZN+5BKJiIhffDC3rtBULsYZE65+0018z9w==}
+
+  '@fontsource/instrument-sans@5.2.8':
+    resolution: {integrity: sha512-TJRYVbjZPx4DGMMU5lb5eFKrP3iLe9h7rz8Pk+dP958IZKiyHjYGXXwQZapVbBXcQN+YOiviVhAWxrjv8g6Z6g==}
 
   '@fontsource/nunito@5.2.7':
     resolution: {integrity: sha512-pmtBq0H9ex9nk+RtJYEJOD9pag393iHETnl/PVKleF4i06cd0ttngK5ZCTgYb5eOqR3Xdlrjtev8m7bmgYprew==}
@@ -3844,7 +3853,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fontsource/jost@5.2.8': {}
+  '@fontsource/ibm-plex-mono@5.2.7': {}
+
+  '@fontsource/instrument-sans@5.2.8': {}
 
   '@fontsource/nunito@5.2.7': {}
 

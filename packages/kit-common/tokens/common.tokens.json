@@ -21,6 +21,11 @@
       "$type": "color",
       "$description": "Accent 2: the green glow bands. Also usable as an accent mark or text on slate (6.7:1) and slate-deep (8.3:1)."
     },
+    "needs-you": {
+      "$value": "{color.green}",
+      "$type": "color",
+      "$description": "The one colour that means something needs you, in both kits: the light that rises from each step that leads to the thing, the point by “1 needs you”, the agent waiting on you. Change it here and every needs-you mark follows. Today the accent green (PDR-015); 6.7:1 on slate. Never a state colour, never focus."
+    },
     "floor-you-high": {
       "$value": "#34D399",
       "$type": "color",
@@ -491,8 +496,14 @@
   },
   "font": {
     "font-sans": {
-      "$value": "\"Jost\", system-ui, -apple-system, \"Segoe UI\", Arial, sans-serif",
-      "$type": "fontFamily"
+      "$value": "\"Instrument Sans\", \"Helvetica Neue\", Arial, system-ui, sans-serif",
+      "$type": "fontFamily",
+      "$description": "The one sans, for all text and titles (PDR-015). Change it here, and the face in scripts/build-fonts.mjs, to change the kit's type."
+    },
+    "font-mono": {
+      "$value": "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace",
+      "$type": "fontFamily",
+      "$description": "The mono, for labels, small print, counts and code (PDR-015). Change it here, and the face in scripts/build-fonts.mjs, to change it."
     },
     "font-rounded": {
       "$value": "Nunito, \"Segoe UI\", system-ui, sans-serif",

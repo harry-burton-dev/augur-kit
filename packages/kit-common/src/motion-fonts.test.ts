@@ -30,7 +30,8 @@ describe('typefaces', () => {
   const css = read('fonts.css');
 
   it('has the faces the font tokens name', () => {
-    expect(css).toMatch(/font-family: 'Jost'/);
+    expect(css).toMatch(/font-family: 'Instrument Sans'/);
+    expect(css).toMatch(/font-family: 'IBM Plex Mono'/);
     expect(css).toMatch(/font-family: 'Nunito'/);
   });
 
