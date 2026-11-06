@@ -46,6 +46,8 @@ export function Select({ label, hint, required, optional, disabled, reason, stat
   const { reasoned, describe, caption } = useReason(disabled, reason);
   const { describedBy, line } = useMessage(shown.message);
   const trigger = useRef<HTMLButtonElement>(null);
+  // A pick closes the list in the same tick, before `picked` has moved.
+  const picking = useRef(false);
   useFieldCheck({
     check: () => {
       if (!required || picked != null || reasoned || readOnly) return true;
@@ -68,7 +70,9 @@ export function Select({ label, hint, required, optional, disabled, reason, stat
       data-unavailable={disabled || undefined}
       selectedKey={picked}
       onSelectionChange={(k: Key | null) => {
-        if (k == null) return;
+        // Arrow keys and typing change a closed Select, so the guard on opening doesn't cover them.
+        if (k == null || reasoned || readOnly || busy) return;
+        picking.current = true;
         setPicked(String(k));
         setOwn({ state: 'idle' });
         onChange?.(String(k));
@@ -78,7 +82,8 @@ export function Select({ label, hint, required, optional, disabled, reason, stat
         // Unavailable, read-only, busy or empty: it stays focusable and says why, but doesn't open.
         if (next && (reasoned || readOnly || busy || none)) return;
         setOpen(next);
-        if (!next && required && picked == null) setOwn({ state: 'attention', message: NEEDS_YOU });
+        if (!next && required && picked == null && !picking.current) setOwn({ state: 'attention', message: NEEDS_YOU });
+        picking.current = false;
       }}
       disabledKeys={items.filter((o) => o.disabled).map((o) => o.value)}
       isRequired={required}

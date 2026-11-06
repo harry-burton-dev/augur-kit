@@ -88,7 +88,9 @@ export function TextField({
         if (e.key === 'Enter' && !multiline) {
           check(text);
           onCommit?.(text);
-        } else e.continuePropagation();
+        }
+        // A Dialog around it takes Enter too: it presses the primary.
+        e.continuePropagation();
       }}
       name={name}
       type={type}

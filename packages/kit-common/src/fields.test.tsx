@@ -103,3 +103,53 @@ describe('Select', () => {
     expect(el.textContent).toContain('This library has no collections yet.');
   });
 });
+
+describe('Select keys', () => {
+  const press = (el: HTMLElement, key: string) => act(() => void el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })));
+
+  it.each([
+    ['unavailable', { disabled: true, reason: 'Floors come from your department.' }],
+    ['read-only', { readOnly: true }],
+    ['busy', { busy: true }],
+  ])('changes nothing from the keyboard while %s', (_name, props) => {
+    const onChange = vi.fn();
+    const el = draw(<Select label="Floor" options={['One', 'Two']} defaultValue="One" onChange={onChange} {...props} />);
+    const trigger = el.querySelector('button')!;
+    act(() => trigger.focus());
+    press(trigger, 'ArrowRight');
+    press(trigger, 't');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(trigger.textContent).toContain('One');
+  });
+
+  it('still changes from the keyboard when it can be used', () => {
+    const onChange = vi.fn();
+    const el = draw(<Select label="Floor" options={['One', 'Two']} defaultValue="One" onChange={onChange} />);
+    const trigger = el.querySelector('button')!;
+    act(() => trigger.focus());
+    press(trigger, 'ArrowRight');
+    expect(onChange).toHaveBeenCalledWith('Two');
+  });
+
+  it('asks for nothing once a required Select has its first pick', () => {
+    const el = draw(<Select label="Floor" options={['One', 'Two']} required />);
+    const trigger = el.querySelector('button')!;
+    act(() => trigger.focus());
+    press(trigger, 'ArrowDown');
+    const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.textContent?.includes('Two'))!;
+    act(() => option.click());
+    expect(document.querySelector('[role="listbox"]')).toBeNull();
+    expect(trigger.textContent).toContain('Two');
+    expect(field(el).dataset.state).toBe('idle');
+    expect(el.textContent).not.toContain('Needs you.');
+  });
+
+  it('asks when a required Select is closed with nothing picked', () => {
+    const el = draw(<Select label="Floor" options={['One', 'Two']} required />);
+    const trigger = el.querySelector('button')!;
+    act(() => trigger.focus());
+    press(trigger, 'ArrowDown');
+    press(document.querySelector<HTMLElement>('[role="listbox"]')!, 'Escape');
+    expect(field(el).dataset.state).toBe('attention');
+  });
+});
