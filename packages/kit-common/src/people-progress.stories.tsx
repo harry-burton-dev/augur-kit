@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { People, Person } from './person.js';
-import { Progress, Steps } from './progress.js';
 import { Tip } from './tip.js';
 
 const meta = { title: 'Common/People and progress', component: Person, args: { name: 'Sam Ortiz', detail: 'Lead, Procurement' } } satisfies Meta<typeof Person>;
@@ -18,24 +17,6 @@ export const Floors: Story = {
       <People
         label="Shared with"
         people={[{ name: 'Alex Morgan', tone: 'you' }, { name: 'Sam Ortiz' }, { name: 'Priya Shah', tone: 'department' }, { name: 'Lee Park', tone: 'org' }, { name: 'Jo Bell' }, { name: 'Kim Ito' }]}
-      />
-    </div>
-  ),
-};
-export const Bars: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: '28rem' }}>
-      <Progress label="Uploading 5 files" value={40} valueText="2 of 5" />
-      <Progress label="Upgrading" value={85} />
-      <Progress label="Reading the document" />
-      <Steps
-        label="Extraction"
-        steps={[
-          { label: 'Read', state: 'done' },
-          { label: 'Extract', state: 'now' },
-          { label: 'Check', state: 'next' },
-          { label: 'File', state: 'next' },
-        ]}
       />
     </div>
   ),
