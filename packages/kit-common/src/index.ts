@@ -32,3 +32,4 @@ export { Explain, type ExplainProps } from './explain.js';
 export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
 export { Notice, Toast, Toasts, type NoticeTone, type NoticeProps, type ToastItem, type ToastProps, type ToastsProps } from './notice.js';
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
+export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
