@@ -75,6 +75,66 @@
       "$value": "#252C38",
       "$type": "color",
       "$description": "The water, Minimal preset: the edge of the ground behind the bands. Where this preset matches Calm Tide it uses navy, green, slate and slate-deep instead. The still horizon replaces the water later."
+    },
+    "grey-0": {
+      "$value": "#0A0B0D",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): the deepest ground, at the screen's edges. Neutral, with no slate in them."
+    },
+    "grey-1": {
+      "$value": "#0F1012",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): an open app's page. Neutral, with no slate in them."
+    },
+    "grey-2": {
+      "$value": "#17191C",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): the bar and its menus. Neutral, with no slate in them."
+    },
+    "grey-3": {
+      "$value": "#212428",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): the horizon's ground at the line. Neutral, with no slate in them."
+    },
+    "grey-4": {
+      "$value": "#3B3E43",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): a menu's edge. Neutral, with no slate in them."
+    },
+    "grey-5": {
+      "$value": "#5E6369",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): a quiet rule. Neutral, with no slate in them."
+    },
+    "grey-6": {
+      "$value": "#90959B",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): a menu's small print and a closed chevron. Neutral, with no slate in them."
+    },
+    "grey-7": {
+      "$value": "#BABDC0",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): an icon at rest. Neutral, with no slate in them."
+    },
+    "grey-8": {
+      "$value": "#DADBDC",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): words at rest. Neutral, with no slate in them."
+    },
+    "grey-9": {
+      "$value": "#E5E6E7",
+      "$type": "color",
+      "$description": "Horizon greys (the app bar and the still horizon): words you're on, and the hard line that marks where you are. Neutral, with no slate in them."
+    },
+    "needs-light": {
+      "$value": "#E0A25C",
+      "$type": "color",
+      "$description": "Horizon: the one colour that means something needs you. It rises as light from the edge of each step that leads to the thing (a tile, a menu row, a page), and goes out once you open it. Light, never ink."
+    },
+    "grey-hairline": {
+      "$value": "rgba(229, 230, 231, 0.14)",
+      "$type": "color",
+      "$description": "Horizon: the hairline between tiles and around the bar."
     }
   },
   "effect": {
@@ -152,6 +212,96 @@
       "$value": "60",
       "$type": "number",
       "$description": "The opening wordmark."
+    },
+    "bar-height": {
+      "$value": "88px",
+      "$type": "dimension",
+      "$description": "The app bar across the desktop: tall enough for a large icon with its name under it."
+    },
+    "bar-tile": {
+      "$value": "112px",
+      "$type": "dimension",
+      "$description": "One tile on the app bar, and the width of the bar when it docks as the side rail while an app is open."
+    },
+    "bar-menu": {
+      "$value": "272px",
+      "$type": "dimension",
+      "$description": "A start menu opened from an app bar tile."
+    },
+    "bar-row": {
+      "$value": "46px",
+      "$type": "dimension",
+      "$description": "One row in a start menu: an icon, a name and a short line."
+    },
+    "bar-icon": {
+      "$value": "30px",
+      "$type": "dimension",
+      "$description": "A tile's icon on the app bar."
+    },
+    "bar-icon-small": {
+      "$value": "22px",
+      "$type": "dimension",
+      "$description": "An icon in a start menu row and in the side rail's fixed block."
+    },
+    "bar-mark": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "The hard line that marks the tile you are on, and an open app."
+    },
+    "bar-grip": {
+      "$value": "36px",
+      "$type": "dimension",
+      "$description": "The grip at the start of the app bar on the desktop, which moves it between its four places."
+    },
+    "bar-tile-narrow": {
+      "$value": "92px",
+      "$type": "dimension",
+      "$description": "One tile on the app bar in a narrow window."
+    },
+    "bar-rail-narrow": {
+      "$value": "84px",
+      "$type": "dimension",
+      "$description": "The side rail in a narrow window."
+    },
+    "bar-rail-tile": {
+      "$value": "92px",
+      "$type": "dimension",
+      "$description": "The least height of a tile in the side rail."
+    },
+    "bar-rail-page": {
+      "$value": "76px",
+      "$type": "dimension",
+      "$description": "The least height of a page tile in the side rail."
+    },
+    "bar-rail-pair": {
+      "$value": "64px",
+      "$type": "dimension",
+      "$description": "Home and Apps, side by side at the top of the side rail."
+    },
+    "bar-rail-app": {
+      "$value": "52px",
+      "$type": "dimension",
+      "$description": "An open app in the side rail fixed block: icon and name on one line."
+    },
+    "bar-icon-narrow": {
+      "$value": "26px",
+      "$type": "dimension",
+      "$description": "A tile icon on the app bar in a narrow window."
+    },
+    "bar-icon-rail": {
+      "$value": "20px",
+      "$type": "dimension",
+      "$description": "An open app icon in the side rail."
+    },
+    "bar-inset": {
+      "$value": "14px",
+      "$type": "dimension",
+      "$description": "How far the hard line sits in from a tile ends, and a start menu row padding at the sides."
+    },
+    "bar-hint": {
+      "$value": "340px",
+      "$type": "dimension",
+      "$description": "The one line by the bar on first run."
     }
   },
   "tracking": {
@@ -181,6 +331,11 @@
       "$value": "6000ms",
       "$type": "duration",
       "$description": "How long a toast stays before it goes by itself. Hovering or focusing it holds it; anything with an Undo stays this long at least."
+    },
+    "motion-bar": {
+      "$value": "560ms",
+      "$type": "duration",
+      "$description": "The app bar gliding between its places, and docking to the side when an app opens."
     }
   }
 }

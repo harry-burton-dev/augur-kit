@@ -6,10 +6,12 @@
 @import '@augur/kit-common/theme-shell.css';
 @import './shell.css' layer(components);
 @import './centre-menu.css' layer(components);
+@import './app-bar.css' layer(components);
 @source './';
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
 @source not './**/*.fixture.ts';
+@source not './**/*.fixture.tsx';
 
 @layer components {
   /* Toasts: at the bottom, above everything. */

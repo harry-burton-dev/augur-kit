@@ -96,6 +96,11 @@
       "$type": "color",
       "$description": "Outlines that must be seen: pills, chips, the ask line at rest."
     },
+    "scrollbar": {
+      "$value": "{color.hairline-strong}",
+      "$type": "color",
+      "$description": "The thumb of a scroll bar. Avoid anything needing to scroll; where something must, its bar is thin and drawn in this, never the browser default."
+    },
     "danger": {
       "$value": "#F87171",
       "$type": "color",

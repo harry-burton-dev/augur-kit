@@ -1,6 +1,6 @@
 import type { LucideIcon, LucideProps } from 'lucide-react';
 import {
-  Activity, Anchor, Archive, ArrowLeft, ArrowRight, ArrowUpDown, Ban, Bell, BellOff, Bird, Bookmark, Building, Building2, CalendarDays, CalendarRange, Car, ChartColumn, Check, ChevronDown, Clock, Compass, Diamond, Download, EighthNotes, Ellipsis, FileText, Folder, FolderPlus, Gauge, GitPullRequest, History, House, Image, Inbox, Info, KeyRound, LayoutGrid, Library, Link, List, ListFilter, Lock, Mail, Map as MapIcon, MapPin, Monitor, Network, Palette, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pause, Pencil, Plane, Play, Plus, Power, Search, Send, Server, ShieldCheck, Ship, SlidersHorizontal, Sparkles, Star, Tag, Trash2, Triangle, Undo2, Upload, User, UserPlus, UserRound, UsersRound, Video, Warehouse, Wifi, X,
+  Activity, Anchor, BookOpen, Briefcase, ChevronRight, FilePenLine, FolderTree, GripVertical, LayoutDashboard, ListChecks, MessagesSquare, Archive, ArrowLeft, ArrowRight, ArrowUpDown, Ban, Bell, BellOff, Bird, Bookmark, Building, Building2, CalendarDays, CalendarRange, Car, ChartColumn, Check, ChevronDown, Clock, Compass, Diamond, Download, EighthNotes, Ellipsis, FileText, Folder, FolderPlus, Gauge, GitPullRequest, History, House, Image, Inbox, Info, KeyRound, LayoutGrid, Library, Link, List, ListFilter, Lock, Mail, Map as MapIcon, MapPin, Monitor, Network, Palette, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pause, Pencil, Plane, Play, Plus, Power, Search, Send, Server, ShieldCheck, Ship, SlidersHorizontal, Sparkles, Star, Tag, Trash2, Triangle, Undo2, Upload, User, UserPlus, UserRound, UsersRound, Video, Warehouse, Wifi, X,
 } from 'lucide-react';
 
 /**
@@ -104,6 +104,16 @@ export const icons = {
   delete: Trash2,
   archive: Archive,
   'folder-plus': FolderPlus,
+  // The app bar (Aerie): moving it, a folder that rolls out, and the sample groups and pages it holds.
+  grip: GripVertical,
+  'chevron-right': ChevronRight,
+  work: Briefcase,
+  context: BookOpen,
+  'folder-tree': FolderTree,
+  dashboard: LayoutDashboard,
+  tasks: ListChecks,
+  messages: MessagesSquare,
+  draft: FilePenLine,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;
