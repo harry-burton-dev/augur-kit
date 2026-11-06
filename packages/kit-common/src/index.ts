@@ -26,10 +26,13 @@ export { Tabs, TabList, Tab, TabPanel, type TabsProps, type TabProps } from './t
 export { Choice, Segmented, type ChoiceOption, type ChoiceProps, type SegmentOption, type SegmentedProps } from './choice.js';
 export { Person, People, initials, type PersonProps, type PeopleProps, type PersonTone } from './person.js';
 export { Tip, type TipProps } from './tip.js';
+export { Badge, type BadgeProps } from './badge.js';
+export { Divider, type DividerProps } from './divider.js';
 export { Progress, Steps, type ProgressProps, type Step } from './progress.js';
 export { Letterbox, type LetterboxProps, type LetterboxLook, type LetterboxBars, type LetterboxQueue, type LetterboxAcknowledgement } from './letterbox.js';
 export { Explain, type ExplainProps } from './explain.js';
 export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
+export { Notice, Toast, Toasts, type NoticeTone, type NoticeProps, type ToastItem, type ToastProps, type ToastsProps } from './notice.js';
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
 export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
 export { ComboBox, type ComboBoxProps } from './combo-box.js';

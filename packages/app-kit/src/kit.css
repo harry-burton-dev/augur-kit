@@ -541,18 +541,43 @@
   .quill-fold:hover { color: var(--ink); }
   .quill-fold:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
 
-  /* State */
-  .quill-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); text-align: center; color: var(--ink-muted); }
-  .quill-state[data-size='line'] { flex-direction: row; flex-wrap: wrap; gap: var(--space-2) var(--space-3); padding: var(--space-3) 0; text-align: left; }
+  /* State: on the horizon. No box; the sentence sits on a groove, with the line running out to either
+     side. Loading draws the line across; an error turns it red and marks it with a diamond; offline is
+     amber. `line` sits under a line of its own inside a tile; `page` stands in for a whole page. */
+  .quill-state {
+    --state-line: var(--groove); --state-lit: var(--groove-lit);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-6) 0; text-align: center; color: var(--ink-muted);
+  }
+  .quill-state[data-kind='error'] { --state-line: var(--danger); --state-lit: transparent; }
+  .quill-state[data-kind='offline'] { --state-line: var(--warning); --state-lit: transparent; }
   .quill-state[data-hidden] { visibility: hidden; }
-  .quill-state-title { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink-muted); }
-  .quill-state[data-kind='error'] .quill-state-title { color: var(--danger); }
-  .quill-state[data-kind='offline'] .quill-state-title { color: var(--warning); }
+  .quill-state-title { display: flex; align-items: center; align-self: stretch; justify-content: center; gap: var(--space-3); margin: 0; font-size: var(--type-body); line-height: var(--leading-body); font-weight: 400; color: var(--ink); }
+  .quill-state-title > span { order: 2; }
+  .quill-state-title::before, .quill-state-title::after { content: ''; flex: 1; min-width: var(--space-5); border-top: 1px solid var(--state-line); box-shadow: 0 1px 0 var(--state-lit); }
+  .quill-state-title::after { order: 3; }
+  .quill-state-mark { flex: none; order: 1; margin-right: calc(var(--space-1) * -1); color: var(--state-line); }
+  .quill-state[data-kind='loading'] .quill-state-title { color: var(--ink-muted); }
+  .quill-state[data-kind='loading'] .quill-state-title::before, .quill-state[data-kind='loading'] .quill-state-title::after { content: none; }
   .quill-state-body { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); max-width: var(--measure-read); }
-  .quill-state-action { color: var(--ink); font: inherit; font-size: var(--type-meta); background: none; border: 0; padding: var(--space-1) 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--green); text-underline-offset: 6px; }
-  .quill-state-action:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); border-radius: var(--radius-key); }
-  .quill-run { position: relative; width: min(240px, 60%); height: 1px; background: var(--hairline); overflow: hidden; }
-  .quill-run::after { content: ''; position: absolute; top: 0; height: 1px; background: var(--ink-muted); animation: augur-run var(--motion-run) var(--ease-standard) infinite; }
+  .quill-state-action { display: flex; margin-top: var(--space-1); }
+  .quill-run { position: relative; display: block; align-self: stretch; height: var(--key-edge-sm); background: var(--groove); box-shadow: 0 1px 0 var(--groove-lit); overflow: hidden; }
+  .quill-run::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: var(--ink-muted); animation: quill-travel var(--motion-run) var(--ease-standard) infinite alternate; }
+
+  .quill-state[data-size='line'] {
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-2) 0 0; text-align: left;
+    border-top: 1px solid var(--state-line); box-shadow: inset 0 1px 0 var(--state-lit);
+  }
+  .quill-state[data-size='line'] .quill-state-title { align-self: auto; justify-content: flex-start; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+  .quill-state[data-size='line'] .quill-state-title::before, .quill-state[data-size='line'] .quill-state-title::after { content: none; }
+  .quill-state[data-size='line'] .quill-state-mark { margin-right: 0; }
+  .quill-state[data-size='line'] .quill-state-body { flex-basis: 100%; }
+  .quill-state[data-size='line'] .quill-state-action { margin-top: 0; }
+  .quill-state[data-size='line'][data-kind='loading'] { border-top: 0; box-shadow: none; padding-top: 0; }
+  .quill-state[data-size='line'] .quill-run { order: -1; align-self: center; width: var(--space-5); }
+
+  .quill-state[data-size='page'] { justify-content: center; min-height: 60vh; padding: var(--space-8) 0; gap: var(--space-3); }
+  .quill-state[data-size='page'] .quill-state-title { font-size: var(--type-heading); line-height: var(--leading-heading); }
+  .quill-state[data-size='page'] .quill-state-body { font-size: var(--type-meta); line-height: var(--leading-meta); }
 
   /* Facts and rows */
   .quill-facts { display: flex; flex-wrap: wrap; gap: var(--space-5) var(--space-7); margin: 0; }
@@ -568,20 +593,11 @@
   .quill-rows li .quill-skel:first-child { width: 40%; }
   .quill-rows li .quill-skel:last-child { width: 18%; }
   .quill-rows .quill-rows-state { justify-content: flex-start; align-items: center; gap: var(--space-2); color: var(--ink-muted); border-bottom: 0; }
-  .quill-rows .quill-rows-state[data-error] { color: var(--danger); }
+  .quill-rows .quill-rows-state[data-error] { color: var(--ink-muted); border-top: 1px solid var(--danger); }
+  .quill-rows .quill-rows-state[data-error]::before { color: var(--danger); }
   .quill-rows .quill-rows-state[data-error]::before { content: ''; width: 8px; height: 8px; flex: none; border: 1.5px solid currentColor; border-radius: 1px; transform: rotate(45deg); }
 
   /* Notice and note */
-  .quill-notice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-raised); border: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); }
-  .quill-notice[data-tone='info'] { background: none; border-color: var(--hairline); }
-  .quill-notice-mark { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .quill-notice[data-tone='needs'] .quill-notice-mark { background: var(--needs-you); box-shadow: 0 0 0 4px color-mix(in srgb, var(--needs-you) 22%, transparent); }
-  .quill-notice[data-tone='warning'] .quill-notice-mark { background: var(--warning); }
-  .quill-notice[data-tone='refused'] .quill-notice-mark { width: 7px; height: 7px; border-radius: 1px; transform: rotate(45deg); background: var(--danger); }
-  .quill-notice[data-tone='info'] .quill-notice-mark { width: auto; height: auto; color: var(--info); display: inline-flex; }
-  .quill-notice p { flex: 1 1 220px; min-width: 0; margin: 0; }
-  .quill-notice b { font-weight: 500; }
-  .quill-notice-more { color: var(--ink-muted); }
   .quill-note { max-width: var(--measure-prose); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
   .quill-note[data-live] { min-height: var(--leading-meta); }
   .quill-note p { margin: 0; }
@@ -591,8 +607,9 @@
   .quill-note-why { margin-top: var(--space-2) !important; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-inset); color: var(--ink); }
 
   /* Tag */
-  .quill-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; min-height: 24px; padding: 0 var(--space-2); border: 1px solid var(--hairline-strong); border-radius: var(--radius-pill); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
-  .quill-tag[data-quiet] { border-color: transparent; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-muted); }
+  /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
+  .quill-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: 24px; padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
+  .quill-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
   .quill-tag[data-removable] { padding-right: 2px; }
   .quill-tag-word { overflow: hidden; text-overflow: ellipsis; }
   .quill-tag > svg { color: var(--ink-muted); }
@@ -640,7 +657,7 @@
   .quill-lifecycle li[data-at='here'] .quill-lifecycle-disc { width: 10px; height: 10px; border-color: var(--ink); background: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 15%, transparent); }
   .quill-lifecycle-moves { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .quill-lifecycle-why { margin: 0; font-size: var(--type-small); color: var(--ink-muted); }
-  .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; color: var(--ink-muted); cursor: pointer; }
+  .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
   .quill-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
   .quill-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
 
@@ -762,10 +779,13 @@
 
   /* Cards, tally, timeline, path, refs */
   .quill-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: var(--space-3); }
-  .quill-card { all: unset; box-sizing: border-box; width: 100%; height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--hairline); border-radius: var(--radius-inset); background: var(--surface-pane); cursor: pointer; transition: border-color var(--motion-instant) var(--ease-standard); }
-  button.quill-card:hover { border-color: var(--hairline-strong); }
+  /* Cards: Key (picked 6 Nov 2026). A card that opens is a key: a small corner, a grey face and a thicker
+     bottom line; pressed, it sinks. One that can't be opened is flat and dashed. */
+  .quill-card { all: unset; box-sizing: border-box; width: 100%; height: 100%; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge) solid var(--key-bottom); border-radius: var(--radius-control); cursor: pointer; transition: background var(--motion-instant) var(--ease-standard), transform var(--motion-instant) var(--ease-standard); }
+  button.quill-card:hover { background: color-mix(in srgb, var(--ink) 14%, var(--slate-deep)); }
+  button.quill-card:active { border-bottom-width: 1px; transform: translateY(calc(var(--key-edge) - 1px)); }
   button.quill-card:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-card[data-unavailable] { cursor: default; border-style: dashed; background: none; }
+  .quill-card[data-unavailable] { cursor: default; border-style: dashed; border-color: var(--hairline-strong); border-bottom-width: 1px; background: none; }
   .quill-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
   .quill-card-title { font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink); min-width: 0; }
   .quill-card[data-unavailable] .quill-card-title, .quill-card-top > svg { color: var(--ink-muted); }
@@ -890,6 +910,7 @@
   }
 }
 
+@keyframes quill-travel { from { left: 0; } to { left: 70%; } }
 @keyframes quill-skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 
 /* Editor, prose and tree (PER-243). */
