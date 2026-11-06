@@ -136,8 +136,8 @@ export function Rows({ items = [], loading, count = 3, empty, error, className }
   if (error)
     return (
       <ul className={cx('quill-rows', className)}>
-        <li className="quill-rows-state" data-error="" role="alert">
-          {error}
+        <li className="quill-rows-state" data-error="">
+          <span role="alert">{error}</span>
         </li>
       </ul>
     );
