@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components';
 import { Button } from './button.js';
 import { Heading } from './heading.js';
@@ -71,6 +72,14 @@ export interface LetterboxProps {
   moreLabel?: string;
   /** How the frame is drawn. `solid` unless the app chose otherwise. */
   look?: LetterboxLook;
+  /**
+   * Drawn only, while something else keeps focus: no dialog, nothing to press, and the pointer passes
+   * through. For a decision being made somewhere else, such as a radial menu action held to confirm,
+   * whose consequences the frame shows until it is let go. `actions`, `onStepBack` and `onAcknowledge`
+   * are not drawn, and it is hidden from assistive technology, so what it says must also be said where
+   * focus is.
+   */
+  passive?: boolean;
 }
 
 /** "1 of 2 · next: Backups are failing", for the top bar and the edge. */
@@ -106,7 +115,7 @@ const typing = (target: EventTarget | null) => target instanceof HTMLElement && 
  * goes away only when it is resolved. Focus stays inside while it's open.
  * Show one at a time; the others wait in `queue`. Use it rarely: for what can't wait.
  */
-export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars, queue, eyebrow, heading, summary, actions, children, more, moreLabel = 'More', look = 'solid' }: LetterboxProps) {
+export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars, queue, eyebrow, heading, summary, actions, children, more, moreLabel = 'More', look = 'solid', passive = false }: LetterboxProps) {
   const id = useId();
   const moreId = `${id}-more`;
   const [showMore, setShowMore] = useState(false);
@@ -118,7 +127,7 @@ export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars,
   const ackId = `${id}-ack`;
   const showsAck = Boolean(acknowledged || onAcknowledge);
   const describedBy = [summary ? summaryId : '', showsAck ? ackId : ''].filter(Boolean).join(' ') || undefined;
-  useOneAtATime(open);
+  useOneAtATime(open && !passive);
 
   // A acknowledges while focus is anywhere inside, unless the person is typing.
   const acknowledge = useRef<(() => void) | undefined>(undefined);
@@ -135,6 +144,32 @@ export function Letterbox({ open, onStepBack, acknowledged, onAcknowledge, bars,
     el.addEventListener('keydown', keydown);
     return () => el.removeEventListener('keydown', keydown);
   }, []);
+
+  if (passive) {
+    if (!open || typeof document === 'undefined') return null;
+    return createPortal(
+      <div className="augur-letterbox" data-look={look} data-passive="" aria-hidden="true">
+        <div className="augur-letterbox-modal">
+          <div className="augur-letterbox-dialog">
+            <div className="augur-letterbox-bar" data-edge="top">
+              <div className="augur-letterbox-bar-info">{bars?.top}</div>
+              {queue ? <div className="augur-letterbox-queue">{queueText(queue)}</div> : null}
+            </div>
+            <div className="augur-letterbox-frame">
+              <div className="augur-letterbox-body">
+                <Heading eyebrow={eyebrow} heading={heading} summary={summary} size="l" id={headingId} summaryId={summaryId} />
+                {children ? <div className="augur-letterbox-text">{children}</div> : null}
+              </div>
+            </div>
+            <div className="augur-letterbox-bar" data-edge="bottom">
+              <div className="augur-letterbox-bar-info">{bars?.bottom}</div>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   return (
     <ModalOverlay isOpen={open} onOpenChange={(next) => !next && onStepBack?.()} isDismissable={false} isKeyboardDismissDisabled={!onStepBack} className="augur-letterbox" data-look={look}>

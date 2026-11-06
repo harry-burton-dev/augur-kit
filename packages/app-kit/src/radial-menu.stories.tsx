@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { FocusStage } from './focus.js';
-import { RadialMenu, type RadialMenuProps } from './radial-menu.js';
-import { documentActions, fewActions, manyActions } from './radial-menu.fixture.js';
+import { RadialMenu, useRingTouch, type RadialMenuProps } from './radial-menu.js';
+import { documentActions, fewActions, manyActions, relatedDocuments, touchingActions } from './radial-menu.fixture.js';
 
 type Args = Omit<RadialMenuProps, 'target'>;
 
@@ -15,6 +15,14 @@ const press = async (...keys: string[]) => {
   }
 };
 
+/** Another document on the page, marked so an action that touches it can bring it forward. */
+function Related({ id, label }: { id: string; label: string }) {
+  return (
+    <div {...useRingTouch(id)} style={rowStyle}>
+      {label}
+    </div>
+  );
+}
 
 /**
  * The menu, open on one row of a minimal page. The row is its `target`, the thing it was opened on; the
@@ -31,6 +39,9 @@ function Stage(args: Args) {
         <button type="button" ref={row} style={rowStyle} onClick={() => setOpen(true)}>
           {args.label}
         </button>
+        {relatedDocuments.map((d) => (
+          <Related key={d.id} id={d.id} label={d.label} />
+        ))}
         <p className="text-meta text-ink-muted">{open ? 'Esc or Cancel closes it.' : 'Press the row to open the menu again.'}</p>
       </div>
       {open && target ? (
@@ -109,3 +120,19 @@ export const PastEightWithMore: Story = { args: { actions: manyActions, overflow
 
 /** `shape: 'list'`: the same actions and keys as a plain list. */
 export const AsList: Story = { args: { shape: 'list' } };
+
+/**
+ * Consequence focus: an action that names what it `touches` brings those things forward while it has focus,
+ * each framed with its effect and a lead from the subject, and the readout lists them. Here Delete (5).
+ * Held, it is letterboxed until it is let go.
+ */
+export const Consequence: Story = {
+  args: { actions: touchingActions },
+  play: () => press('5'),
+};
+
+/** What a target would touch: Move to People updates the links in two documents (4, then ArrowRight). */
+export const ConsequenceOfATarget: Story = {
+  args: { actions: touchingActions },
+  play: () => press('4', 'ArrowRight'),
+};

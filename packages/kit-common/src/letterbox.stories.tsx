@@ -86,3 +86,21 @@ export const Edge: Story = {
     </div>
   ),
 };
+
+/**
+ * `passive`: drawn only, while focus stays somewhere else. The radial menu shows a held action's consequences
+ * this way until it is let go; nothing in it can be pressed.
+ */
+export const DrawnOnly: Story = {
+  render: () => (
+    <Letterbox
+      passive
+      open
+      heading="Delete Joining guidance"
+      summary="Three documents cite this one"
+      bars={{ top: <span>Joining guidance › Delete</span>, bottom: <span>3 things break · Let go to cancel · Undo for 30 s</span> }}
+    >
+      <p>Policy index: link breaks. Onboarding pack: loses a source. Staff handbook: link breaks.</p>
+    </Letterbox>
+  ),
+};
