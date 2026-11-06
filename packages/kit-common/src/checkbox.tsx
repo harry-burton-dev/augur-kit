@@ -23,7 +23,8 @@ export interface CheckboxProps {
 }
 
 /**
- * A choice that waits for the form's primary. Ticked, the box fills with ink.
+ * A choice that waits for the form's primary. The box is a small well; ticked,
+ * a light key comes up in it.
  * A choice that acts at once is a Toggle.
  */
 export function Checkbox({ children, detail, value, checked, defaultChecked, onChange, disabled, reason, name, className }: CheckboxProps) {

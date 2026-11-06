@@ -101,6 +101,16 @@
       "$type": "color",
       "$description": "Outlines that must be seen: pills, chips, the ask line at rest."
     },
+    "well": {
+      "$value": "#161B22",
+      "$type": "color",
+      "$description": "The inside of a field, a box or a switch (Well): a slot a key sits in, a step darker than the ground."
+    },
+    "well-edge": {
+      "$value": "#0D0F14",
+      "$type": "color",
+      "$description": "A well's top line, drawn thicker: its depth, the way a key's is its bottom line."
+    },
     "scrollbar": {
       "$value": "{color.hairline-strong}",
       "$type": "color",
@@ -321,6 +331,11 @@
       "$value": "2px",
       "$type": "dimension",
       "$description": "The same bottom line on a small button."
+    },
+    "well-depth": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "A field's, a box's or a switch's top line (Well): how far it sits below the ground. A ticked box or an on knob comes up as a key with a bottom line this thick."
     },
     "letterbox-ratio": {
       "$value": "2.39",

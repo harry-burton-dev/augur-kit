@@ -27,8 +27,9 @@ export interface ToggleProps {
 }
 
 /**
- * On or off, and you can always tell which: the track fills with ink, the knob
- * moves, its mark turns from a dash to a tick, and the word changes. A toggle
+ * On or off, and you can always tell which: the switch is a well and its knob a
+ * small key that moves across and comes up light, its mark turns from a dash to
+ * a tick, and the word changes. A toggle
  * acts at once; a choice that waits for a form's primary is a Checkbox.
  */
 export function Toggle({ label, hint, checked, defaultChecked = false, onChange, disabled, reason, onWord = 'On', offWord = 'Off', name, className }: ToggleProps) {

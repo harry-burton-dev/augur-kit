@@ -27,7 +27,7 @@ export interface ChoiceProps extends Omit<FieldProps, 'state'> {
 
 /**
  * Pick one of two to four options, each with a line explaining it. The chosen
- * one fills with green. An option that can't be picked stays in the list and
+ * one comes up as a key, in ink: never green, which means "needs you". An option that can't be picked stays in the list and
  * says why in place of its line. Arrows move and pick (React Aria).
  */
 export function Choice({
