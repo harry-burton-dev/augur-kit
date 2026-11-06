@@ -47,6 +47,18 @@ describe('a chunk that fails to load', () => {
     reloaded.mockRestore();
   });
 
+  it('loadReader asks again after a failure, for browsers that can fetch it', async () => {
+    let asked = 0;
+    vi.doMock('markdown-it', () => {
+      asked++;
+      throw new Error('Failed to fetch');
+    });
+    const { loadReader } = await import('./reader.js');
+    await expect(loadReader()).rejects.toThrow();
+    await expect(loadReader()).rejects.toThrow();
+    expect(asked).toBe(2);
+  });
+
   describe('the Editor', () => {
     const failing = () =>
       vi.doMock('./editor-engine.js', () => {
