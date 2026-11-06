@@ -36,3 +36,4 @@ export { useData, useChange, useRefresh, DataView, DataProvider, newDataClient, 
 export { Guide, FirstSteps, type GuideStep, type GuideLabels, type GuideProps, type FirstStep, type FirstStepsProps } from './guide.js';
 export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';
 export { UploadList, Attachment, Picture, FilePreview, fileIcon, fileSize, splitName, type UploadItem, type UploadState, type UploadListProps, type AttachmentProps, type PictureProps, type FilePreviewProps } from './files.js';
+export { EditInPlace, type EditInPlaceProps } from './edit-in-place.js';
