@@ -3,6 +3,7 @@
   "description": "Dependency updates for the kit: weekly, grouped, never merged by Renovate, as in AUGUR (its ADR 0033).",
   "extends": [
     "config:recommended",
+    "helpers:pinGitHubActionDigests",
     ":dependencyDashboard",
     ":disableRateLimiting"
   ],
