@@ -399,8 +399,8 @@
   .augur-dialog {
     width: min(var(--measure-decision), calc(100% - 2 * var(--edge)));
     margin: max(var(--space-6), calc(46vh - 180px)) auto var(--space-6);
-    border: 1px solid var(--sheet-line); border-radius: 0; background: var(--sheet); box-shadow: var(--sheet-drop);
-    color: var(--ink); font-family: var(--font-sans);
+    border: 1px solid var(--sheet-line); border-radius: var(--radius-control); background: var(--sheet); box-shadow: var(--sheet-drop);
+    color: var(--ink); font-family: var(--font-sans); overflow: hidden;
   }
   .augur-dialog[data-entering] { animation: augur-rise-far var(--motion-slow) var(--ease-out); }
   .augur-dialog[data-size='glance'] { width: min(var(--measure-glance), calc(100% - 2 * var(--edge))); }
@@ -417,7 +417,7 @@
     color: var(--danger); font-size: var(--type-meta); line-height: var(--leading-meta);
   }
   .augur-dialog-error::before {
-    content: 'Not done'; flex: none; padding: 0 var(--space-1); background: var(--danger); color: var(--slate-deep);
+    content: 'Not done'; flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--danger); color: var(--slate-deep);
     font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
   }
   .augur-dialog-text { display: flex; flex-direction: column; gap: var(--space-4); padding-block: var(--space-5); color: var(--ink-muted); }
@@ -436,7 +436,7 @@
   .augur-dialog-cancel:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .augur-dialog-cancel:disabled { opacity: 0.4; cursor: default; }
   .augur-dialog-cancel kbd {
-    font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: 0;
+    font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
   }
 
   /* Notices: Sheet. One sentence in a page that needs attention, on a solid square strip. The tone is a word
@@ -444,14 +444,14 @@
   .augur-notice {
     --tone: var(--ink-muted);
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
-    background: var(--sheet); border: 1px solid var(--hairline); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+    background: var(--sheet); border: 1px solid var(--hairline); border-radius: var(--radius-control); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
   }
   .augur-notice[data-tone='needs'] { --tone: var(--needs-you); }
   .augur-notice[data-tone='warning'] { --tone: var(--warning); }
   .augur-notice[data-tone='refused'] { --tone: var(--danger); }
   .augur-notice[data-tone='info'] { background: none; }
   .augur-notice-tone {
-    flex: none; padding: 0 var(--space-1); background: var(--tone); color: var(--slate-deep); white-space: nowrap;
+    flex: none; padding: 0 var(--space-1); border-radius: var(--radius-key); background: var(--tone); color: var(--slate-deep); white-space: nowrap;
     font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
   }
   .augur-notice[data-tone='info'] .augur-notice-tone { background: none; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
@@ -467,7 +467,7 @@
   }
   .augur-toast {
     position: relative; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
-    background: var(--sheet); border: 1px solid var(--sheet-line); box-shadow: var(--sheet-drop); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+    background: var(--sheet); border: 1px solid var(--sheet-line); border-radius: var(--radius-control); overflow: hidden; box-shadow: var(--sheet-drop); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
   }
   .augur-toast { animation: augur-rise-far var(--motion-base) var(--ease-out); }
   .augur-toast-kind {
@@ -476,7 +476,7 @@
   }
   .augur-toast-text { white-space: nowrap; }
   .augur-toast-time {
-    position: absolute; left: 0; right: 0; bottom: -1px; height: var(--key-edge-sm); background: var(--ink-muted); transform-origin: left;
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--key-edge-sm); background: var(--ink-muted); transform-origin: left;
     animation: augur-count var(--motion-toast) linear forwards;
   }
   .augur-toast[data-held] .augur-toast-time { animation-play-state: paused; }
