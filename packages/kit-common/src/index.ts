@@ -26,6 +26,8 @@ export { Tabs, TabList, Tab, TabPanel, type TabsProps, type TabProps } from './t
 export { Choice, Segmented, type ChoiceOption, type ChoiceProps, type SegmentOption, type SegmentedProps } from './choice.js';
 export { Person, People, initials, type PersonProps, type PeopleProps, type PersonTone } from './person.js';
 export { Tip, type TipProps } from './tip.js';
+export { Badge, type BadgeProps } from './badge.js';
+export { Divider, type DividerProps } from './divider.js';
 export { Progress, Steps, type ProgressProps, type Step } from './progress.js';
 export { Letterbox, type LetterboxProps, type LetterboxLook, type LetterboxBars, type LetterboxQueue, type LetterboxAcknowledgement } from './letterbox.js';
 export { Explain, type ExplainProps } from './explain.js';
