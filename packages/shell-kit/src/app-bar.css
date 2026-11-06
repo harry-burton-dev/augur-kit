@@ -57,6 +57,8 @@
   transition: opacity var(--motion-quick) var(--ease-standard);
 }
 .aerie-bar[data-mode='app'] .aerie-bar-tiles { flex-direction: column; overflow: hidden; }
+/* on the desktop the tiles never scroll (More takes what doesn't fit), so light can spill past a tile */
+.aerie-bar[data-mode='desk'] .aerie-bar-tiles { overflow: visible; }
 .aerie-bar[data-swapping] .aerie-bar-tiles { opacity: 0; }
 .aerie-bar-tiles > hr { flex: none; margin: 0; border: 0; background: var(--grey-hairline); width: 1px; align-self: stretch; }
 
@@ -156,9 +158,10 @@
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(to right, color-mix(in srgb, var(--needs-light) 34%, transparent), transparent 62%);
 }
-/* on the desktop's bar it rises from the bar's bottom edge */
+/* On the desktop's bar it rises from the bar's bottom edge, and spills past the tile's sides so it never ends in a hard edge. */
 .aerie-bar[data-mode='desk'] .aerie-bar-lit::before {
-  background: radial-gradient(85% 90% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent 72%);
+  inset: 0 calc(var(--space-5) * -1);
+  background: radial-gradient(50% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent);
 }
 .aerie-bar-lit, .aerie-bar .aerie-bar-lit, .aerie-bar-menu .aerie-bar-lit { color: var(--grey-9); }
 .aerie-bar-lit > svg:first-child { color: var(--needs-light); }
