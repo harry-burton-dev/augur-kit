@@ -587,16 +587,6 @@
   .quill-rows .quill-rows-state[data-error]::before { content: ''; width: 8px; height: 8px; flex: none; border: 1.5px solid currentColor; border-radius: 1px; transform: rotate(45deg); }
 
   /* Notice and note */
-  .quill-notice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-raised); border: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); }
-  .quill-notice[data-tone='info'] { background: none; border-color: var(--hairline); }
-  .quill-notice-mark { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .quill-notice[data-tone='needs'] .quill-notice-mark { background: var(--needs-you); box-shadow: 0 0 0 4px color-mix(in srgb, var(--needs-you) 22%, transparent); }
-  .quill-notice[data-tone='warning'] .quill-notice-mark { background: var(--warning); }
-  .quill-notice[data-tone='refused'] .quill-notice-mark { width: 7px; height: 7px; border-radius: 1px; transform: rotate(45deg); background: var(--danger); }
-  .quill-notice[data-tone='info'] .quill-notice-mark { width: auto; height: auto; color: var(--info); display: inline-flex; }
-  .quill-notice p { flex: 1 1 220px; min-width: 0; margin: 0; }
-  .quill-notice b { font-weight: 500; }
-  .quill-notice-more { color: var(--ink-muted); }
   .quill-note { max-width: var(--measure-prose); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
   .quill-note[data-live] { min-height: var(--leading-meta); }
   .quill-note p { margin: 0; }
