@@ -580,13 +580,6 @@
   .quill-note button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-note-why { margin-top: var(--space-2) !important; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-inset); color: var(--ink); }
 
-  /* Tag */
-  /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
-  .quill-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: 24px; padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
-  .quill-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
-  .quill-tag[data-removable] { padding-right: 2px; }
-  .quill-tag-word { overflow: hidden; text-overflow: ellipsis; }
-  .quill-tag > svg { color: var(--ink-muted); }
   /* A tag picker: the chosen tags sit in the field, before what's typed. */
   .quill-tag-picker-box { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); padding-block: var(--space-1); cursor: text; }
   .quill-tag-picker-input { flex: 1 1 auto; min-width: calc(var(--space-8) * 2); }
@@ -631,9 +624,6 @@
   .quill-lifecycle li[data-at='here'] .quill-lifecycle-disc { width: 10px; height: 10px; border-color: var(--ink); background: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 15%, transparent); }
   .quill-lifecycle-moves { display: flex; flex-wrap: wrap; gap: var(--space-2); }
   .quill-lifecycle-why { margin: 0; font-size: var(--type-small); color: var(--ink-muted); }
-  .quill-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
-  .quill-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
-  .quill-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
 
   /* Details */
   .quill-details { display: flex; flex-direction: column; gap: var(--space-3); }

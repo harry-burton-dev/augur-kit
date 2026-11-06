@@ -724,6 +724,24 @@
   .augur-letterbox-actions { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
 }
 
+/* Tag and Tags: a word something is filed under (moved from Quill, PDR-016). */
+@layer components {
+  /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
+  .augur-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: 24px; padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
+  .augur-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
+  .augur-tag[data-removable] { padding-right: 2px; }
+  .augur-tag-word { overflow: hidden; text-overflow: ellipsis; }
+  .augur-tag > svg { color: var(--ink-muted); }
+  .augur-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
+  .augur-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
+  .augur-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+  .augur-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+  .augur-tags > li { display: flex; max-width: 100%; }
+  .augur-tags-more { font: inherit; font-size: var(--type-small); color: var(--ink-muted); cursor: pointer; }
+  .augur-tags-more:hover { color: var(--ink); }
+  .augur-tags-more:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+}
+
 /* Status: where a thing is, as a mark and a word (moved from Quill, PDR-016). */
 @layer components {
   .augur-status { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }

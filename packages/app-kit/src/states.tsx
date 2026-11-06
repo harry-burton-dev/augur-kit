@@ -193,34 +193,6 @@ export function Note({ why, live, children, className }: NoteProps) {
   );
 }
 
-export interface TagProps {
-  label: string;
-  /** A kit icon before the word. */
-  icon?: IconName;
-  /** With it, the tag carries its own ×. */
-  onRemove?: () => void;
-  /** What the × says it removes, when the label alone isn't enough. */
-  removeLabel?: string;
-  /** No line round it: for a row's list of tags. */
-  quiet?: boolean;
-  className?: string;
-}
-
-/** A word something is filed under, as a small pill. */
-export function Tag({ label, icon, onRemove, removeLabel, quiet, className }: TagProps) {
-  return (
-    <span className={cx('quill-tag', className)} data-quiet={quiet ? '' : undefined} data-removable={onRemove ? '' : undefined}>
-      {icon ? <Icon name={icon} size={12} /> : null}
-      <span className="quill-tag-word">{label}</span>
-      {onRemove ? (
-        <button type="button" aria-label={`Remove ${removeLabel || label}`} onClick={onRemove}>
-          <Icon name="close" size={12} />
-        </button>
-      ) : null}
-    </span>
-  );
-}
-
 export interface Detail {
   label: string;
   /** Left empty, it says the `missing` words instead of leaving a gap. */
