@@ -165,16 +165,16 @@
     }
   },
   "radius": {
-    "$description": "Corners. Everything is square (PDR: square corners, 6 Nov 2026): keys, wells, sheets and panes alike. Only circles stay round.",
+    "$description": "Corners. Everything is square (PDR-017, 6 Nov 2026): keys, wells, sheets and panes alike. Only circles stay round.",
     "radius-key": {
       "$value": "0px",
       "$type": "dimension",
-      "$description": "Small keys and marks (check boxes, switch knobs, tabs, tags, menu rows): square, as every corner is (PDR: square corners)."
+      "$description": "Small keys and marks (check boxes, switch knobs, tabs, tags, menu rows): square, as every corner is (PDR-017)."
     },
     "radius-control": {
       "$value": "0px",
       "$type": "dimension",
-      "$description": "Buttons, wells, switches, tab trays and cards: square, so keys and wells sit with the Sheet menus (PDR: square corners; was 6px under the Keycap pick)."
+      "$description": "Buttons, wells, switches, tab trays and cards: square, so keys and wells sit with the Sheet menus (PDR-017; was 6px under the Keycap pick)."
     },
     "radius-inset": {
       "$value": "0px",
