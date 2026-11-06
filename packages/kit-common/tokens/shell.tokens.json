@@ -127,9 +127,9 @@
       "$description": "Horizon greys (the app bar and the still horizon): words you're on, and the hard line that marks where you are. Neutral, with no slate in them."
     },
     "needs-light": {
-      "$value": "#E0A25C",
+      "$value": "{color.needs-you}",
       "$type": "color",
-      "$description": "Horizon: the one colour that means something needs you. It rises as light from the edge of each step that leads to the thing (a tile, a menu row, a page), and goes out once you open it. Light, never ink."
+      "$description": "Horizon: the needs-you light on the app bar. It rises as light from the edge of each step that leads to the thing (a tile, a menu row, a page), and goes out once you open it. Light, never ink. Always Common's needs-you; change that one."
     },
     "grey-hairline": {
       "$value": "rgba(229, 230, 231, 0.14)",

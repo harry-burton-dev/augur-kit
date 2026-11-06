@@ -219,11 +219,11 @@
   .augur-message { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
   .augur-count-text { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  .augur-field[data-state='attention'] .augur-field-box { border-bottom-color: var(--green); box-shadow: 0 1px 0 var(--green); }
-  .augur-field[data-state='attention'] .augur-flag, .augur-field[data-state='attention'] .augur-message { color: var(--green); }
-  .augur-field[data-state='attention'] .augur-dot { background: var(--green); border-color: var(--green); }
+  .augur-field[data-state='attention'] .augur-field-box { border-bottom-color: var(--needs-you); box-shadow: 0 1px 0 var(--needs-you); }
+  .augur-field[data-state='attention'] .augur-flag, .augur-field[data-state='attention'] .augur-message { color: var(--needs-you); }
+  .augur-field[data-state='attention'] .augur-dot { background: var(--needs-you); border-color: var(--needs-you); }
   .augur-field[data-state='attention'] .augur-dot::after {
-    content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--green);
+    content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--needs-you);
     --ping-scale: 1.9; animation: augur-ping var(--motion-ping) var(--ease-ping) infinite;
   }
   .augur-field[data-state='error'] .augur-field-box { border-bottom-color: var(--danger); box-shadow: 0 1px 0 var(--danger); }

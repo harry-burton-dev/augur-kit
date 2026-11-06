@@ -25,7 +25,7 @@ The three files in `tokens/`, in the W3C design tokens format, are the only plac
 
 ## Typefaces
 
-The `font-*` tokens name Jost (`font-sans`) and Nunito (`font-rounded`). Common serves them itself from Fontsource (AUGUR's ADR 0015), so a deployment with no internet still shows them. `scripts/build-fonts.mjs` writes `dist/fonts.css`, the `@font-face` rules for the weights the kit uses (Jost 200 to 600, Nunito 400 and 600), and copies only the files they name into `dist/fonts/`, next to it. A page loads `@augur/kit-common/fonts.css` once; the kit bundle serves it as `fonts.css` with its `fonts/` and lists it in `kit.json`'s `styles`, so a shell that links those has the typefaces with nothing else to install.
+The `font-*` tokens name Instrument Sans (`font-sans`), IBM Plex Mono (`font-mono`) and Nunito (`font-rounded`); to change a face, change its token and its lines in `scripts/build-fonts.mjs` together (PDR-015). Common serves them itself from Fontsource (AUGUR's ADR 0015), so a deployment with no internet still shows them. `scripts/build-fonts.mjs` writes `dist/fonts.css`, the `@font-face` rules for the weights the kit uses (Instrument Sans 400 to 600, IBM Plex Mono 400 and 500, Nunito 400 and 600), and copies only the files they name into `dist/fonts/`, next to it. A page loads `@augur/kit-common/fonts.css` once; the kit bundle serves it as `fonts.css` with its `fonts/` and lists it in `kit.json`'s `styles`, so a shell that links those has the typefaces with nothing else to install.
 
 ## Using the tokens
 
