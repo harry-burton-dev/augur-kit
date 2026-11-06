@@ -449,6 +449,89 @@
     font-family: var(--font-mono); font-size: var(--type-small); line-height: 1; padding: 3px 6px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-key);
   }
 
+  /* Side sheets: Leaf (picked 6 Nov 2026). Create and edit work too big for a dialog: a Sheet from the right
+     edge, full height, over the dimmed page. The heading on its own strip, the work, a ruled footer. A sheet
+     opened from a sheet stacks on it; the one under steps back to the left and dims, its edge in view. */
+  .augur-sheet-veil {
+    position: fixed; inset: 0; z-index: calc(var(--layer-chrome) + 1); display: flex; justify-content: flex-end;
+    background: color-mix(in srgb, var(--shade) 55%, transparent);
+  }
+  .augur-sheet-veil[data-stacked] { background: none; }
+  /* The sheet under one opened from it drops a layer, so the newer one is always on top. */
+  .augur-sheet-veil[data-covered] { z-index: var(--layer-chrome); }
+  .augur-sheet-veil[data-entering] { animation: augur-fade var(--motion-slow) var(--ease-out); }
+  .augur-sheet-veil[data-exiting] { animation: augur-fade var(--motion-quick) var(--ease-out) reverse; }
+  .augur-side-sheet {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --sheet-drop: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+    box-sizing: border-box; height: 100%; width: min(var(--measure-decision), calc(100% - var(--space-7)));
+    border-left: 1px solid var(--sheet-edge); border-radius: var(--radius-control) 0 0 var(--radius-control); background: var(--sheet); box-shadow: var(--sheet-drop);
+    color: var(--ink); font-family: var(--font-sans); outline: none;
+    transition: transform var(--motion-quick) var(--ease-out), filter var(--motion-quick) var(--ease-out);
+  }
+  .augur-side-sheet[data-size='read'] { width: min(var(--measure-read), calc(100% - var(--space-7))); }
+  .augur-side-sheet[data-entering] { animation: augur-sheet-in var(--motion-slow) var(--ease-out); }
+  .augur-side-sheet[data-exiting] { animation: augur-sheet-in var(--motion-quick) var(--ease-out) reverse; }
+  .augur-side-sheet[data-covered] { transform: translateX(calc(var(--space-6) * -1.5)); filter: brightness(0.7); }
+  .augur-side-sheet-dialog { display: flex; flex-direction: column; height: 100%; }
+  .augur-side-sheet-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border-bottom: 1px solid var(--hairline); }
+  .augur-side-sheet-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+  .augur-side-sheet-eyebrow, .augur-side-sheet-count {
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted); white-space: nowrap;
+  }
+  .augur-side-sheet-title { margin: 0; font-size: var(--type-lead); line-height: var(--leading-lead); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The steps: one short line each under the heading, lit up to where you are. */
+  .augur-side-sheet-steps { display: flex; gap: var(--space-1); margin: 0; padding: 0 var(--space-5); list-style: none; }
+  .augur-side-sheet-steps li { flex: 1; height: var(--key-edge-sm); background: var(--hairline); }
+  .augur-side-sheet-steps li[data-state='done'] { background: var(--ink-muted); }
+  .augur-side-sheet-steps li[data-state='here'] { background: var(--ink); }
+  .augur-side-sheet-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5); }
+  .augur-side-sheet-body > .augur-dialog-error { margin: 0; }
+  .augur-side-sheet-text { display: flex; flex-direction: column; gap: var(--space-4); color: var(--ink-muted); }
+  .augur-side-sheet-text p { margin: 0; }
+  .augur-side-sheet-fields { display: flex; flex-direction: column; gap: var(--space-5); }
+  .augur-side-sheet-foot {
+    display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: var(--space-4); flex-wrap: wrap;
+    padding: var(--space-3) var(--space-5); border-top: 1px solid var(--hairline); background: color-mix(in srgb, var(--shade) 18%, transparent);
+  }
+  .augur-side-sheet-foot > .augur-dialog-cancel { margin-right: auto; }
+  @keyframes augur-sheet-in { from { transform: translateX(var(--space-6)); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .augur-side-sheet[data-entering], .augur-side-sheet[data-exiting] { animation: augur-fade var(--motion-quick) linear; }
+  }
+
+  /* Info pops: Slip (picked 6 Nov 2026). The why behind something, when you ask: a mark like a small key,
+     inked while open, and a small square sheet under it with a heading in mono and one way on, on a ruled foot. */
+  .augur-info-mark {
+    display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--space-5); height: var(--space-5); padding: 0;
+    border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key);
+    background: var(--key); color: var(--ink-muted); cursor: pointer; outline: none; vertical-align: middle;
+  }
+  .augur-info-mark[data-hovered] { color: var(--ink); }
+  .augur-info-mark[aria-expanded='true'] { background: var(--ink); border-color: var(--ink); color: var(--slate-deep); }
+  .augur-info-mark[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .augur-info-pop {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    z-index: calc(var(--layer-chrome) + 2); box-sizing: border-box; width: min(34ch, calc(100vw - 2 * var(--edge)));
+    background: var(--sheet); border: 1px solid var(--sheet-edge); border-radius: var(--radius-control);
+    box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent); color: var(--ink); font-family: var(--font-sans); overflow: hidden;
+  }
+  .augur-info-pop[data-entering] { animation: augur-fade var(--motion-quick) var(--ease-out); }
+  .augur-info-pop-head {
+    margin: 0; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--hairline); color: var(--ink-muted);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  }
+  .augur-info-pop-text { padding: var(--space-3); font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-info-pop-text p { margin: 0; }
+  .augur-info-pop-text p + p { margin-top: var(--space-2); }
+  .augur-info-pop-link {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--hairline); background: color-mix(in srgb, var(--shade) 18%, transparent);
+    color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); text-decoration: none; cursor: pointer; outline: none;
+  }
+  .augur-info-pop-link[data-hovered] { text-decoration: underline; text-underline-offset: var(--space-1); }
+  .augur-info-pop-link[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+
   /* Notices: Sheet. One sentence in a page that needs attention, on a solid square strip. The tone is a word
      in mono stamped at the start, printed solid in the tone (green only for needs you); a note is outlined. */
   .augur-notice {

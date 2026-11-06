@@ -20,6 +20,8 @@ export { Toggle, type ToggleProps } from './toggle.js';
 export { Checkbox, CheckboxGroup, type CheckboxProps, type CheckboxGroupProps } from './checkbox.js';
 export { Heading, type HeadingProps } from './heading.js';
 export { Dialog, type DialogProps, type DialogSubmit } from './dialog.js';
+export { SideSheet, type SideSheetProps } from './side-sheet.js';
+export { InfoPop, type InfoPopLink, type InfoPopProps } from './info-pop.js';
 export { FieldChecks, useFieldCheck, FieldHead, FieldHint, StateMark, useMessage, useValue, shownState, NEEDS_YOU, type FieldChecker } from './field.js';
 export { Menu, type MenuAction, type MenuEntry, type MenuProps } from './menu.js';
 export { Tabs, TabList, Tab, TabPanel, type TabsProps, type TabProps } from './tabs.js';
