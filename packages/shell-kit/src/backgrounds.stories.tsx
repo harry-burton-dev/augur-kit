@@ -12,6 +12,7 @@ const frame = { position: 'relative', width: '100%', aspectRatio: '16 / 10', min
 const meta = {
   title: 'Aerie/Backgrounds',
   component: Horizon,
+  tags: ['autodocs'],
   parameters: { layout: 'padded' },
   render: (args) => (
     <div style={frame}>
@@ -21,6 +22,7 @@ const meta = {
   argTypes: {
     floor: { control: 'inline-radio', options: ['you', 'department', 'team', 'org'] },
     away: { control: 'boolean' },
+    className: { control: false },
   },
   args: { floor: 'department', away: false },
 } satisfies Meta<typeof Horizon>;

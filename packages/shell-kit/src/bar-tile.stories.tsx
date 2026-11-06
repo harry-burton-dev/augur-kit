@@ -11,6 +11,7 @@ import { iconNames } from '@augur/kit-common';
 const meta = {
   title: 'Aerie/App bar/Bar tile',
   component: BarTile,
+  tags: ['autodocs'],
   parameters: { layout: 'padded' },
   render: (args) => (
     <Screen height={180}>
@@ -23,6 +24,13 @@ const meta = {
     icon: { control: 'select', options: iconNames },
     kind: { control: 'inline-radio', options: ['plain', 'menu', 'app', 'page', 'half'] },
     menu: { control: false },
+    menuTitle: { control: 'text' },
+    current: { control: 'boolean' },
+    running: { control: 'boolean' },
+    lit: { control: 'boolean' },
+    lead: { control: 'boolean' },
+    start: { control: 'boolean' },
+    onPress: { control: false },
   },
   args: { icon: 'context', name: 'Context', current: false, running: false, lit: false, lead: false, start: false },
 } satisfies Meta<typeof BarTile>;

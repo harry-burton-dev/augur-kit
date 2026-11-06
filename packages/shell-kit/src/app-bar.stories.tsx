@@ -11,6 +11,7 @@ import { GROUPS, MANY, ONE, SampleBar, Screen, TWO } from './app-bar.fixture.js'
 const meta = {
   title: 'Aerie/App bar/App bar',
   component: AppBar,
+  tags: ['autodocs'],
   parameters: { layout: 'padded' },
   render: (args) => (
     <Screen>

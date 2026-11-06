@@ -10,6 +10,7 @@ import { StartMenuDivider, StartMenuFolder, StartMenuItem, StartMenu } from './a
 const meta = {
   title: 'Aerie/App bar/Start menu',
   component: StartMenu,
+  tags: ['autodocs'],
   parameters: { layout: 'padded' },
   render: (args) => (
     <div style={{ position: 'relative', minHeight: 320 }}>
@@ -21,7 +22,7 @@ const meta = {
       </StartMenu>
     </div>
   ),
-  argTypes: { children: { control: false } },
+  argTypes: { children: { control: false }, title: { control: 'text' }, sub: { control: 'boolean' } },
   args: { title: 'Context', sub: false },
 } satisfies Meta<typeof StartMenu>;
 export default meta;
@@ -38,7 +39,7 @@ export const Item: StoryObj<typeof StartMenuItem> = {
       </StartMenu>
     </div>
   ),
-  argTypes: { icon: { control: 'select', options: iconNames } },
+  argTypes: { icon: { control: 'select', options: iconNames }, line: { control: 'text' }, off: { control: 'text' }, current: { control: 'boolean' }, lit: { control: 'boolean' }, lead: { control: 'boolean' }, onPress: { control: false } },
   args: { icon: 'library', name: 'Artifacts', line: 'What your floors keep', off: '', current: false, lit: false, lead: false },
 };
 
@@ -54,5 +55,6 @@ export const Folder: StoryObj<typeof StartMenuFolder> = {
       </StartMenu>
     </div>
   ),
+  argTypes: { icon: { control: 'select', options: iconNames }, line: { control: 'text' }, lit: { control: 'boolean' }, lead: { control: 'boolean' }, children: { control: false } },
   args: { name: 'Work', line: 'What you’re doing, and why', lit: false, lead: false },
 };
