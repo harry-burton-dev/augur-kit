@@ -367,15 +367,15 @@
   .quill-tree-fold { color: var(--ink-muted); }
   .quill-tree-fold:hover, .quill-tree-fold:focus-visible { color: var(--ink); }
   /* Needs you: the row blooms, and its sentence is always written under its name. */
-  .quill-tree-row[data-needs] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 40%, transparent), 0 0 var(--space-3) color-mix(in srgb, var(--green) 18%, transparent); }
-  .quill-tree-row[data-needs] .quill-tree-dot { background: var(--green); }
+  .quill-tree-row[data-needs] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--needs-you) 40%, transparent), 0 0 var(--space-3) color-mix(in srgb, var(--needs-you) 18%, transparent); }
+  .quill-tree-row[data-needs] .quill-tree-dot { background: var(--needs-you); }
   .quill-tree-dot { flex: none; width: var(--space-1); height: var(--space-1); margin-inline: 1px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--motion-slow) var(--ease-out), background var(--motion-slow) var(--ease-out); }
   .quill-tree-lit .quill-tree-dot { background: var(--ink); transform: scale(1.5); }
   .quill-tree-row[data-current] .quill-tree-dot { transform: scale(2); box-shadow: 0 0 0 1px var(--focus); }
   .quill-tree-icon { flex: none; color: var(--ink-muted); }
   .quill-tree-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .quill-tree-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-tree-needs { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: var(--space-1); color: var(--green); font-size: var(--type-small); line-height: var(--leading-small); font-weight: 400; }
+  .quill-tree-needs { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: var(--space-1); color: var(--needs-you); font-size: var(--type-small); line-height: var(--leading-small); font-weight: 400; }
   .quill-tree-count { color: var(--ink-muted); font-size: var(--type-label); font-variant-numeric: tabular-nums; }
   .quill-tree-line { position: absolute; left: calc(var(--space-3) + var(--line-level) * var(--space-4) + 2px); width: 1px; background: color-mix(in srgb, var(--ink) 55%, transparent); pointer-events: none; }
   .quill-tree-line[data-part='start'] { top: 50%; bottom: 0; }
@@ -558,9 +558,9 @@
   .quill-status { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }
   .quill-status-mark { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; }
   .quill-status-word { color: var(--ink); }
-  .quill-status[data-status='needs'] .quill-status-mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-  .quill-status[data-status='needs'] .quill-status-word { color: var(--green); }
-  .quill-status[data-status='needs'][data-next] .quill-status-mark::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--green); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; --ping-scale: 1.9; }
+  .quill-status[data-status='needs'] .quill-status-mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--needs-you); }
+  .quill-status[data-status='needs'] .quill-status-word { color: var(--needs-you); }
+  .quill-status[data-status='needs'][data-next] .quill-status-mark::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; --ping-scale: 1.9; }
   .quill-status[data-status='running'] .quill-status-mark::before { content: ''; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
   .quill-status[data-status='queued'] .quill-status-mark::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }
   .quill-status[data-status='paused'] .quill-status-mark::before { content: ''; width: 8px; height: 8px; border-left: 2px solid var(--ink-muted); border-right: 2px solid var(--ink-muted); }
@@ -590,7 +590,7 @@
   .quill-notice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-raised); border: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); }
   .quill-notice[data-tone='info'] { background: none; border-color: var(--hairline); }
   .quill-notice-mark { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .quill-notice[data-tone='needs'] .quill-notice-mark { background: var(--green); box-shadow: 0 0 0 4px color-mix(in srgb, var(--green) 22%, transparent); }
+  .quill-notice[data-tone='needs'] .quill-notice-mark { background: var(--needs-you); box-shadow: 0 0 0 4px color-mix(in srgb, var(--needs-you) 22%, transparent); }
   .quill-notice[data-tone='warning'] .quill-notice-mark { background: var(--warning); }
   .quill-notice[data-tone='refused'] .quill-notice-mark { width: 7px; height: 7px; border-radius: 1px; transform: rotate(45deg); background: var(--danger); }
   .quill-notice[data-tone='info'] .quill-notice-mark { width: auto; height: auto; color: var(--info); display: inline-flex; }
@@ -963,7 +963,7 @@
   .quill-reader li::marker { color: var(--ink-muted); }
   .quill-reader blockquote { margin-left: 0; padding-left: var(--space-4); border-left: 2px solid var(--hairline-strong); color: var(--ink-muted); }
   .quill-reader hr { border: 0; border-top: 1px solid var(--hairline); margin: var(--space-6) 0; }
-  .quill-reader code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.875em; padding: 0.1em 0.3em; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  .quill-reader code { font-family: var(--font-mono); font-size: 0.875em; padding: 0.1em 0.3em; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .quill-reader pre { overflow-x: auto; padding: var(--space-4); border-radius: var(--radius-inset); background: color-mix(in srgb, var(--ink) 6%, transparent); line-height: 1.5; }
   .quill-reader pre code { padding: 0; background: none; }
   .quill-reader-table { overflow-x: auto; border-radius: var(--radius-inset); border: 1px solid var(--hairline); }

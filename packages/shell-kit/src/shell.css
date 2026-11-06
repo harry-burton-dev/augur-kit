@@ -46,9 +46,9 @@
 .aerie-status:hover { color: var(--ink); }
 .aerie-point { position: relative; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--ink-muted); }
 .aerie-status.aerie-some .aerie-point { background: var(--ink); border-color: var(--ink); }
-.aerie-status.aerie-needs { color: var(--green); }
-.aerie-status.aerie-needs .aerie-point { background: var(--green); border-color: var(--green); }
-.aerie-status.aerie-needs .aerie-point::after, .aerie-orb.aerie-needs::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--green); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
+.aerie-status.aerie-needs { color: var(--needs-you); }
+.aerie-status.aerie-needs .aerie-point { background: var(--needs-you); border-color: var(--needs-you); }
+.aerie-status.aerie-needs .aerie-point::after, .aerie-orb.aerie-needs::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
 .aerie-status.aerie-offline { color: var(--warning); }
 .aerie-status.aerie-offline .aerie-point { border-color: var(--warning); }
 .aerie-shell[data-arriving] .aerie-point { animation: aerie-arrive var(--motion-calm) var(--s-ease); }
@@ -102,14 +102,14 @@
   background: repeating-linear-gradient(to bottom, transparent 0 46px, color-mix(in srgb, var(--ink) 90%, transparent) 46px 52px, transparent 52px 120px); background-size: 1px 120px;
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 50%); mask-image: linear-gradient(to bottom, transparent, black 50%); animation: aerie-fall var(--motion-ping) linear infinite; }
 .aerie-sky.aerie-some .aerie-thread::after { opacity: 0.5; }
-.aerie-sky.aerie-needs .aerie-thread::after { opacity: 0.9; animation-duration: var(--motion-shimmer); background-image: repeating-linear-gradient(to bottom, transparent 0 46px, color-mix(in srgb, var(--green) 95%, transparent) 46px 52px, transparent 52px 120px); }
+.aerie-sky.aerie-needs .aerie-thread::after { opacity: 0.9; animation-duration: var(--motion-shimmer); background-image: repeating-linear-gradient(to bottom, transparent 0 46px, color-mix(in srgb, var(--needs-you) 95%, transparent) 46px 52px, transparent 52px 120px); }
 @keyframes aerie-fall { to { background-position: 0 120px; } }
 .aerie-orb { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--hairline-strong); display: flex; align-items: center; justify-content: center; }
 .aerie-orb i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-muted); transition: all var(--motion-slow); }
 .aerie-orb.aerie-some i { background: var(--ink); border-color: var(--ink); }
-.aerie-orb.aerie-needs { border-color: color-mix(in srgb, var(--green) 50%, transparent); }
-.aerie-orb.aerie-needs::after { inset: -1px; border-color: color-mix(in srgb, var(--green) 50%, transparent); }
-.aerie-orb.aerie-needs i { width: 10px; height: 10px; background: var(--green); border-color: var(--green); box-shadow: 0 0 16px color-mix(in srgb, var(--green) 70%, transparent); }
+.aerie-orb.aerie-needs { border-color: color-mix(in srgb, var(--needs-you) 50%, transparent); }
+.aerie-orb.aerie-needs::after { inset: -1px; border-color: color-mix(in srgb, var(--needs-you) 50%, transparent); }
+.aerie-orb.aerie-needs i { width: 10px; height: 10px; background: var(--needs-you); border-color: var(--needs-you); box-shadow: 0 0 16px color-mix(in srgb, var(--needs-you) 70%, transparent); }
 .aerie-orb.aerie-offline { border-color: color-mix(in srgb, var(--warning) 50%, transparent); }
 .aerie-orb.aerie-offline i { border-color: var(--warning); }
 
@@ -117,7 +117,7 @@
 .aerie-caption { position: absolute; left: 50%; top: calc(var(--dome) + var(--space-7)); transform: translateX(-50%); margin: 0; width: min(var(--measure-glance), calc(100% - 2 * var(--edge))); text-align: center; opacity: 0; transition: opacity var(--motion-calm) var(--ease-standard) var(--motion-slow); }
 .aerie-shell[data-open] .aerie-caption { opacity: 1; }
 .aerie-caption b { display: block; font-weight: 300; font-size: var(--type-lead); line-height: var(--leading-lead); }
-.aerie-caption.aerie-needs b { color: var(--green); }
+.aerie-caption.aerie-needs b { color: var(--needs-you); }
 .aerie-caption.aerie-offline b { color: var(--warning); }
 .aerie-caption span { display: block; margin-top: var(--space-1); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aerie-esc { position: absolute; left: 50%; bottom: var(--anchor-back); transform: translateX(-50%); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); opacity: 0; transition: opacity var(--motion-slow) var(--ease-standard) var(--motion-calm); }
@@ -137,7 +137,7 @@
 .aerie-act { flex: none; padding: var(--space-1) var(--space-3); margin-left: var(--space-2); border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); white-space: nowrap; }
 .aerie-act:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
 .aerie-act.aerie-main { border-color: var(--green); }
-.aerie-group.aerie-needs, .aerie-group.aerie-needs b { color: var(--green); }
+.aerie-group.aerie-needs, .aerie-group.aerie-needs b { color: var(--needs-you); }
 :where(.aerie-shell > :not(.aerie-stage)) ul { list-style: none; margin: 0; padding: 0; }
 .aerie-item { display: flex; align-items: center; border-bottom: 1px solid var(--hairline); }
 .aerie-item .aerie-row { border-bottom: 0; }
@@ -145,8 +145,8 @@
 .aerie-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .aerie-row:focus-visible { outline: 0; box-shadow: inset 0 0 0 1.5px var(--focus); border-radius: var(--radius-key); }
 .aerie-lead { flex: none; position: relative; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-muted); }
-.aerie-row.aerie-needs .aerie-lead { background: var(--green); border-color: var(--green); }
-.aerie-row.aerie-needs.aerie-first .aerie-lead::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--green); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
+.aerie-row.aerie-needs .aerie-lead { background: var(--needs-you); border-color: var(--needs-you); }
+.aerie-row.aerie-needs.aerie-first .aerie-lead::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
 .aerie-row.aerie-failed .aerie-lead { border-color: var(--danger); }
 .aerie-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .aerie-text b { font-weight: 400; font-size: var(--type-body); line-height: var(--leading-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -284,20 +284,15 @@
   .aerie-skel, .aerie-agent[data-status='needs'][data-next] i::after, .aerie-agent[data-status='running'] i::before { animation: none; }
 }
 
-/* the water, inside the ground */
-.aerie-water { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
-.aerie-water-ground, .aerie-water-bands, .aerie-water-grain { position: absolute; inset: 0; width: 100%; height: 100%; }
-.aerie-water-bands { display: block; mix-blend-mode: screen; }
-
 /* an AI app's icon carries the bubble: a soft ring round it */
 .aerie-bubble { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); box-shadow: 0 0 var(--space-4) color-mix(in srgb, var(--green) 25%, transparent); }
 
-/* how an agent is doing: a mark and a word; only needs is green, every mark keeps its shape */
+/* how an agent is doing: a mark and a word; only needs is in the needs-you colour, every mark keeps its shape */
 .aerie-agent { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; color: var(--ink-muted); }
 .aerie-agent i { position: relative; flex: none; display: grid; place-items: center; width: 14px; height: 14px; }
-.aerie-agent[data-status='needs'] { color: var(--green); }
-.aerie-agent[data-status='needs'] i::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-.aerie-agent[data-status='needs'][data-next] i::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--green); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
+.aerie-agent[data-status='needs'] { color: var(--needs-you); }
+.aerie-agent[data-status='needs'] i::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--needs-you); }
+.aerie-agent[data-status='needs'][data-next] i::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
 .aerie-agent[data-status='running'] { color: var(--ink); }
 .aerie-agent[data-status='running'] i::before { content: ''; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
 .aerie-agent[data-status='waiting'] i::before, .aerie-agent[data-status='idle'] i::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }

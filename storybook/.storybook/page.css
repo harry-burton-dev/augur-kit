@@ -2,11 +2,11 @@
  * What a page gives the kit around it, which AUGUR's shell sets in a deployment: the typefaces
  * (Fontsource, so nothing loads from the internet), the ground, and reduced motion from the system.
  */
-@import '@fontsource/jost/200.css';
-@import '@fontsource/jost/300.css';
-@import '@fontsource/jost/400.css';
-@import '@fontsource/jost/500.css';
-@import '@fontsource/jost/600.css';
+@import '@fontsource/instrument-sans/400.css';
+@import '@fontsource/instrument-sans/500.css';
+@import '@fontsource/instrument-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import '@fontsource/nunito/400.css';
 @import '@fontsource/nunito/600.css';
 

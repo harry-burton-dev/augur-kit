@@ -1,6 +1,6 @@
 /**
- * Aerie: the shell's own kit (ADR 0015): the water, the band, Orbit and the
- * title cards, and the shell's notices. Only the shell imports it
+ * Aerie: the shell's own kit (ADR 0015): the app bar, the desktop's backgrounds
+ * (a set to choose from), the band, Orbit and the title cards, and the shell's notices. Only the shell imports it
  * (`pnpm check:boundaries`), so it can change with the shell and is not part of
  * the SDK promise. The shell loads `@augur/shell-kit/kit.css`.
  */
@@ -14,6 +14,9 @@ export * from './shell-model.js';
 export { CentreMenu, CentreMenuModel, searchMenu, type CentreMenuProps, type CentreMenuElement, type MenuCategory, type MenuItem, type MenuOption, type MenuVariant, type MenuBackground } from './centre-menu.js';
 export { Water, resolveWave, wavePresets, DEFAULT_WAVE, type WaveMove, type WavePreset } from './water.js';
 export { AppBar, BarTile, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop } from './app-bar.js';
-export { Horizon, type HorizonProps } from './horizon.js';
+export { Background, backgrounds, DEFAULT_BACKGROUND, type BackgroundProps, type BackgroundChoice, type GroundProps } from './background.js';
+export { Horizon, type HorizonProps } from './background-horizon.js';
+export { Flat, type FlatProps } from './background-flat.js';
+export { WaterGround, type WaterGroundProps } from './background-water.js';
 export * from './floors.js';
 export { animate, finishMotion, liftGhost, moving, motionMode, reducedMotion, tokenValue, tokenEasing, type Ghost } from './motion.js';

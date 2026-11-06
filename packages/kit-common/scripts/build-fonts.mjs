@@ -13,13 +13,17 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 
-/** The faces and weights the kit uses: Jost for text and titles (font-sans), Nunito where it is rounded (font-rounded). */
+/**
+ * The faces and weights the kit uses: Instrument Sans for text and titles (font-sans), IBM Plex Mono
+ * for labels and small print (font-mono), Nunito where it is rounded (font-rounded). To change a face,
+ * change its font-* token and its lines here together (PDR-015).
+ */
 export const FACES = [
-  '@fontsource/jost/200.css',
-  '@fontsource/jost/300.css',
-  '@fontsource/jost/400.css',
-  '@fontsource/jost/500.css',
-  '@fontsource/jost/600.css',
+  '@fontsource/instrument-sans/400.css',
+  '@fontsource/instrument-sans/500.css',
+  '@fontsource/instrument-sans/600.css',
+  '@fontsource/ibm-plex-mono/400.css',
+  '@fontsource/ibm-plex-mono/500.css',
   '@fontsource/nunito/400.css',
   '@fontsource/nunito/600.css',
 ];
