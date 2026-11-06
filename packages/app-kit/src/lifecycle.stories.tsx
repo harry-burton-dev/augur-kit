@@ -20,7 +20,7 @@ const Mover = (props: LifecycleProps) => {
 
 /**
  * Where one record is in its lifecycle: every state in order, the ones it has passed filled, the
- * one it's in ringed and named, the rest hollow. Under the track, a button for each state the
+ * one it's in raised as a key, the rest dim. The states sit in a well, as Key. Under the track, a button for each state the
  * person may move it to; with none, `why` says what would let them. States off the main line, such
  * as Retired, show only while the record is in one. The states' names are the app's own words.
  */
