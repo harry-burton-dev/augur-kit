@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { ComboBox, Input, ListBox, ListBoxItem, Popover, type Key } from 'react-aria-components';
-import { FieldHead, FieldHint, Icon, cx, useFieldCheck, useReason, useValue, type FieldProps, type IconName, type SelectOption } from '@augur/kit-common';
-import { Tag } from './states.js';
+import { FieldHead, FieldHint, Icon, Tag, cx, useFieldCheck, useReason, useValue, type FieldProps, type IconName, type SelectOption } from '@augur/kit-common';
 
 /** A tag to pick from. `detail` is a quiet word beside it, such as an email. */
 export type TagOption = SelectOption & { icon?: IconName };

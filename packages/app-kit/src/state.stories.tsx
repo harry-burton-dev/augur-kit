@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button } from '@augur/kit-common';
+import { Button, State, StateBoundary } from '@augur/kit-common';
 import { useState, type ReactNode } from 'react';
-import { Rows, State, StateBoundary } from './states.js';
+import { Rows } from './states.js';
 
 const Frame = ({ children, wide }: { children: ReactNode; wide?: boolean }) => (
   <div style={{ width: wide ? 'var(--measure-wide)' : 'var(--measure-read)', maxWidth: '100%' }}>{children}</div>
@@ -18,11 +18,12 @@ const Frame = ({ children, wide }: { children: ReactNode; wide?: boolean }) => (
  *
  * `size` is `region` (centred in its region), `line` (inside a tile or beside a control, under a line of
  * its own) or `page` (in place of a whole page). Green never shows here: it means only "needs you".
- * For a region that loads data, use `DataView`, which picks the state for you. To keep one part failing
+ * State is in Common so that Aerie and Quill say these the same way (PDR-016). In an app, for a region
+ * that loads data, use Quill's `DataView`, which picks the state for you. To keep one part failing
  * from blanking the page, wrap it in `StateBoundary`.
  */
 const meta = {
-  title: 'Quill/State',
+  title: 'Common/State',
   component: State,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },

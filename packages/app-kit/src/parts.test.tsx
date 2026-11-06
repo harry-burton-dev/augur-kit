@@ -29,9 +29,9 @@ describe('the parts apps took from the Lit kit', () => {
   it('waits before showing a load, and offers one thing to do after an error', () => {
     vi.useFakeTimers();
     draw(<State kind="loading" heading="Loading plans" />);
-    expect(document.querySelector('.quill-state')!.hasAttribute('data-hidden')).toBe(true);
+    expect(document.querySelector('.augur-state')!.hasAttribute('data-hidden')).toBe(true);
     act(() => vi.advanceTimersByTime(300));
-    expect(document.querySelector('.quill-state')!.hasAttribute('data-hidden')).toBe(false);
+    expect(document.querySelector('.augur-state')!.hasAttribute('data-hidden')).toBe(false);
     vi.useRealTimers();
     const retry = vi.fn();
     draw(<State kind="error" heading="Couldn’t load" action="Try again" onAction={retry} />);
@@ -274,7 +274,7 @@ describe('picking tags', () => {
   it('shows the chosen as tags, takes one off with its ×, and says when it’s full', () => {
     const change = vi.fn();
     draw(<TagPicker label="Developers" options={people} defaultValue={['u1', 'u2']} max={2} onChange={change} />);
-    expect([...document.querySelectorAll('.quill-tag-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
+    expect([...document.querySelectorAll('.augur-tag-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
     expect(document.querySelector('input')!.placeholder).toContain('most it takes: 2');
     act(() => button('Remove Nora Briggs').click());
     expect(change).toHaveBeenLastCalledWith(['u2']);
@@ -354,7 +354,7 @@ describe('filtering', () => {
     expect(text()).toContain('3 documents');
     expect(text()).toContain('Sort: Title');
     expect(button('Tags, 2 chosen')).toBeDefined();
-    expect([...document.querySelectorAll('.quill-filter-chips .quill-tag-word')].map((t) => t.textContent)).toEqual(['Travel', 'Leave']);
+    expect([...document.querySelectorAll('.quill-filter-chips .augur-tag-word')].map((t) => t.textContent)).toEqual(['Travel', 'Leave']);
     act(() => button('Remove Tags: Travel').click());
     expect(change).toHaveBeenLastCalledWith({ tag: ['t2'] }, 'title');
     act(() => button('Clear all').click());

@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Button as AriaButton, Input, Menu, MenuItem, MenuTrigger, Popover, SearchField, type Key, type Selection } from 'react-aria-components';
-import { Icon, cx, type IconName, type SelectOption } from '@augur/kit-common';
-import { Tag } from './states.js';
+import { Icon, Tag, cx, type IconName, type SelectOption } from '@augur/kit-common';
 
 /** One way to narrow a list: its button in the bar, and the choices it opens. */
 export interface FilterDef {
