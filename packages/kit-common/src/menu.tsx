@@ -27,6 +27,10 @@ export interface MenuProps {
   /** The button that opens it: a Button or an IconButton. */
   children: ReactNode;
   placement?: 'bottom start' | 'bottom end' | 'top start' | 'top end';
+  /** A heading over the rows, in small capitals: the thing a context menu acts on ("Q3 plan"). */
+  heading?: string;
+  /** Open from the start: for a still of it, or a tour. */
+  defaultOpen?: boolean;
 }
 
 const isAction = (e: MenuEntry): e is MenuAction => e !== '-';
@@ -39,8 +43,8 @@ const isAction = (e: MenuEntry): e is MenuAction => e !== '-';
  * Arrows, Home and End, typing to jump, Enter, Esc and focus going back to the
  * button come from React Aria; an item's own key picks it.
  */
-export function Menu({ label, items, onAction, children, placement = 'bottom start' }: MenuProps) {
-  const [open, setOpen] = useState(false);
+export function Menu({ label, items, onAction, children, placement = 'bottom start', heading, defaultOpen = false }: MenuProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const actions = items.filter(isAction);
   const pick = (id: Key) => {
     setOpen(false);
@@ -64,6 +68,11 @@ export function Menu({ label, items, onAction, children, placement = 'bottom sta
             }
           }}
         >
+          {heading ? (
+            <p className="augur-menu-heading" aria-hidden="true">
+              {heading}
+            </p>
+          ) : null}
           <AriaMenu aria-label={label} onAction={pick} disabledKeys={actions.filter((a) => a.disabled).map((a) => a.id)} className="outline-none">
             {entries.map((e) =>
               'sep' in e ? (
