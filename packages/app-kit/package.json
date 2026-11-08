@@ -10,12 +10,18 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./remote": {
+      "types": "./dist/remote/elements.d.ts",
+      "default": "./dist/remote/elements.js"
+    },
+    "./remote/allowlist.json": "./remote-allowlist.json",
     "./theme.css": "./theme.css",
     "./kit.css": "./dist/kit.css"
   },
   "files": [
     "dist",
-    "theme.css"
+    "theme.css",
+    "remote-allowlist.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && tailwindcss -i src/kit.css -o dist/kit.css --minify",
@@ -25,6 +31,7 @@
   "dependencies": {
     "@augur/kit-common": "workspace:*",
     "@internationalized/date": "3.12.4",
+    "@remote-dom/core": "1.12.1",
     "@tanstack/react-query": "5.104.4",
     "@tanstack/react-router": "1.170.44",
     "@tanstack/react-table": "9.3.1",

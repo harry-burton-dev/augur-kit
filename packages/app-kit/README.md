@@ -69,3 +69,22 @@ The parts apps used from the Lit kit, on React with the same words, looks and li
 Common already had the controls (`Button`, `TextField`, `Select`, `Toggle`, `CheckboxGroup`, `Dialog`, `Menu`, `Heading`).
 
 The shell loads `@augur/app-kit/kit.css` once, after Common's.
+
+## The remote vocabulary (contract 3)
+
+Under the app contract's third major (AUGUR's ADR 0076), an app's frontend runs in a worker and never draws itself: it describes its screen in Quill's remote elements and the shell draws them with this kit. `@augur/app-kit/remote` is the sandbox side, with no React and no kit parts in it:
+
+```ts
+import { defineQuillElements } from '@augur/app-kit/remote';
+
+defineQuillElements();
+const list = document.createElement('quill-list');
+list.label = 'Notes';
+list.items = notes.map((n) => ({ id: n.id, title: n.title, meta: n.when }));
+list.addEventListener('open', (e) => open((e as CustomEvent<string>).detail));
+```
+
+- Each element is named `quill-*` and takes the part's props that can cross a bridge: data, never functions or markup. A part's callbacks are events, whose detail is an id or a value; its markup props are slots (`slot="history"` on a child of `quill-about`).
+- The vocabulary is `QUILL_REMOTE_ELEMENTS`, and `@augur/app-kit/remote/allowlist.json` is the same as JSON. It is the shell's allowlist: an element outside it, a property it doesn't name or of the wrong type, or an event it doesn't send is dropped with a console reason, and the rest of the screen still draws. Within a major it only grows.
+- Lists and tables take their rows as one property. From 200 rows (`VIRTUAL_FROM`) the host draws only the rows in view.
+- The host side is `createQuillReceiver()` and `<QuillRemote receiver={…} />`, which the shell uses; an app never does.

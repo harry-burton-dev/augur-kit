@@ -19,6 +19,7 @@ import {
   Table as AriaTable,
   TableBody,
   TableHeader,
+  ListLayout,
   TableLayout,
   Virtualizer,
   Checkbox as AriaCheckbox,
@@ -88,8 +89,18 @@ export interface ListProps {
    * for no menu. Inside a RingProvider (AppFrame has one); outside one, nothing is drawn.
    */
   ringFor?: (item: ListItem) => RingSubject | undefined;
+  /**
+   * For long lists: draw only the rows in view (React Aria's virtualizer), so thousands of rows stay
+   * quick. Rows keep the density's fixed height, and the list scrolls inside itself past
+   * `measure-list-virtual`. It takes effect only when no row has a `group` or `more`, which need
+   * rows of their own height; such a list draws every row.
+   */
+  virtual?: boolean;
   className?: string;
 }
+
+/** Row heights in px for the virtualizer; they match `.quill-list-row`'s min-height in kit.css. */
+const LIST_ROW_HEIGHT = { comfortable: 60, compact: 44 } as const;
 
 /** A row's words and controls, opening the radial menu where the row has one. */
 function RowRing({ ring, children }: { ring: () => RingSubject | undefined; children: ReactNode }) {
@@ -112,7 +123,7 @@ function RowRing({ ring, children }: { ring: () => RingSubject | undefined; chil
  * row that needs you pings; the rest are a still green. Arrows, Home, End and
  * Enter come from React Aria's grid list.
  */
-export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, look = 'well', moreLabel = 'More about', onOpen, onAction, onRetry, ringFor, className }: ListProps) {
+export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, look = 'well', moreLabel = 'More about', onOpen, onAction, onRetry, ringFor, virtual, className }: ListProps) {
   const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(new Set());
   const fold = (id: string) =>
     setUnfolded((was) => {
@@ -124,8 +135,9 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
   const [one, many] = noun;
   const count = items.length;
   const head = bar ? <div className="quill-list-bar quill-label">{loading ? `${many}…` : `${count} ${count === 1 ? one : many}`}</div> : null;
+  const virtualRows = Boolean(virtual && !loading && !error && count && items.every((i) => i.group === undefined && i.more === undefined));
   const wrap = (body: ReactNode) => (
-    <div className={cx('quill-list', className)} data-density={density} data-look={look}>
+    <div className={cx('quill-list', className)} data-density={density} data-look={look} data-virtual={virtualRows ? '' : undefined}>
       {head}
       {body}
     </div>
@@ -147,6 +159,83 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
     else groups.push([item.group, [item]]);
   }
   const pinging = items.find((i) => i.status === 'needs' && !i.disabled)?.id;
+  const row = (item: ListItem) => (
+    <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined}>
+      {(() => {
+        const content = (
+          <>
+          {item.icon && !item.status ? (
+            <Icon name={item.icon} size={16} className="quill-list-icon" />
+          ) : (
+            <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
+          )}
+          <span className="quill-list-text">
+            <b>{item.title}</b>
+            {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
+          </span>
+          {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
+          {item.more !== undefined ? (
+            <button
+              type="button"
+              className="quill-list-fold"
+              aria-expanded={unfolded.has(item.id)}
+              aria-label={`${moreLabel} ${item.title}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                fold(item.id);
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <Icon name="chevron-down" size={16} />
+            </button>
+          ) : null}
+          {(item.actions ?? []).slice(0, 2).map((action, i) => {
+            const off = Boolean(item.disabled || action.disabled);
+            return (
+              <Button
+                key={action.id}
+                kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
+                size="sm"
+                disabled={off}
+                reason={action.disabled ? action.reason : item.reason}
+                aria-label={`${action.label}: ${item.title}`}
+                onPress={() => onAction?.(item, action)}
+              >
+                {action.label}
+              </Button>
+            );
+          })}
+          </>
+        );
+        const row = ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
+        return item.more !== undefined && unfolded.has(item.id) ? (
+          <>
+            <span className="quill-list-line">{row}</span>
+            <div className="quill-list-more">{item.more}</div>
+          </>
+        ) : (
+          row
+        );
+      })()}
+    </GridListItem>
+  );
+  if (virtualRows)
+    return wrap(
+      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: LIST_ROW_HEIGHT[density] }}>
+        <GridList
+          aria-label={label}
+          className="quill-list-rows"
+          items={items}
+          disabledKeys={items.filter((r) => r.disabled).map((r) => r.id)}
+          onAction={(key) => {
+            const item = items.find((r) => r.id === key);
+            if (item && !item.disabled) onOpen?.(item);
+          }}
+        >
+          {row}
+        </GridList>
+      </Virtualizer>,
+    );
   return wrap(
     groups.map(([name, rows]) => (
       <div key={name ?? ''}>
@@ -164,66 +253,7 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
             if (item && !item.disabled) onOpen?.(item);
           }}
         >
-          {rows.map((item) => (
-            <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined}>
-              {(() => {
-                const content = (
-                  <>
-                  {item.icon && !item.status ? (
-                    <Icon name={item.icon} size={16} className="quill-list-icon" />
-                  ) : (
-                    <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
-                  )}
-                  <span className="quill-list-text">
-                    <b>{item.title}</b>
-                    {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
-                  </span>
-                  {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
-                  {item.more !== undefined ? (
-                    <button
-                      type="button"
-                      className="quill-list-fold"
-                      aria-expanded={unfolded.has(item.id)}
-                      aria-label={`${moreLabel} ${item.title}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fold(item.id);
-                      }}
-                      onKeyDown={(e) => e.stopPropagation()}
-                    >
-                      <Icon name="chevron-down" size={16} />
-                    </button>
-                  ) : null}
-                  {(item.actions ?? []).slice(0, 2).map((action, i) => {
-                    const off = Boolean(item.disabled || action.disabled);
-                    return (
-                      <Button
-                        key={action.id}
-                        kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
-                        size="sm"
-                        disabled={off}
-                        reason={action.disabled ? action.reason : item.reason}
-                        aria-label={`${action.label}: ${item.title}`}
-                        onPress={() => onAction?.(item, action)}
-                      >
-                        {action.label}
-                      </Button>
-                    );
-                  })}
-                  </>
-                );
-                const row = ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
-                return item.more !== undefined && unfolded.has(item.id) ? (
-                  <>
-                    <span className="quill-list-line">{row}</span>
-                    <div className="quill-list-more">{item.more}</div>
-                  </>
-                ) : (
-                  row
-                );
-              })()}
-            </GridListItem>
-          ))}
+          {rows.map(row)}
         </GridList>
       </div>
     )),

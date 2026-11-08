@@ -16,6 +16,11 @@
       "$type": "dimension",
       "$description": "The most a virtual Table (`virtual`) is tall before it scrolls inside itself: about ten rows and the header. A virtual table needs a height of its own, or it grows to every row's height and nothing is left to virtualise."
     },
+    "measure-list-virtual": {
+      "$value": "640px",
+      "$type": "dimension",
+      "$description": "The most a virtual List (`virtual`, and every list an app's sandbox sends from 200 rows) is tall before it scrolls inside itself: about ten rows. Like a virtual table, it needs a height of its own or nothing is left to virtualise."
+    },
     "frame-overlay-below": {
       "$value": "1100px",
       "$type": "dimension",
