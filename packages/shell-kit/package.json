@@ -23,6 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@augur/app-kit": "workspace:*",
     "@augur/kit-common": "workspace:*"
   },
   "peerDependencies": {

@@ -206,6 +206,9 @@ importers:
 
   packages/shell-kit:
     dependencies:
+      '@augur/app-kit':
+        specifier: workspace:*
+        version: link:../app-kit
       '@augur/kit-common':
         specifier: workspace:*
         version: link:../kit-common
