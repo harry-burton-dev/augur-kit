@@ -206,13 +206,13 @@ importers:
 
   packages/shell-kit:
     dependencies:
-      '@augur/app-kit':
-        specifier: workspace:*
-        version: link:../app-kit
       '@augur/kit-common':
         specifier: workspace:*
         version: link:../kit-common
     devDependencies:
+      '@augur/app-kit':
+        specifier: workspace:*
+        version: link:../app-kit
       '@tailwindcss/cli':
         specifier: 4.3.3
         version: 4.3.3

@@ -5,12 +5,13 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ReactNode } from 'react';
-import { CommandPalette } from './command-palette.js';
+import { useState, type ReactNode } from 'react';
+import { CommandPalette, isCommandKey } from './command-palette.js';
+import { AppBar, RailPages } from './app-bar.js';
 import { FrameRadial } from './frame-radial.js';
 import { RailPlaces } from './rail-places.js';
 import { AboutPanel } from './about-panel.js';
-import { capUnder, commandReason, paletteItems, radialActions, UNDER_CAP, type CommandSource } from './frame.js';
+import { capUnder, commandReason, insideApp, paletteItems, radialActions, UNDER_CAP, type CommandSource } from './frame.js';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -85,6 +86,23 @@ describe('commands (spec 6.4)', () => {
   });
 });
 
+describe('the palette’s key', () => {
+  const press = (key: string, mods: Partial<KeyboardEvent> = {}) => ({ key, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false, ...mods });
+  it('is Ctrl or ⌘ with Shift and P unless the shell is given another binding', () => {
+    expect(isCommandKey(press('P', { ctrlKey: true, shiftKey: true }))).toBe(true);
+    expect(isCommandKey(press('p', { metaKey: true, shiftKey: true }))).toBe(true);
+    expect(isCommandKey(press('p', { ctrlKey: true }))).toBe(false);
+    expect(isCommandKey(press('k', { ctrlKey: true }))).toBe(false);
+    expect(isCommandKey(press('p', { altKey: true, shiftKey: true }), 'Alt+Shift+P')).toBe(true);
+    expect(isCommandKey(press('p', { ctrlKey: true, shiftKey: true }), 'Alt+Shift+P')).toBe(false);
+  });
+  it('says whose a command is on every row when there are several apps, since a heading isn’t read aloud', () => {
+    const other = source({ app: { id: 'maps', name: 'Maps' }, commands: [{ id: 'map.new', label: 'New map' }], handled: ['map.new'] });
+    expect(paletteItems([source(), other], 'new').map((i) => i.detail)).toEqual(['Notes', 'Maps']);
+    expect(paletteItems([source()], 'new')[0]!.detail).toBeUndefined();
+  });
+});
+
 describe('the radial menu on right-click (spec 6.4, Actions live on the object)', () => {
   it('builds a kind’s actions from the declared radial, in its order, each naming a declared command', () => {
     // Opened on a thing, a command that needs something selected has it: the thing.
@@ -128,6 +146,25 @@ describe('the radial menu on right-click (spec 6.4, Actions live on the object)'
     act(() => void vi.runAllTimers());
     expect(onRun).toHaveBeenCalledWith('note.share', { kind: 'note', id: 'n-1', label: 'Shopping' });
     expect(body.querySelector('[role="menu"]')).toBeNull();
+    // Focus went back to the thing, which was made able to take it.
+    const thing = body.querySelector<HTMLElement>('[data-thing]')!;
+    expect(thing.getAttribute('tabindex')).toBe('-1');
+    expect(document.activeElement).toBe(thing);
+  });
+
+  it('never runs an action that can’t run now', () => {
+    vi.useFakeTimers();
+    const onRun = vi.fn();
+    const body = draw(
+      <FrameRadial source={source({ handled: ['note.share'] })} onRun={onRun}>
+        <p data-thing="note" data-thing-label="Shopping">Shopping</p>
+      </FrameRadial>,
+    );
+    act(() => void body.querySelector('p')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 9, clientY: 9 })));
+    const archive = [...body.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')].find((b) => b.textContent!.includes('Archive note'))!;
+    act(() => archive.click());
+    act(() => void vi.runAllTimers());
+    expect(onRun).not.toHaveBeenCalled();
   });
 
   it('opens from the keyboard too (the context-menu key, Shift+F10)', () => {
@@ -156,6 +193,9 @@ describe('the rail’s places and what sits under them (spec 6.3)', () => {
     expect(capUnder(many).more).toBe(70);
     expect(capUnder(many, 10)).toMatchObject({ more: 110 });
     expect(capUnder(many.slice(0, 3))).toMatchObject({ more: 0 });
+    expect(capUnder(many, 0)).toMatchObject({ shown: [], more: 120 });
+    expect(capUnder(many, -5)).toMatchObject({ shown: [], more: 120 });
+    expect(capUnder(many, Number.NaN).shown.length).toBe(50);
   });
 
   it('draws each place, then what sits under it, then “and n more” going to the place', () => {
@@ -196,6 +236,36 @@ describe('the rail’s places and what sits under them (spec 6.3)', () => {
     warn.mockRestore();
   });
 
+  it('keeps an app’s paths inside its own address', () => {
+    for (const ok of ['/', '/notebooks', '/notebooks/2', '/notebooks/', '/a/My%20Note', '/a/b.c']) expect(insideApp(ok), ok).toBe(true);
+    for (const bad of ['//evil.example/x', '/a//b', '/../admin', '/a/./b', '/a/%2e%2e/b', '/a/%2F', 'notebooks', 'https://example.org', '/a?b', '/a#b', '/a/%zz', '']) expect(insideApp(bad), bad).toBe(false);
+  });
+
+  it('with a cap of 0 shows only “and n more”, and leaves out a place whose own path leaves the app', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const body = draw(<RailPlaces places={[...places, { id: 'out', label: 'Out', path: '//evil.example' }]} cap={0} under={{ notebooks: many }} onOpen={() => undefined} />);
+    expect(body.querySelectorAll('.aerie-rail-under').length).toBe(0);
+    expect(body.querySelector('.aerie-rail-more')!.textContent).toBe('and 120 more');
+    expect([...body.querySelectorAll('.aerie-bar-tile')].map((t) => t.textContent)).not.toContain('Out');
+    warn.mockRestore();
+  });
+
+  it('on the docked rail, the arrow keys move through the places and the things under them', () => {
+    const body = draw(
+      <AppBar mode="app" label="Apps">
+        <RailPages>
+          <RailPlaces places={places} under={{ notebooks: many.slice(0, 2) }} onOpen={() => undefined} />
+        </RailPages>
+      </AppBar>,
+    );
+    const tiles = [...body.querySelectorAll<HTMLElement>('.aerie-bar-tile')];
+    tiles[1]!.focus();
+    act(() => void tiles[1]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true })));
+    expect(document.activeElement!.textContent).toBe('Notebook 1');
+    act(() => void document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true })));
+    expect(document.activeElement).toBe(tiles[1]);
+  });
+
   it('only a place that fills gets things under it, and one place with nothing under it is no choice', () => {
     expect(draw(<RailPlaces places={places} under={{ recent: many }} onOpen={() => undefined} />).querySelectorAll('.aerie-rail-under').length).toBe(0);
     expect(draw(<RailPlaces places={[places[0]!]} onOpen={() => undefined} />).querySelectorAll('.aerie-bar-tile').length).toBe(0);
@@ -217,16 +287,21 @@ describe('the About panel (PDR-021 point 6, spec 6.8)', () => {
     expect(panel.querySelectorAll('section')[1]!.textContent).toContain('Nothing here yet');
   });
 
-  it('Esc closes it; closed, it stays as a button that opens it', () => {
-    const onOpenChange = vi.fn();
-    let body = draw(<AboutPanel app="Notes" sections={sections} open onOpenChange={onOpenChange} />);
-    act(() => void body.querySelector('aside')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
-    expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    body = draw(<AboutPanel app="Notes" sections={sections} open={false} onOpenChange={onOpenChange} />);
+  it('opening takes focus to the panel; Esc folds it back to its button, which takes focus again', () => {
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return <AboutPanel app="Notes" sections={sections} open={open} onOpenChange={setOpen} />;
+    }
+    const body = draw(<Host />);
     const opener = body.querySelector<HTMLButtonElement>('aside button')!;
     expect(opener.getAttribute('aria-expanded')).toBe('false');
+    opener.focus();
     act(() => opener.click());
-    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(true);
+    expect(document.activeElement!.tagName).toBe('H2');
+    act(() => void document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(false);
+    expect(document.activeElement).toBe(body.querySelector('.aerie-about-open'));
   });
 
   it('draws nothing for an app that declares no sections', () => {

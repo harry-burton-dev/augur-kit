@@ -136,7 +136,9 @@ export function paletteItems(sources: readonly CommandSource[], query: string, k
         id: paletteId(source.app.id, c.id),
         label: c.label,
         icon: iconOf(c.icon) ?? COMMAND_ICON,
+        // With several apps, each row also says whose it is: the group heading isn't read aloud.
         ...(several && i === 0 ? { group: source.app.name } : {}),
+        ...(several ? { detail: source.app.name } : {}),
         ...(meta ? { meta } : {}),
         ...(locked ? { locked } : {}),
       };
@@ -171,7 +173,22 @@ export function radialActions(kind: string, source: CommandSource, words: FrameW
 
 /** A path an app may send for something under a place: below its own address, never out of it. */
 export function insideApp(path: string): boolean {
-  return /^\/[A-Za-z0-9_./-]*$/.test(path) && !path.split('/').some((part) => part === '..' || part === '.');
+  if (path === '/') return true;
+  if (!/^\/[A-Za-z0-9_.~%/-]*$/.test(path)) return false;
+  // Every segment is a name: none empty (so never `//host`), none `.` or `..`, even percent-encoded.
+  return path
+    .slice(1)
+    .split('/')
+    .every((part, i, all) => {
+      if (part === '') return i === all.length - 1 && all.length > 1;
+      let name: string;
+      try {
+        name = decodeURIComponent(part);
+      } catch {
+        return false;
+      }
+      return name !== '.' && name !== '..' && !/[/\\?#]/.test(name);
+    });
 }
 
 /** Where a place opens, below the app's own address. */

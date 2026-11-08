@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
-import { RadialMenu, type RingAction } from '@augur/app-kit';
+import { RadialMenu } from '@augur/app-kit';
 import { FRAME_WORDS, radialActions, type CommandSource, type FrameThing, type FrameWords } from './frame.js';
 
 /** How long a finger stays down before the menu opens, as a right-click does with a mouse. */
@@ -30,7 +30,6 @@ interface Opened {
   target: HTMLElement;
   point?: { x: number; y: number };
   thing: FrameThing;
-  actions: RingAction[];
 }
 
 /**
@@ -38,8 +37,10 @@ interface Opened {
  * object"). The app draws a thing and marks it with its kind (`data-thing="note"`, with `data-thing-id` and
  * `data-thing-label`); right-click, the context-menu key, Shift+F10 or a long press on it opens Quill's
  * radial menu with the actions `contributes.radial` names for that kind, in their declared directions. An
- * action that can't run stays in the ring and says why. Anything not marked, or a kind with no actions,
- * keeps the browser's own menu. The app never draws the menu itself.
+ * action that can't run stays in the ring and says why, and its reasons follow what the app has loaded
+ * while the menu is open. A thing that can't take focus is given `tabindex="-1"`, so focus goes back to it
+ * when the menu closes. Anything not marked, or a kind with no actions, keeps the browser's own menu. The
+ * app never draws the menu itself.
  */
 export function FrameRadial({ source, onRun, words, children }: FrameRadialProps) {
   const pane = useRef<HTMLDivElement>(null);
@@ -47,13 +48,17 @@ export function FrameRadial({ source, onRun, words, children }: FrameRadialProps
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pressed = useRef(false);
   const w = { ...FRAME_WORDS, ...words };
+  // A long press opens the menu later: it reads what the app has loaded then, not when the press began.
+  const latest = useRef({ source, w });
+  latest.current = { source, w };
 
   const open = (from: EventTarget | null, point?: { x: number; y: number }) => {
     const at = thingAt(from, pane.current);
     if (!at) return false;
-    const actions = radialActions(at.thing.kind, source, w);
-    if (!actions.length) return false;
-    setOpened({ target: at.el, thing: at.thing, actions, ...(point ? { point } : {}) });
+    if (!radialActions(at.thing.kind, latest.current.source, latest.current.w).length) return false;
+    // The menu gives focus back to the thing when it closes, so the thing must be able to take it.
+    if (at.el.tabIndex < 0 && !at.el.hasAttribute('tabindex')) at.el.tabIndex = -1;
+    setOpened({ target: at.el, thing: at.thing, ...(point ? { point } : {}) });
     return true;
   };
   const stop = () => clearTimeout(timer.current);
@@ -95,7 +100,7 @@ export function FrameRadial({ source, onRun, words, children }: FrameRadialProps
       {opened ? (
         <RadialMenu
           label={opened.thing.label}
-          actions={opened.actions}
+          actions={radialActions(opened.thing.kind, source, w)}
           target={opened.target}
           {...(opened.point ? { point: opened.point } : {})}
           onAction={(id) => onRun(id, opened.thing)}

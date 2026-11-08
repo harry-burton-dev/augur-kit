@@ -20,7 +20,7 @@ export { Flat, type FlatProps } from './background-flat.js';
 export { WaterGround, type WaterGroundProps } from './background-water.js';
 export * from './floors.js';
 export { animate, finishMotion, liftGhost, moving, motionMode, reducedMotion, tokenValue, tokenEasing, type Ghost } from './motion.js';
-export { CommandPalette, isCommandKey, type CommandPaletteProps } from './command-palette.js';
+export { CommandPalette, isCommandKey, COMMAND_KEY, type CommandPaletteProps } from './command-palette.js';
 export { FrameRadial, thingAt, type FrameRadialProps } from './frame-radial.js';
 export { RailPlaces, type RailPlacesProps } from './rail-places.js';
 export { AboutPanel, type AboutPanelProps } from './about-panel.js';
