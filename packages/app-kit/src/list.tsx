@@ -301,10 +301,13 @@ export const relativeTime = (value: unknown, now = Date.now(), formats: AppForma
   return writeDate(t, { dateStyle: 'medium' }, formats);
 };
 
+/** A row's own value for a column: never one inherited from Object (a column keyed `constructor`). */
+const cellValue = (row: TableRow, key: string): unknown => (Object.hasOwn(row, key) ? row[key] : undefined);
+
 /** Sort comparison for one column: status by urgency, numbers and dates by value, text by locale. */
 export const compareBy = <R extends TableRow>(column: TableColumn<R>, a: R, b: R): number => {
-  const av = a[column.key];
-  const bv = b[column.key];
+  const av = cellValue(a, column.key);
+  const bv = cellValue(b, column.key);
   if (column.kind === 'status') return statusUrgency.indexOf(av as StatusName) - statusUrgency.indexOf(bv as StatusName);
   if (column.kind === 'number') return Number(av) - Number(bv);
   if (column.kind === 'date') return Date.parse(String(av)) - Date.parse(String(bv));
@@ -376,7 +379,7 @@ function useShownRows<R extends TableRow>(rows: R[], columns: TableColumn<R>[], 
       columns.map(
         (c): ColumnDef<RowFeatures, R> => ({
           id: c.key,
-          accessorFn: (row: R) => row[c.key] as never,
+          accessorFn: (row: R) => cellValue(row, c.key) as never,
           sortFn: (a, b) => compareBy(c, a.original, b.original),
           sortUndefined: false,
         }),
@@ -386,7 +389,7 @@ function useShownRows<R extends TableRow>(rows: R[], columns: TableColumn<R>[], 
   const matches = useCallback<FilterFn<RowFeatures, R>>(
     (row, id, value: string) => {
       const c = columns.find((x) => x.key === id);
-      const v = row.original[id];
+      const v = cellValue(row.original, id);
       return (c?.text ? c.text(v, row.original) : String(v ?? '')).toLowerCase().includes(value);
     },
     [columns],
@@ -474,7 +477,7 @@ export function Table<R extends TableRow = TableRow>({
     }
   };
   const cell = (c: TableColumn<R>, row: R): ReactNode => {
-    const value = row[c.key];
+    const value = cellValue(row, c.key);
     if (c.format) return c.format(value, row);
     if (c.kind === 'status') return <Status status={String(value) as StatusName} />;
     if (c.kind === 'date') {

@@ -177,3 +177,35 @@ describe('values inside lists and objects (spec 6.7)', () => {
     expect(drops).toEqual(['<quill-state> failed to draw (broken part); it was dropped.']);
   });
 });
+
+describe('fast typing in a field', () => {
+  it('passes by late echoes of what the person typed, and still takes the app’s own value', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const receiver = createQuillReceiver();
+    const host = document.createElement('div');
+    document.body.replaceChildren(host);
+    root = createRoot(host);
+    act(() => root!.render(createElement(QuillRemote, { receiver })));
+    const sent: string[] = [];
+    const field = { id: 'f', type: 1, element: 'quill-text-field', properties: { label: 'Title' }, attributes: {}, eventListeners: { change: (v: string) => void sent.push(v) }, children: [] };
+    act(() => receiver.connection.mutate([[0, '~', field, 0]]));
+    const input = host.querySelector('input')!;
+    const type = (value: string) =>
+      act(() => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    type('a');
+    type('ab');
+    type('abc');
+    expect(sent).toEqual(['a', 'ab', 'abc']);
+    // The sandbox's echoes arrive after the person has typed on.
+    act(() => receiver.connection.mutate([[3, 'f', 'value', 'a']]));
+    expect(host.querySelector('input')!.value).toBe('abc');
+    act(() => receiver.connection.mutate([[3, 'f', 'value', 'ab']]));
+    expect(host.querySelector('input')!.value).toBe('abc');
+    // The app's own value wins.
+    act(() => receiver.connection.mutate([[3, 'f', 'value', '']]));
+    expect(host.querySelector('input')!.value).toBe('');
+  });
+});

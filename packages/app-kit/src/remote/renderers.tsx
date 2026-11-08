@@ -3,7 +3,7 @@
  * properties that passed, its events as callbacks that send the detail back over the bridge, and
  * its children by slot. Long lists and tables draw only the rows in view (the app contract, 6.9).
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Button, Checkbox, Icon, Notice, Select, TextField, type IconName } from '@augur/kit-common';
 import { About } from '../about.js';
 import { Editor } from '../editor.js';
@@ -33,15 +33,29 @@ export const VIRTUAL_FROM = 200;
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 const p = (parts: RemoteParts) => parts.props as Record<string, Any>;
 
-/** A form value the person changes here and the app may change too: the host keeps the person's typing. */
+/**
+ * A form value the person changes here and the app may change too: the host keeps the person's
+ * typing. Each value the host sends comes back from the sandbox as an echo, late; an echo of a value
+ * already sent is passed by, so fast typing isn't set back. Any other value is the app's, and wins.
+ */
 function useHeld<T>(value: T): [T, (next: T) => void] {
   const [held, setHeld] = useState(value);
   const [was, setWas] = useState(value);
+  const [sent, setSent] = useState<T[]>([]);
   if (value !== was) {
     setWas(value);
-    setHeld(value);
+    const echo = sent.indexOf(value);
+    if (echo >= 0) setSent(sent.slice(echo + 1));
+    else {
+      setSent([]);
+      setHeld(value);
+    }
   }
-  return [held, setHeld];
+  const change = useCallback((next: T) => {
+    setHeld(next);
+    setSent((was) => [...was.slice(-99), next]);
+  }, []);
+  return [held, change];
 }
 
 function RemoteTextField({ parts }: { parts: RemoteParts }) {

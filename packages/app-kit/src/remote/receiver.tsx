@@ -7,10 +7,10 @@
  * A dropped element stays in the receiver's tree, drawn as nothing, so the positions the sandbox's
  * later changes name still line up.
  */
-import { Component, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Component, memo, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { icons } from '@augur/kit-common';
 import { RemoteReceiver, type RemoteReceiverElement, type RemoteReceiverNode, type RemoteReceiverRoot } from '@remote-dom/core/receivers';
-import { QUILL_REMOTE_ELEMENTS, checkRemoteValue, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
+import { QUILL_REMOTE_ELEMENTS, checkRemoteValue, isQuillRemoteElement, type QuillRemoteElementName, type RemoteCheck, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
 import { renderers, type RemoteParts } from './renderers.js';
 
 /** What carries the sandbox's changes in: the bridge hands each batch of records to `mutate`. */
@@ -80,6 +80,24 @@ function dropper(onDrop: (reason: string) => void): Drop {
 
 const isIcon = (name: string) => Object.hasOwn(icons, name);
 
+/** How many reasons one property says before it sums the rest up. */
+const REASONS_EACH = 10;
+
+/**
+ * Checks are kept per value: remote-dom replaces a property's value when it changes, so a list of
+ * 50 000 rows is checked once, and the same checked rows go to the part on every redraw.
+ */
+// Keyed by the vocabulary's own shapes, a fixed set, then weakly by the value.
+const checked = new Map<RemoteType, WeakMap<object, RemoteCheck>>();
+function check(type: RemoteType, value: unknown, path: string): RemoteCheck {
+  if (typeof value !== 'object' || value === null) return checkRemoteValue(type, value, path, isIcon);
+  let byValue = checked.get(type);
+  if (!byValue) checked.set(type, (byValue = new WeakMap()));
+  let result = byValue.get(value);
+  if (!result) byValue.set(value, (result = checkRemoteValue(type, value, path, isIcon)));
+  return result;
+}
+
 /** The values of the properties the vocabulary names, checked down to every field; the rest are dropped. */
 function allowed(el: RemoteReceiverElement, spec: RemoteElementSpec, drop: Drop) {
   const props: Record<string, unknown> = {};
@@ -88,9 +106,10 @@ function allowed(el: RemoteReceiverElement, spec: RemoteElementSpec, drop: Drop)
       drop(`${el.id}.${name}`, `<${el.element}> has no property “${name}”; it was dropped.`);
       continue;
     }
-    const checked = checkRemoteValue(spec.properties[name]!, value, `<${el.element}>’s “${name}”`, isIcon);
-    for (const reason of checked.dropped) drop(`${el.id}.${name}:${reason}`, reason);
-    if (checked.ok && checked.value !== undefined) props[name] = checked.value;
+    const result = check(spec.properties[name]!, value, `<${el.element}>’s “${name}”`);
+    for (const reason of result.dropped.slice(0, REASONS_EACH)) drop(`${el.id}.${name}:${reason}`, reason);
+    if (result.dropped.length > REASONS_EACH) drop(`${el.id}.${name}:more`, `<${el.element}>’s “${name}”: and ${result.dropped.length - REASONS_EACH} more like these.`);
+    if (result.ok && result.value !== undefined) props[name] = result.value;
   }
   const events: Record<string, (detail?: unknown) => void> = {};
   for (const [name, listener] of Object.entries(el.eventListeners)) {
@@ -131,7 +150,8 @@ class Contained extends Component<{ element: string; id: string; version: number
   }
 }
 
-function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: RemoteReceiverElement; drop: Drop }): ReactNode {
+// Memoised: each element follows its own changes, so a sibling's or parent's redraw passes it by.
+const Element = memo(function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: RemoteReceiverElement; drop: Drop }): ReactNode {
   const el = useNode(receiver, node);
   // What this drawing dropped is told after it is drawn, never while (onDrop may set state).
   useEffect(() => drop.flush());
@@ -169,7 +189,7 @@ function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: Rem
       <Draw name={name} parts={parts} />
     </Contained>
   );
-}
+});
 
 /** Draws inside the boundary, so a part that throws is caught there. */
 function Draw({ name, parts }: { name: QuillRemoteElementName; parts: RemoteParts }) {

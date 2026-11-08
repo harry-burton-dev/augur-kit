@@ -275,6 +275,9 @@ export interface RemoteCheck {
   dropped: string[];
 }
 
+/** Writes a field as the object's own, whatever its name (`__proto__` included). */
+const own = (out: Record<string, unknown>, key: string, value: unknown) => Object.defineProperty(out, key, { value, enumerable: true, writable: true, configurable: true });
+
 const kindOf = (value: unknown) => (value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value);
 
 /**
@@ -346,9 +349,9 @@ export function checkRemoteValue(type: RemoteType, value: unknown, path: string,
     const entries = Object.entries(v as Record<string, unknown>).filter(([, x]) => x !== undefined);
     if ('record' in t) {
       for (const [key, x] of entries) {
-        const own = t.required && Object.hasOwn(t.required, key) ? t.required[key]! : t.record;
-        const o = walk(own, x, `${at}.${key}`);
-        if (o.ok) out[key] = o.value;
+        const shape = t.required && Object.hasOwn(t.required, key) ? t.required[key]! : t.record;
+        const o = walk(shape, x, `${at}.${key}`);
+        if (o.ok) own(out, key, o.value);
       }
       const missing = Object.keys(t.required ?? {}).filter((k) => !Object.hasOwn(out, k));
       if (missing.length) {
@@ -363,7 +366,7 @@ export function checkRemoteValue(type: RemoteType, value: unknown, path: string,
         continue;
       }
       const o = walk(t.object[key]!, x, `${at}.${key}`);
-      if (o.ok) out[key] = o.value;
+      if (o.ok) own(out, key, o.value);
     }
     const missing = (t.required ?? []).filter((k) => !Object.hasOwn(out, k));
     if (missing.length) {
