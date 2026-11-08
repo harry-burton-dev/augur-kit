@@ -213,11 +213,11 @@ describe('the rail’s places and what sits under them (spec 6.3)', () => {
     const more = group.querySelector<HTMLButtonElement>('.aerie-rail-more')!;
     expect(more.textContent).toBe('and 70 more');
     act(() => more.click());
-    expect(onOpen).toHaveBeenLastCalledWith('/notebooks');
+    expect(onOpen).toHaveBeenLastCalledWith('/notebooks', 'notebooks');
     act(() => tiles[0]!.click());
-    expect(onOpen).toHaveBeenLastCalledWith('/');
+    expect(onOpen).toHaveBeenLastCalledWith('/', 'recent');
     act(() => tiles[3]!.click());
-    expect(onOpen).toHaveBeenLastCalledWith('/notebooks/2');
+    expect(onOpen).toHaveBeenLastCalledWith('/notebooks/2', 'notebooks');
   });
 
   it('takes the cap from the deployment, and drops an item whose path leaves the app', () => {
