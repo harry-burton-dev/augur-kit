@@ -4,7 +4,7 @@
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
-  "description": "Aerie: the shell's own React kit, on Common. Only the shell uses it: it is published for the shell to build with, but it is not in the kit bundle, not in the import map and not part of the SDK promise.",
+  "description": "Aerie: the shell's own React kit, on Common, with Quill's Palette and RadialMenu for the frame it draws round apps (Quill is a peer: the shell serves it). Only the shell uses it: it is published for the shell to build with, but it is not in the kit bundle, not in the import map and not part of the SDK promise.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,10 +26,12 @@
     "@augur/kit-common": "workspace:*"
   },
   "peerDependencies": {
+    "@augur/app-kit": "workspace:^",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@augur/app-kit": "workspace:*",
     "@tailwindcss/cli": "4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

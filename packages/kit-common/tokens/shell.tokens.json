@@ -302,6 +302,16 @@
       "$value": "340px",
       "$type": "dimension",
       "$description": "The one line by the bar on first run."
+    },
+    "about-panel": {
+      "$value": "320px",
+      "$type": "dimension",
+      "$description": "The width of the About panel, the right-hand region the shell draws beside an app's main column."
+    },
+    "rail-under": {
+      "$value": "36px",
+      "$type": "dimension",
+      "$description": "The height of a row under a place on the rail: a thing the app put there."
     }
   },
   "tracking": {
