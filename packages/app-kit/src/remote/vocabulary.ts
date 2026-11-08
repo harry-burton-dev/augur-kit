@@ -246,7 +246,7 @@ export const QUILL_REMOTE_ELEMENTS = {
   },
   'quill-kind-tile': {
     part: 'KindTile',
-    properties: { kind: oneOf('collection', 'folder', 'series', 'document', 'library'), name: S, eyebrow: S, count: S, state: S, needs: B, needsLabel: S, owner: S, locked: S, note: S, thing },
+    properties: { kind: oneOf('collection', 'folder', 'series', 'document', 'library'), name: S, eyebrow: S, count: S, state: S, needs: B, needsLabel: S, owner: S, locked: S, note: S, thing: { object: thing.object, required: ['kind', 'id'] } },
     events: { open: 'nothing' },
   },
   'quill-add-tile': {

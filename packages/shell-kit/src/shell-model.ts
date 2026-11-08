@@ -208,6 +208,7 @@ export interface ShellParts {
  * `<Shell>` draws it and redraws on every change.
  *
  * Events: ui-toggle `{ open }`, ui-open-app `{ id }`, ui-home, ui-page `{ app, id }`,
+ * ui-path `{ app, page, path }` (a thing under a place, or "and n more"),
  * ui-close-app `{ id }`, ui-bar-hint,
  * ui-open-notification `{ notification }`, ui-notification-action
  * `{ notification, index }`, ui-notifications `{ notifications, muted }`,
@@ -258,7 +259,10 @@ export class ShellModel extends EventTarget {
    * thing under a place that is open. Cleared on a page, an app or Home.
    */
   path = '';
-  /** What each app put under its places (`ctx.frame.under`), by app id, then place id. The host sets it. */
+  /**
+   * What each app put under its places (`ctx.frame.under`), by app id, then place id. The host owns it and
+   * sets it from the app's session; closing an app drops its entry, so a reopened app starts empty.
+   */
   under: Record<string, Record<string, FrameUnderItem[]>> = {};
   /** How many things show under one place: the deployment's number, 50 unless it says. */
   underCap = UNDER_CAP;
@@ -804,6 +808,7 @@ export class ShellModel extends EventTarget {
     this.page = id;
     this.path = '';
     this.emit('ui-page', { app: this.current, id });
+    this.requestUpdate();
   }
 
   /**
@@ -813,13 +818,18 @@ export class ShellModel extends EventTarget {
   openPath(path: string, page?: string) {
     if (page) this.page = page;
     this.path = path;
-    this.emit('ui-path', { app: this.current, page: this.page, path });
+    this.emit('ui-path', { app: this.current, page: this.page || this.openNow?.pages?.[0]?.id || '', path });
     this.requestUpdate();
   }
 
   /** Closes an open app; if it was the one in front, the last one opened before it comes forward, or the desktop. */
   closeApp(id: string) {
     this.running = this.running.filter((a) => a !== id);
+    if (id in this.under) {
+      const rest = { ...this.under };
+      delete rest[id];
+      this.under = rest;
+    }
     if (this.current === id) {
       this.current = this.running[this.running.length - 1] ?? '';
       this.page = '';

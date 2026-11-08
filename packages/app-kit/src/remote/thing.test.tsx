@@ -78,6 +78,43 @@ describe('things sent from the sandbox', () => {
     ]);
   });
 
+  it('a table takes its label only from one of its own columns', () => {
+    drawRemote(() => {
+      const table = document.createElement('quill-table');
+      table.label = 'Notes';
+      table.columns = [{ key: 'title', label: 'Title' }];
+      table.rows = [{ id: 'n1', title: 'Shopping', secret: 'x' }];
+      table.thing = { kind: 'note', label: 'constructor' };
+      return table;
+    });
+    expect(marks()).toEqual([['note', 'n1', undefined]]);
+  });
+
+  it('drops a bad kind, an unknown field or a value of the wrong type the sandbox sends, and keeps hostile text as text', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    drawRemote(() => {
+      const list = document.createElement('quill-list');
+      list.label = 'Notes';
+      list.items = [
+        { id: 'a', title: 'Bad kind', thing: { kind: 'Not A Kind' } },
+        { id: 'b', title: 'Extra', thing: { kind: 'note', onclick: 'alert(1)' } },
+        { id: 'c', title: 'Wrong type', thing: { kind: 7 } },
+        { id: 'd', title: 'Hostile', thing: { kind: 'note', id: '"><img src=x onerror=alert(1)>', label: '<b>x</b>' } },
+      ];
+      return list;
+    });
+    const all = marks();
+    expect(all.find(([, id]) => id === 'a')).toBeUndefined();
+    expect(all.find(([, id]) => id === 'c')).toBeUndefined();
+    expect(document.querySelector('img')).toBeNull();
+    const hostile = document.querySelector<HTMLElement>('[data-thing-label="<b>x</b>"]');
+    expect(hostile?.dataset.thingId).toBe('"><img src=x onerror=alert(1)>');
+    for (const el of document.querySelectorAll('[data-thing]')) expect(el.hasAttribute('onclick')).toBe(false);
+    warn.mockRestore();
+    error.mockRestore();
+  });
+
   it('a kind tile carries its mark on its button', () => {
     drawRemote(() => {
       const tile = document.createElement('quill-kind-tile');

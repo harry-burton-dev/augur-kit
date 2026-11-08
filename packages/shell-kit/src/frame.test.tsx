@@ -167,6 +167,18 @@ describe('the radial menu on right-click (spec 6.4, Actions live on the object)'
     expect(onRun).not.toHaveBeenCalled();
   });
 
+  it('leaves a right-click alone that a part with its own menu already took', () => {
+    const body = draw(
+      <FrameRadial source={source()} onRun={() => undefined}>
+        <p data-thing="note" data-thing-label="Shopping" onContextMenu={(e) => e.preventDefault()}>
+          Shopping
+        </p>
+      </FrameRadial>,
+    );
+    act(() => void body.querySelector('p')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 9, clientY: 9 })));
+    expect(body.querySelector('[role="menu"]')).toBeNull();
+  });
+
   it('opens from the keyboard too (the context-menu key, Shift+F10)', () => {
     const body = draw(
       <FrameRadial source={source()} onRun={() => undefined}>

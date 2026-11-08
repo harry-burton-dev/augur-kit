@@ -72,7 +72,7 @@ export interface QuillRemoteProperties {
   'quill-editor': Field & { value?: string; name?: string; placeholder?: string; rows?: number; guide?: string };
   'quill-palette': { open: boolean; placeholder: string; query: string; items: { id: string; label: string; detail?: string; meta?: string; icon?: string; group?: string; locked?: string }[]; none?: string; lead?: string };
   'quill-tiles': { label: string };
-  'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing };
+  'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing & { id: string } };
   'quill-add-tile': { label: string; reason?: string };
   'quill-reel': { label: string; tone?: 'action' | 'new' | 'upcoming' | 'quiet'; items: { id: string; title: string; when?: string; urgent?: boolean; from?: string }[]; reveal?: 'pull' | 'all'; noun?: string };
 }

@@ -12,6 +12,9 @@ export interface ThingMark {
   label?: string;
 }
 
+/** Said once each: a bad kind on every row of a long list isn't news after the first. */
+const told = new Set<string>();
+
 /** A kind as the manifest names one: lower case, a letter first, at most 40. */
 const KIND = /^[a-z][a-z0-9-]{0,39}$/;
 
@@ -19,7 +22,11 @@ const KIND = /^[a-z][a-z0-9-]{0,39}$/;
 export function thingProps(thing: ThingMark | undefined, own: { id?: string; label?: string }): Record<string, string> {
   if (!thing) return {};
   if (typeof thing.kind !== 'string' || !KIND.test(thing.kind)) {
-    console.warn(`Quill: the thing mark “${String(thing.kind)}” was dropped: a kind is a short word in lower case, as the manifest names it.`);
+    const kind = String(thing.kind).slice(0, 60);
+    if (!told.has(kind)) {
+      told.add(kind);
+      console.warn(`Quill: the thing mark “${kind}” was dropped: a kind is a short word in lower case, as the manifest names it.`);
+    }
     return {};
   }
   const id = thing.id ?? own.id;

@@ -500,6 +500,13 @@ export function Table<R extends TableRow = TableRow>({
     return String(value ?? '');
   };
   const descriptor: SortDescriptor | undefined = sort ? { column: sort.key, direction: sort.dir === 'asc' ? 'ascending' : 'descending' } : undefined;
+  // A thing's label comes from one of the table's own columns, never from anything else the row holds.
+  const labelKey = thing?.label !== undefined && columns.some((c) => c.key === thing.label) ? thing.label : undefined;
+  const thingLabel = (row: R) => {
+    if (labelKey === undefined || !Object.hasOwn(row, labelKey)) return undefined;
+    const v = (row as Record<string, unknown>)[labelKey];
+    return v == null ? undefined : String(v);
+  };
   const stateRow = (body: ReactNode, tone?: 'error') => (
     <AriaRow id="__state" className="quill-table-state-row">
       <Cell colSpan={span} className="quill-table-state" data-error={tone ? '' : undefined}>
@@ -540,7 +547,7 @@ export function Table<R extends TableRow = TableRow>({
     );
   const virtualRows = Boolean(virtual && !paged && !loading && !error && visible.length);
   const renderRow = (row: R) => (
-    <AriaRow key={row.id} id={row.id} className="quill-table-row" {...thingProps(thing && { kind: thing.kind }, { id: String(row.id), label: thing?.label !== undefined && row[thing.label] != null ? String(row[thing.label]) : undefined })}>
+    <AriaRow key={row.id} id={row.id} className="quill-table-row" {...thingProps(thing && { kind: thing.kind }, { id: String(row.id), label: thingLabel(row) })}>
       {selectable ? (
         <Cell className="quill-table-sel">
           <AriaCheckbox slot="selection" aria-label="Select" className="quill-check">

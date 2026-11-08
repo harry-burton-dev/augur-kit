@@ -30,7 +30,7 @@ export interface KindTileProps {
   onOpen: () => void;
   /** The radial menu on the tile. */
   ring?: () => RingSubject | undefined;
-  /** The tile is a thing with actions: the shell's radial menu opens on it (the app contract, 6.4). */
+  /** The tile is a thing with actions: the shell's radial menu opens on it (the app contract, 6.4). Give it an `id`: a tile has none of its own. */
   thing?: ThingMark;
 }
 

@@ -699,7 +699,8 @@
             "label": "string"
           },
           "required": [
-            "kind"
+            "kind",
+            "id"
           ]
         }
       },

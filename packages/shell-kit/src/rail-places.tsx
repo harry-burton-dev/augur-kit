@@ -44,8 +44,12 @@ function sound(place: FramePlace, items: readonly FrameUnderItem[] | undefined):
   });
 }
 
-/** A place whose own path leaves the app isn't drawn (the registry refuses such a manifest). */
-function placeInside(place: FramePlace) {
+/**
+ * A place whose own path leaves the app isn't drawn (the registry refuses such a manifest). When the shell
+ * opens places by id (`onPlace`), a place with no path of its own and nothing under it needs no path.
+ */
+function placeInside(place: FramePlace, byId: boolean) {
+  if (byId && place.path === undefined && !place.fills) return true;
   if (insideApp(placePath(place))) return true;
   drop(`Aerie: the place ${place.id} was dropped: its path “${placePath(place)}” isn’t inside the app.`);
   return false;
@@ -61,7 +65,7 @@ function placeInside(place: FramePlace) {
  */
 export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, onPlace, currentPlace, lit, lead, words }: RailPlacesProps) {
   const w = { ...FRAME_WORDS, ...words };
-  const filled = useMemo(() => places.filter(placeInside).map((p) => ({ place: p, items: sound(p, under?.[p.id]) })), [places, under]);
+  const filled = useMemo(() => places.filter((p) => placeInside(p, !!onPlace)).map((p) => ({ place: p, items: sound(p, under?.[p.id]) })), [places, under, onPlace]);
   if (filled.length === 1 && !filled[0]!.items.length) return null;
   const here = (path: string) => current !== undefined && current === path;
   return (

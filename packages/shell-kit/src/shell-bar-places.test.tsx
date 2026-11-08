@@ -75,14 +75,45 @@ describe('the rail’s places from the model', () => {
     act(() => [...body.querySelectorAll<HTMLButtonElement>('.aerie-bar-pages .aerie-bar-tile')].find((t) => t.textContent === 'Recent')!.click());
     expect(heard).toEqual(['recent']);
     expect(model.path).toBe('');
+    // Redrawn at once: the thing is no longer marked, the page is.
+    expect(body.querySelector('.aerie-rail-under[aria-current]')).toBeNull();
+    expect(body.querySelector('.aerie-bar-pages [aria-current="page"]')!.textContent).toBe('Recent');
+  });
+
+  it('names the place in ui-path even when the first page is open by default', () => {
+    const model = filling();
+    const heard: unknown[] = [];
+    model.addEventListener('ui-path', (e) => heard.push((e as CustomEvent).detail));
+    model.openPath('/shelves/1');
+    expect(heard).toEqual([{ app: 'docs', page: 'library', path: '/shelves/1' }]);
+  });
+
+  it('keeps a page with no path of its own, whatever its id, when another page fills', () => {
+    const model = filling();
+    const docs = model.apps.find((a) => a.id === 'docs')!;
+    docs.pages = [...docs.pages!, { id: 'odd id', name: 'Odd', icon: 'list' }];
+    expect(pageTiles(draw(model))).toContain('Odd');
+  });
+
+  it('closing an app drops what it put under its places', () => {
+    const model = filling();
+    model.closeApp('docs');
+    expect(model.under.docs).toBeUndefined();
   });
 
   it('keeps one app’s things off another app’s places, and drops the path on switching app', () => {
     const model = filling();
+    // Mandate has a filling place with the same id, and nothing under it of its own.
+    model.apps.find((a) => a.id === 'mandate')!.pages = [
+      { id: 'library', name: 'Plans', icon: 'compass', fills: true },
+      { id: 'tasks', name: 'Tasks', icon: 'tasks' },
+    ];
     model.path = '/shelves/2';
     model.openApp('mandate');
     expect(model.path).toBe('');
-    model.openApp('docs');
-    expect(draw(model).querySelectorAll('.aerie-rail-under').length).toBe(50);
+    const body = draw(model);
+    expect(pageTiles(body)).toEqual(['Plans', 'Tasks']);
+    act(() => model.openApp('docs'));
+    expect(body.querySelectorAll('.aerie-rail-under').length).toBe(50);
   });
 });
