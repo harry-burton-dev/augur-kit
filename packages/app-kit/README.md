@@ -85,6 +85,7 @@ list.addEventListener('open', (e) => open((e as CustomEvent<string>).detail));
 ```
 
 - Each element is named `quill-*` and takes the part's props that can cross a bridge: data, never functions or markup. A part's callbacks are events, whose detail is an id or a value; its markup props are slots (`slot="history"` on a child of `quill-about`).
-- The vocabulary is `QUILL_REMOTE_ELEMENTS`, and `@augur/app-kit/remote/allowlist.json` is the same as JSON. It is the shell's allowlist: an element outside it, a property it doesn't name or of the wrong type, or an event it doesn't send is dropped with a console reason, and the rest of the screen still draws. Within a major it only grows.
+- Every property states its shape, down to the fields of a list's items and the values an enum takes. Fields the person types into hold what they typed in the sandbox too, so setting `value` afterwards (clearing it after a save) reaches the screen.
+- The vocabulary is `QUILL_REMOTE_ELEMENTS`, and `@augur/app-kit/remote/allowlist.json` is the same as JSON. It is the shell's allowlist: an element outside it, a property or field it doesn't name or of the wrong shape, or an event it doesn't send is dropped with a console reason; a part that fails to draw stops only itself, and the rest of the screen still draws. Within a major it only grows.
 - Lists and tables take their rows as one property. From 200 rows (`VIRTUAL_FROM`) the host draws only the rows in view.
 - The host side is `createQuillReceiver()` and `<QuillRemote receiver={…} />`, which the shell uses; an app never does.

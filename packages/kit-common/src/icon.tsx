@@ -132,7 +132,8 @@ export interface IconProps extends Omit<LucideProps, 'ref'> {
 
 /** A line icon in currentColor. */
 export function Icon({ name, size = 24, label, ...rest }: IconProps) {
-  const Glyph = (icons as Record<string, LucideIcon>)[name];
+  // Own names only: a name like `constructor` would otherwise find Object's.
+  const Glyph = Object.hasOwn(icons, name) ? (icons as Record<string, LucideIcon>)[name] : undefined;
   if (!Glyph) return null;
   return <Glyph size={size} strokeWidth={1.5} aria-hidden={label ? undefined : true} aria-label={label} role={label ? 'img' : undefined} focusable="false" {...rest} />;
 }

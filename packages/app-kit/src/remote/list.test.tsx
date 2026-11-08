@@ -11,6 +11,8 @@ import { defineQuillElements } from './elements.js';
 /** The app contract's first-paint budget (6.9): past it the pane says "slow to open". */
 const FIRST_PAINT_MS = 5000;
 const ROWS = 50_000;
+/** Long enough for happy-dom on a slow runner; the budget, not the timeout, is what a test checks. */
+const TIMEOUT = 30_000;
 
 // happy-dom has no layout: give every element a size, as React Aria's own tests do, so the
 // virtualizer works out which rows are in view.
@@ -46,7 +48,7 @@ function drawRemote(make: () => HTMLElement): number {
 }
 
 describe('a long list sent from the sandbox (spec 6.9)', () => {
-  it(`draws ${ROWS} rows within the first-paint budget, with only the rows in view in the DOM`, () => {
+  it(`draws ${ROWS} rows within the first-paint budget, with only the rows in view in the DOM`, { timeout: TIMEOUT }, () => {
     const ms = drawRemote(() => {
       const list = document.createElement('quill-list');
       list.label = 'Notes';
@@ -64,19 +66,40 @@ describe('a long list sent from the sandbox (spec 6.9)', () => {
   });
 
   // The table builds React Aria's collection for every row, which happy-dom makes about four times
-  // slower than a browser (50 000 rows: 4.4 s here, 1.2 s in Chromium 153), so only the list is timed.
-  it(`draws a ${ROWS}-row table with only the rows in view in the DOM`, () => {
+  // slower than a browser (50 000 rows: 4.4 s here, 1.2 s in Chromium 153), so it is not timed and
+  // has fewer rows.
+  it('draws a 20 000-row table with only the rows in view in the DOM', { timeout: TIMEOUT }, () => {
     drawRemote(() => {
       const table = document.createElement('quill-table');
       table.noun = 'notes';
       table.columns = [{ key: 'title', label: 'Title' }, { key: 'size', label: 'Size', kind: 'number' }];
-      table.rows = Array.from({ length: ROWS }, (_, i) => ({ id: `n${i}`, title: `Note ${i}`, size: i }));
+      table.rows = Array.from({ length: 20_000 }, (_, i) => ({ id: `n${i}`, title: `Note ${i}`, size: i }));
       return table;
     });
     const cells = document.querySelectorAll('.quill-table-cell[data-primary]');
     expect(cells.length).toBeGreaterThan(0);
     expect(cells.length).toBeLessThan(60);
     expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(true);
+  });
+
+  it('sends a row’s action to a listener the sandbox added after the rows', { timeout: TIMEOUT }, () => {
+    let list!: HTMLElementTagNameMap['quill-list'];
+    drawRemote(() => {
+      list = document.createElement('quill-list');
+      list.label = 'Notes';
+      list.items = Array.from({ length: 300 }, (_, i) => ({ id: `n${i}`, title: `Note ${i}`, actions: [{ id: 'archive', label: 'Archive' }] }));
+      return list;
+    });
+    const picked: unknown[] = [];
+    act(() => list.addEventListener('action', (e) => picked.push((e as CustomEvent).detail)));
+    const archive = [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Archive: Note 0')!;
+    act(() => {
+      archive.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse', button: 0 }));
+      archive.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse', button: 0 }));
+      archive.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+    });
+    expect(document.querySelector('.quill-list')!.hasAttribute('data-virtual')).toBe(true);
+    expect(picked).toEqual([{ item: 'n0', action: 'archive' }]);
   });
 
   it('draws a short list in full, as Quill’s List always has', () => {

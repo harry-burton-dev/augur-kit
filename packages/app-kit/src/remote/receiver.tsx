@@ -7,9 +7,10 @@
  * A dropped element stays in the receiver's tree, drawn as nothing, so the positions the sandbox's
  * later changes name still line up.
  */
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { icons } from '@augur/kit-common';
 import { RemoteReceiver, type RemoteReceiverElement, type RemoteReceiverNode, type RemoteReceiverRoot } from '@remote-dom/core/receivers';
-import { QUILL_REMOTE_ELEMENTS, fitsRemoteType, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
+import { QUILL_REMOTE_ELEMENTS, checkRemoteValue, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 import { renderers, type RemoteParts } from './renderers.js';
 
 /** What carries the sandbox's changes in: the bridge hands each batch of records to `mutate`. */
@@ -77,21 +78,57 @@ function dropper(onDrop: (reason: string) => void): Drop {
   return drop;
 }
 
-/** The values of the properties the vocabulary names and types; the rest are dropped. */
+const isIcon = (name: string) => Object.hasOwn(icons, name);
+
+/** The values of the properties the vocabulary names, checked down to every field; the rest are dropped. */
 function allowed(el: RemoteReceiverElement, spec: RemoteElementSpec, drop: Drop) {
   const props: Record<string, unknown> = {};
   for (const [name, value] of Object.entries(el.properties)) {
-    const type = spec.properties[name];
-    if (!type) drop(`${el.id}.${name}`, `<${el.element}> has no property “${name}”; it was dropped.`);
-    else if (!fitsRemoteType(type, value)) drop(`${el.id}.${name}:type`, `<${el.element}>’s “${name}” takes a ${type}; the ${Array.isArray(value) ? 'array' : typeof value} sent was dropped.`);
-    else props[name] = value;
+    if (!Object.hasOwn(spec.properties, name)) {
+      drop(`${el.id}.${name}`, `<${el.element}> has no property “${name}”; it was dropped.`);
+      continue;
+    }
+    const checked = checkRemoteValue(spec.properties[name]!, value, `<${el.element}>’s “${name}”`, isIcon);
+    for (const reason of checked.dropped) drop(`${el.id}.${name}:${reason}`, reason);
+    if (checked.ok && checked.value !== undefined) props[name] = checked.value;
   }
   const events: Record<string, (detail?: unknown) => void> = {};
   for (const [name, listener] of Object.entries(el.eventListeners)) {
     if (!Object.hasOwn(spec.events, name)) drop(`${el.id}@${name}`, `<${el.element}> sends no “${name}” event; its listener was dropped.`);
-    else events[name] = (detail?: unknown) => void Promise.resolve(listener(detail)).catch(() => undefined);
+    else {
+      const failed = (error: unknown) => console.warn(`Quill remote: <${el.element}>’s “${name}” listener failed in the sandbox:`, error);
+      events[name] = (detail?: unknown) => {
+        try {
+          void Promise.resolve(listener(detail)).catch(failed);
+        } catch (error) {
+          failed(error);
+        }
+      };
+    }
   }
   return { props, events };
+}
+
+/**
+ * A part that fails to draw stops only itself: it is dropped with the reason and the rest still
+ * draws. The sandbox's next change to it tries again.
+ */
+class Contained extends Component<{ element: string; id: string; version: number; drop: Drop; children: ReactNode }, { failed: boolean; version: number }> {
+  state = { failed: false, version: this.props.version };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  static getDerivedStateFromProps(props: { version: number }, state: { failed: boolean; version: number }) {
+    return props.version === state.version ? null : { failed: false, version: props.version };
+  }
+  componentDidCatch(error: unknown) {
+    const { drop, element, id } = this.props;
+    drop(`${id}!`, `<${element}> failed to draw (${error instanceof Error ? error.message : String(error)}); it was dropped.`);
+    drop.flush();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: RemoteReceiverElement; drop: Drop }): ReactNode {
@@ -113,7 +150,8 @@ function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: Rem
       drop(`${child.id}#${slot}`, `<${el.element}> has no slot “${slot}”; what was put there was dropped.`);
       continue;
     }
-    if (slot === undefined && !spec.children && child.type !== 8) {
+    if (child.type === 8 || (child.type === 3 && !child.data.trim() && spec.children !== 'text')) continue;
+    if (slot === undefined && !spec.children) {
       drop(`${el.id}>`, `<${el.element}> takes no children; they were dropped.`);
       continue;
     }
@@ -126,6 +164,15 @@ function Element({ receiver, node, drop }: { receiver: RemoteReceiver; node: Rem
     else children.push(drawn);
   }
   const parts: RemoteParts = { props, events, slots, children };
+  return (
+    <Contained element={name} id={el.id} version={el.version} drop={drop}>
+      <Draw name={name} parts={parts} />
+    </Contained>
+  );
+}
+
+/** Draws inside the boundary, so a part that throws is caught there. */
+function Draw({ name, parts }: { name: QuillRemoteElementName; parts: RemoteParts }) {
   return renderers[name](parts);
 }
 

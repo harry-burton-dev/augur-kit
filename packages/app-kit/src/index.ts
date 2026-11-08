@@ -39,5 +39,5 @@ export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';
 export { UploadList, Attachment, Picture, FilePreview, fileIcon, fileSize, splitName, type UploadItem, type UploadState, type UploadListProps, type AttachmentProps, type PictureProps, type FilePreviewProps } from './files.js';
 export { EditInPlace, type EditInPlaceProps } from './edit-in-place.js';
 export { QuillRemote, createQuillReceiver, type QuillRemoteProps, type QuillReceiver, type QuillRemoteConnection } from './remote/receiver.js';
-export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemotePropertyType } from './remote/vocabulary.js';
+export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, checkRemoteValue, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType, type RemoteCheck } from './remote/vocabulary.js';
 export { VIRTUAL_FROM } from './remote/renderers.js';

@@ -9,7 +9,7 @@ import { createRemoteElement } from '@remote-dom/core/elements';
 import type { QuillRemoteEvents, QuillRemoteProperties } from './types.js';
 import { QUILL_REMOTE_ELEMENTS, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 
-export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemotePropertyType } from './vocabulary.js';
+export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
 export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteTableColumn } from './types.js';
 
 /** A Quill remote element as the sandbox holds it: its properties, set like any other. */
@@ -19,14 +19,29 @@ export type QuillRemoteElement<N extends QuillRemoteElementName = QuillRemoteEle
 export type QuillRemoteEvent<N extends QuillRemoteElementName, E extends keyof QuillRemoteEvents[N]> = CustomEvent<QuillRemoteEvents[N][E]>;
 
 /** A remote-dom element constructor for one entry of the vocabulary. */
-export const quillRemoteElement = (spec: RemoteElementSpec) =>
-  createRemoteElement({
+export const quillRemoteElement = (spec: RemoteElementSpec): CustomElementConstructor => {
+  const Base = createRemoteElement({
     // Properties only, never reflected to attributes: remote-dom's typed attributes would also start a
     // boolean at false, where the kit part has its own default.
     properties: Object.fromEntries(Object.keys(spec.properties).map((name) => [name, { attribute: false }])),
     events: Object.keys(spec.events),
     slots: [...(spec.slots ?? [])],
   }) as unknown as CustomElementConstructor;
+  const mirror = Object.entries(spec.mirror ?? {});
+  if (!mirror.length) return Base;
+  // A field the person types into on the host: the element keeps what they typed, so when the app
+  // later sets the value (clearing it after a save, say) that is a change and reaches the host.
+  return class extends (Base as unknown as { new (): HTMLElement }) {
+    constructor() {
+      super();
+      for (const [event, property] of mirror) {
+        this.addEventListener(event, (e) => {
+          (this as unknown as Record<string, unknown>)[property] = (e as CustomEvent).detail;
+        });
+      }
+    }
+  };
+};
 
 /**
  * Defines every Quill remote element in the sandbox's element registry. Safe to call twice; a name

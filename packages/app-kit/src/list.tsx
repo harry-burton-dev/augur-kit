@@ -226,6 +226,7 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
           aria-label={label}
           className="quill-list-rows"
           items={items}
+          dependencies={[onAction, ringFor, pinging, moreLabel]}
           disabledKeys={items.filter((r) => r.disabled).map((r) => r.id)}
           onAction={(key) => {
             const item = items.find((r) => r.id === key);
