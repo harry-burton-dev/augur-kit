@@ -272,6 +272,26 @@
       "$value": "46ch",
       "$description": "Longest line of running summary text inside any measure."
     },
+    "dialog-section-width": {
+      "$value": "960px",
+      "$type": "dimension",
+      "$description": "A SectionDialog at its widest: a small place to work in, with its sections down the side."
+    },
+    "dialog-section-height": {
+      "$value": "600px",
+      "$type": "dimension",
+      "$description": "A SectionDialog at its tallest. It keeps the edge clear on every side of a smaller window."
+    },
+    "section-tabs-width": {
+      "$value": "172px",
+      "$type": "dimension",
+      "$description": "The column of section names down the side of a SectionDialog."
+    },
+    "part-min-width": {
+      "$value": "300px",
+      "$type": "dimension",
+      "$description": "The narrowest a FitParts part may be. Parts that can't each have this much wait behind the switch."
+    },
     "edge": {
       "$value": "24px",
       "$type": "dimension",
