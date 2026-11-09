@@ -12,7 +12,7 @@
   /* The frame: rail, main column, drawer. The room around it is the container its shape is measured by. */
   .quill-room { container: quill-frame / inline-size; display: flex; flex-direction: column; flex: 1 0 auto; min-height: 100%; }
   .quill-frame {
-    --frame-rail: var(--measure-rail);
+    --frame-rail: var(--bar-tile);
     --frame-drawer: var(--measure-drawer);
     --frame-strip: 56px;
     position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'main'; flex: 1 0 auto; min-height: 100%;
@@ -34,38 +34,43 @@
     position: absolute; top: 0; bottom: 0; z-index: 4; background: var(--slate); box-shadow: var(--shadow-overlay);
     animation: quill-fade var(--motion-base) var(--ease-out);
   }
-  .quill-frame[data-rail='over'] .quill-rail { left: 0; width: var(--measure-rail); overflow: visible; }
+  .quill-frame[data-rail='over'] .quill-rail { left: 0; width: var(--bar-tile); overflow: visible; }
+  /* The horizon (the Line look): one hairline across rail, page and drawer at the foot of the page's head,
+     wherever the page has a head. The rail's app block and the drawer's head end on it too. */
+  .quill-frame:has(.quill-page-head, .quill-front-head) {
+    background-image: linear-gradient(var(--hairline-strong), var(--hairline-strong));
+    background-size: 100% 1px; background-position: 0 calc(var(--frame-head) - 1px); background-repeat: no-repeat;
+  }
   .quill-frame[data-drawer='over'] .quill-drawer { right: 0; width: var(--measure-drawer); }
 
-  .quill-rail { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; padding: var(--space-4) var(--space-3) var(--space-6); border-right: 1px solid var(--hairline); overflow: hidden auto; }
-  .quill-rail-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-  .quill-frame[data-rail='closed'] .quill-rail { padding-inline: 0; align-items: center; overflow: visible; z-index: 1; }
+  /* The rail: the app bar's tiles, docked down the left. An icon over its name; the page you're on carries
+     the bar's hard line on the rail's inner edge. */
+  .quill-rail { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--hairline); overflow: hidden auto; }
+  .quill-rail-head { position: relative; display: flex; flex-direction: column; justify-content: flex-end; flex: none; height: var(--frame-head); }
+  .quill-rail-head > .augur-control { position: absolute; top: var(--space-2); left: 50%; transform: translateX(-50%); }
+  .quill-frame[data-rail='closed'] .quill-rail { overflow: visible; z-index: 1; }
   /* Folded, the rail's button names open to the right, over the main column, not off the screen's edge. */
   .quill-rail .augur-name { left: 0; transform: translateY(-2px); }
   .quill-rail .augur-control:hover > .augur-name, .quill-rail .augur-control:focus-within > .augur-name { transform: none; }
-  .quill-frame[data-rail='closed'] .quill-rail-head { flex-direction: column; }
-  .quill-app {
-    display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--target-sm); min-width: 0; padding: var(--space-1) var(--space-2);
-    border: 0; border-radius: var(--radius-key); background: transparent; color: var(--ink); font: inherit; font-size: var(--type-meta); font-weight: 600; cursor: pointer;
+  .quill-app, .quill-rail-link {
+    position: relative; display: grid; justify-items: center; align-content: center; gap: var(--space-1); width: 100%;
+    padding: var(--space-2); border: 0; background: transparent; font: inherit; text-align: center; cursor: pointer;
+    font-size: var(--type-small); line-height: var(--leading-small); font-weight: 500;
+    transition: background var(--motion-instant) var(--ease-standard), color var(--motion-instant) var(--ease-standard);
   }
-  .quill-app span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-app:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .quill-app:focus-visible, .quill-rail-link:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-rail-body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-  .quill-frame[data-rail='closed'] .quill-rail-body { align-items: center; }
-  .quill-rail-link {
-    display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--target-sm); padding: var(--space-1) var(--space-3);
-    border: 0; border-radius: var(--radius-key); background: transparent; color: var(--ink-muted); font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta);
-    text-align: left; cursor: pointer; transition: background var(--motion-instant) var(--ease-standard), color var(--motion-instant) var(--ease-standard);
-  }
-  .quill-frame[data-rail='closed'] .quill-rail-link { width: auto; justify-content: center; padding-inline: var(--space-2); position: relative; }
-  .quill-rail-link:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  .quill-rail-link[aria-current='page'] { color: var(--ink); background: color-mix(in srgb, var(--ink) 9%, transparent); }
-  .quill-rail-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .quill-rail-count { color: var(--green); font-variant-numeric: tabular-nums; }
-  .quill-frame[data-rail='closed'] .quill-rail-count { position: absolute; top: 0; right: 0; font-size: var(--type-label); }
+  .quill-app { min-height: var(--bar-rail-tile); color: var(--ink); }
+  .quill-app span, .quill-rail-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quill-app:hover, .quill-rail-link:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .quill-app:focus-visible, .quill-rail-link:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .quill-rail-body { display: flex; flex-direction: column; min-width: 0; }
+  .quill-rail-link { min-height: var(--bar-rail-page); color: var(--ink-muted); }
+  .quill-rail-link[aria-current='page'] { color: var(--ink); }
+  .quill-rail-link[aria-current='page']::after { content: ''; position: absolute; right: 0; top: var(--bar-inset); bottom: var(--bar-inset); width: var(--bar-mark); background: var(--ink); }
+  .quill-rail-count { position: absolute; top: var(--space-2); right: var(--space-3); font-family: var(--font-mono); font-size: var(--type-label); color: var(--needs-you); font-variant-numeric: tabular-nums; }
+  .quill-frame[data-rail='closed'] .quill-rail-link, .quill-frame[data-rail='closed'] .quill-app { min-height: var(--target-md); }
 
-  .quill-main { min-width: 0; padding: var(--space-6) var(--edge) var(--space-8); }
+  .quill-main { min-width: 0; padding: 0 var(--edge) var(--space-8); }
+  .quill-main:not(:has(.quill-page-head, .quill-front-head)) { padding-top: var(--space-6); }
   .quill-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-7); align-items: start; max-width: var(--measure-wide); margin: 0 auto; transition: opacity var(--motion-slow) var(--ease-out); }
   .quill-frame[data-rail] .quill-page { margin: 0; }
   .quill-page-aside { grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr); }
@@ -77,8 +82,10 @@
   .quill-aside { gap: var(--space-6); }
 
   .quill-drawer { position: relative; min-width: 0; overflow: hidden; border-left: 1px solid var(--hairline); }
-  .quill-drawer-head { display: flex; padding: var(--space-4) var(--space-3) 0; }
+  .quill-drawer-head { box-sizing: border-box; display: flex; justify-content: flex-end; align-items: flex-end; padding: var(--space-3); }
+  .quill-frame:has(.quill-page-head, .quill-front-head) .quill-drawer-head { height: var(--frame-head); }
   .quill-frame[data-drawer='closed'] .quill-drawer-head { justify-content: center; padding-inline: 0; }
+  .quill-frame[data-shape='icons'] .quill-rail-label, .quill-frame[data-rail='closed'] .quill-rail-label, .quill-frame[data-rail='closed'] .quill-app span { display: none; }
   .quill-drawer-inner {
     position: sticky; top: 0; max-height: 100vh; overflow-y: auto; padding: var(--space-4) var(--space-5) var(--space-8);
     transition: opacity var(--motion-slow) var(--ease-out), transform var(--motion-slow) var(--ease-out);
@@ -97,6 +104,7 @@
   @container quill-frame (width < 800px) {
     .quill-frame[data-rail='open'] { --frame-rail: var(--frame-strip); }
     .quill-frame[data-rail='open'] .quill-rail-label, .quill-frame[data-rail='open'] .quill-app span { display: none; }
+    .quill-frame[data-rail='open'] .quill-rail-link, .quill-frame[data-rail='open'] .quill-app { min-height: var(--target-md); }
   }
 
   /* The front page: what needs you, what's new, what's worth knowing. */
@@ -104,7 +112,7 @@
   .quill-front-section { display: flex; flex-direction: column; gap: var(--space-3); }
   .quill-section-title {
     display: flex; align-items: baseline; gap: var(--space-2); margin: 0;
-    font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-label); text-transform: uppercase; font-weight: 500; color: var(--ink-muted);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 400; color: var(--ink-muted);
   }
   .quill-section-count { color: var(--green); font-variant-numeric: tabular-nums; }
   .quill-empty { margin: 0; color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); }
@@ -121,12 +129,14 @@
   .quill-more-count { color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); font-variant-numeric: tabular-nums; }
 
   /* The selection bar: rises at the bottom of the main column while anything is picked. */
+  /* The selection bar. In a page's head (PageHead `selection`) it takes the actions' slot and sits on an ink line;
+     anywhere else it holds at the foot of the main column, flat, under an ink line. No blur, no pill. */
   .quill-selection {
-    position: sticky; bottom: var(--space-5); z-index: 2; display: flex; align-items: center; gap: var(--space-4); align-self: center;
-    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5); border-radius: var(--radius-pill);
-    background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline-strong); box-shadow: var(--shadow-overlay);
+    position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-2) 0; background: var(--slate); border-top: 1px solid var(--ink);
     animation: quill-rise var(--motion-slow) var(--ease-out);
   }
+  .quill-page-head-acts > .quill-selection { position: static; padding: 0 0 var(--space-1); background: none; border-top: 0; border-bottom: 1px solid var(--ink); animation: quill-fade var(--motion-base) var(--ease-out); }
   .quill-selection-count { font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .quill-selection-actions { display: flex; align-items: center; gap: var(--space-2); }
   /* The title card a front page can open with (look="title"): the floor small, the app's name wide, search under it. */
@@ -696,21 +706,34 @@
   @media (max-width: 480px) { .quill-details dl { grid-template-columns: minmax(0, 1fr); gap: 0; } .quill-details dd { margin-bottom: var(--space-2); } }
 
   /* Page head and section */
-  .quill-page-head { display: flex; flex-direction: column; gap: var(--space-3); }
+  /* The page's head (Line): as tall as the frame's horizon, its foot on the line. Title left, actions right,
+     both in fixed slots; one arrival line when a link brought you, then a Back key. */
+  .quill-page-head { box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-2); height: var(--frame-head); padding-bottom: var(--space-4); margin-bottom: var(--space-2); }
   .quill-page-head ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
   .quill-page-head li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
   .quill-page-head li + li::before { content: '›'; }
   .quill-page-head ol button { all: unset; cursor: pointer; border-radius: var(--radius-key); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 28ch; }
   .quill-page-head ol button:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
   .quill-page-head ol button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
-  .quill-page-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
-  .quill-page-head-text { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; flex: 1 1 320px; }
   .quill-page-head-title { margin: 0; font-size: var(--type-title-s); line-height: var(--leading-title-s); font-weight: 300; letter-spacing: var(--tracking-tight); color: var(--ink); text-wrap: balance; }
-  .quill-page-head-summary { margin: 0; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64ch; }
-  .quill-page-head-acts { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+  .quill-page-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5); min-width: 0; }
+  .quill-page-head-text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; flex: 1 1 auto; }
+  .quill-page-head-text > .quill-label { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
+  .quill-page-head-title { margin: 0; font-size: var(--type-title-s); line-height: var(--leading-title-s); font-weight: 300; letter-spacing: var(--tracking-tight); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .quill-page-head-summary { margin: 0; color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64ch; }
+  .quill-page-head-arrival { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 0; padding-left: var(--space-3); border-left: 1px solid var(--hairline-strong); max-width: var(--measure-prose); color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .quill-page-head-arrival > svg { flex: none; }
+  .quill-page-head-arrival b { color: var(--ink); font-weight: 500; }
+  .quill-page-head-arrival button, .quill-page-head-back { flex: none; border: 0; background: none; padding: 0; color: var(--ink-muted); cursor: pointer; font: inherit; }
+  .quill-page-head-arrival button { font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; text-decoration: underline; text-underline-offset: var(--space-1); }
+  .quill-page-head-back { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--target-sm); padding: 0 var(--space-2); font-size: var(--type-meta); }
+  .quill-page-head-arrival button:hover, .quill-page-head-back:hover { color: var(--ink); }
+  .quill-page-head-arrival button:focus-visible, .quill-page-head-back:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+  .quill-front-head .quill-page-head-title { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-width: var(--measure-prose); }
+  .quill-page-head-acts { flex: none; display: flex; align-items: center; gap: var(--space-2); }
   .quill-section { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
   .quill-section-head { display: flex; align-items: baseline; gap: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
-  .quill-section-head > .quill-label { margin: 0; flex: 1; min-width: 0; }
+  .quill-section-head > .quill-label { margin: 0; flex: 1; min-width: 0; font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }
   .quill-section-head b { color: var(--ink); font-weight: 400; margin-right: 0.5em; font-variant-numeric: tabular-nums; }
   .quill-section-why { margin: 0; max-width: var(--measure-prose); padding: var(--space-3) var(--space-4); border-radius: var(--radius-inset); background: var(--surface-inset); font-size: var(--type-meta); line-height: var(--leading-meta); }
   .quill-section-body { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }

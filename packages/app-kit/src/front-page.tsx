@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { cx, Heading } from '@augur/kit-common';
+import { cx } from '@augur/kit-common';
+import { PageHead } from './page.js';
 import { Reel, type ReelItem, type ReelTone, type Reveal } from './reel.js';
 import type { Ambience } from './focus.js';
 
@@ -46,7 +47,7 @@ export interface FrontPageConfig {
 export interface FrontPageProps {
   /** Where you are ("Plans, your team's floor"). */
   eyebrow?: string;
-  /** The app's name. */
+  /** The app's name, or better, one sentence of what changed since you looked ("Two vessels changed course, and one voyage waits for you."). Up to two lines. */
   heading: string;
   /** One fact about now ("Three need you."). */
   summary?: string;
@@ -84,7 +85,7 @@ export function FrontPage({ eyebrow, heading, summary, sections, look = 'plain',
           {summary ? <p className="quill-title-summary">{summary}</p> : null}
         </header>
       ) : (
-        <Heading eyebrow={eyebrow} heading={heading} summary={summary} size="l" level={1} />
+        <PageHead className="quill-front-head" eyebrow={eyebrow} heading={heading} summary={summary} />
       )}
       {search ? <div className="quill-front-search">{search}</div> : null}
       {sections.map((s) => {

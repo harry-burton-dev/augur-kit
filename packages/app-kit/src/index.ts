@@ -17,7 +17,7 @@ export { Reel, type ReelItem, type ReelTone, type Reveal, type ReelProps } from 
 export { KindTile, AddTile, Tiles, type TileKind, type KindTileProps, type AddTileProps, type TilesProps } from './tiles.js';
 export { Palette, type PaletteItem, type PaletteProps } from './palette.js';
 export { State, StateBoundary, Facts, Rows, Notice, Note, Tag, Details, type StateKind, type StateProps, type StateBoundaryProps, type Fact, type FactsProps, type Row, type RowsProps, type NoticeTone, type NoticeProps, type NoteProps, type TagProps, type Detail, type DetailsProps } from './states.js';
-export { PageHead, Section, type TrailStep, type PageAction, type PageHeadProps, type SectionProps } from './page.js';
+export { PageHead, Section, type TrailStep, type PageAction, type PageArrival, type PageHeadProps, type SectionProps } from './page.js';
 export { List, Table, compareBy, relativeTime, type ListAction, type ListItem, type ListProps, type TableColumn, type TableRow, type TableSort, type TableProps } from './list.js';
 export { Card, Cards, Tally, Timeline, Path, Ref, Refs, floorMark, floorIcon, dayWords, refIcon, refName, type FloorKind, type CardProps, type TallyCount, type TallyProps, type TimelineItem, type TimelineProps, type PathStep, type PathProps, type RefKind, type RefShown, type RefProps, type RefsProps } from './things.js';
 export { TimeField, DateRangeField, parseTime, type TimeFieldProps, type DateRangeFieldProps, type DateRange } from './time.js';
