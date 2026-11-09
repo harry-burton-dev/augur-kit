@@ -10,7 +10,7 @@ import type { QuillRemoteEvents, QuillRemoteProperties } from './types.js';
 import { QUILL_REMOTE_ELEMENTS, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 
 export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
-export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteTableColumn, RemoteThing } from './types.js';
+export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteOption, RemoteTableColumn, RemoteThing } from './types.js';
 
 /** A Quill remote element as the sandbox holds it: its properties, set like any other. */
 export type QuillRemoteElement<N extends QuillRemoteElementName = QuillRemoteElementName> = HTMLElement & Partial<QuillRemoteProperties[N]>;
@@ -78,5 +78,14 @@ declare global {
     'quill-kind-tile': QuillRemoteElement<'quill-kind-tile'>;
     'quill-add-tile': QuillRemoteElement<'quill-add-tile'>;
     'quill-reel': QuillRemoteElement<'quill-reel'>;
+    'quill-dialog': QuillRemoteElement<'quill-dialog'>;
+    'quill-ask-twice': QuillRemoteElement<'quill-ask-twice'>;
+    'quill-choice': QuillRemoteElement<'quill-choice'>;
+    'quill-checkbox-group': QuillRemoteElement<'quill-checkbox-group'>;
+    'quill-date-field': QuillRemoteElement<'quill-date-field'>;
+    'quill-tag-picker': QuillRemoteElement<'quill-tag-picker'>;
+    'quill-steps': QuillRemoteElement<'quill-steps'>;
+    'quill-progress': QuillRemoteElement<'quill-progress'>;
+    'quill-status': QuillRemoteElement<'quill-status'>;
   }
 }

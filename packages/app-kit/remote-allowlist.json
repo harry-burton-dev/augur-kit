@@ -756,6 +756,269 @@
       "events": {
         "open": "the item’s id"
       }
+    },
+    "quill-dialog": {
+      "part": "Dialog",
+      "properties": {
+        "open": "boolean",
+        "eyebrow": "string",
+        "heading": "string",
+        "summary": "string",
+        "size": {
+          "enum": [
+            "decision",
+            "glance",
+            "read"
+          ]
+        },
+        "actionLabel": "string",
+        "busyLabel": "string",
+        "cancelLabel": "string",
+        "danger": "boolean",
+        "light": "boolean",
+        "busy": "boolean",
+        "error": "string"
+      },
+      "events": {
+        "submit": "the fields’ values, by their names",
+        "close": "false: the person closed it"
+      },
+      "mirror": {
+        "close": "open"
+      },
+      "slots": [
+        "fields"
+      ],
+      "children": "elements"
+    },
+    "quill-ask-twice": {
+      "part": "AskTwice",
+      "properties": {
+        "label": "string",
+        "confirm": "string",
+        "size": {
+          "enum": [
+            "md",
+            "sm"
+          ]
+        },
+        "icon": "icon",
+        "disabled": "boolean",
+        "reason": "string",
+        "busy": "boolean",
+        "busyLabel": "string"
+      },
+      "events": {
+        "press": "nothing: the second press"
+      }
+    },
+    "quill-choice": {
+      "part": "Choice",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "message": "string",
+        "options": {
+          "array": {
+            "object": {
+              "value": "string",
+              "label": "string",
+              "detail": "string",
+              "disabled": "boolean",
+              "reason": "string"
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          }
+        },
+        "value": "string",
+        "name": "string"
+      },
+      "events": {
+        "change": "the value"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-checkbox-group": {
+      "part": "CheckboxGroup",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "message": "string",
+        "options": {
+          "array": {
+            "object": {
+              "value": "string",
+              "label": "string",
+              "detail": "string",
+              "disabled": "boolean",
+              "reason": "string"
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          }
+        },
+        "value": {
+          "array": "string"
+        },
+        "max": "number",
+        "name": "string"
+      },
+      "events": {
+        "change": "the ticked values"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-date-field": {
+      "part": "DateField",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "state": {
+          "enum": [
+            "idle",
+            "attention",
+            "error",
+            "warning",
+            "valid"
+          ]
+        },
+        "message": "string",
+        "value": "string",
+        "name": "string",
+        "empty": "string",
+        "quick": {
+          "array": {
+            "object": {
+              "label": "string",
+              "value": "string"
+            },
+            "required": [
+              "label",
+              "value"
+            ]
+          }
+        }
+      },
+      "events": {
+        "change": "the day, YYYY-MM-DD, or empty"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-tag-picker": {
+      "part": "TagPicker",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "options": {
+          "array": {
+            "object": {
+              "value": "string",
+              "label": "string",
+              "detail": "string",
+              "disabled": "boolean",
+              "icon": "icon"
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          }
+        },
+        "value": {
+          "array": "string"
+        },
+        "max": "number",
+        "placeholder": "string",
+        "name": "string",
+        "creatable": "boolean"
+      },
+      "events": {
+        "change": "the chosen values",
+        "create": "the word to add as a tag"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-steps": {
+      "part": "Steps",
+      "properties": {
+        "label": "string",
+        "steps": {
+          "array": {
+            "object": {
+              "label": "string",
+              "state": {
+                "enum": [
+                  "done",
+                  "now",
+                  "next"
+                ]
+              }
+            },
+            "required": [
+              "label",
+              "state"
+            ]
+          }
+        }
+      },
+      "events": {}
+    },
+    "quill-progress": {
+      "part": "Progress",
+      "properties": {
+        "label": "string",
+        "value": "number",
+        "valueText": "string"
+      },
+      "events": {}
+    },
+    "quill-status": {
+      "part": "Status",
+      "properties": {
+        "status": {
+          "enum": [
+            "needs",
+            "running",
+            "queued",
+            "paused",
+            "done",
+            "failed",
+            "warning"
+          ]
+        },
+        "label": "string",
+        "markOnly": "boolean"
+      },
+      "events": {}
     }
   }
 }
