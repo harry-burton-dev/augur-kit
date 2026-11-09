@@ -39,6 +39,9 @@
     display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--edge);
     background: var(--scrim); color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small);
   }
+  /* with an app open the strip starts at the docked rail's edge: the rail stands the full height */
+  :root:has(.aerie-shell[data-bar='app']) .aerie-connection { left: var(--bar-tile); }
+  @media (max-width: 719px) { :root:has(.aerie-shell[data-bar='app']) .aerie-connection { left: var(--bar-rail-narrow); } }
   .aerie-connection-name { flex: none; color: var(--ink); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 500; }
   .aerie-connection-words { flex: 1; min-width: 0; }
   .aerie-connection-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--hairline-strong); }

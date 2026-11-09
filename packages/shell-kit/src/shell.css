@@ -29,7 +29,9 @@
 .aerie-shell[data-gauge] .aerie-stage { right: var(--gauge-lane); }
 /* With an app open the app bar docks as the rail on the left, and the stage starts beside it. */
 .aerie-shell[data-bar='app'] .aerie-stage { left: var(--bar-tile); }
-@media (max-width: 719px) { .aerie-shell[data-bar='app'] .aerie-stage { left: var(--bar-rail-narrow); } }
+/* ...and the band starts beside the rail, so the rail takes the corner and the band's fade never crosses it */
+.aerie-shell[data-bar='app'] .aerie-band { left: var(--bar-tile); }
+@media (max-width: 719px) { .aerie-shell[data-bar='app'] :is(.aerie-stage, .aerie-band) { left: var(--bar-rail-narrow); } }
 /* The bar is chrome: it steps back with the band while you look up. */
 .aerie-shell-bar { transition: opacity var(--motion-slow) var(--ease-standard); }
 .aerie-shell[data-open] .aerie-shell-bar { opacity: 0; pointer-events: none; }
@@ -38,7 +40,7 @@
 
 /* the band */
 /* The band is chrome, never a surface: on every screen it rests on a fade from the scrim, so it reads over bright water or an app. */
-.aerie-band { position: absolute; z-index: 4; top: 0; left: 0; right: 0; height: var(--band-top); padding: 0 var(--edge); display: flex; align-items: center; justify-content: space-between; transition: opacity var(--motion-slow) var(--ease-standard); }
+.aerie-band { position: absolute; z-index: 4; top: 0; left: 0; right: 0; height: var(--band-top); padding: 0 var(--edge); display: flex; align-items: center; justify-content: space-between; transition: opacity var(--motion-slow) var(--ease-standard), left var(--motion-bar) var(--ease-out); }
 .aerie-band::before { content: ''; position: absolute; z-index: -1; inset: 0 0 calc(var(--space-5) * -1); pointer-events: none; background: linear-gradient(to bottom, var(--scrim), transparent); }
 .aerie-shell[data-open] .aerie-band { opacity: 0; pointer-events: none; }
 .aerie-mark { display: flex; align-items: baseline; gap: var(--space-3); }
