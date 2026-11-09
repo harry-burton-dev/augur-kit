@@ -1,5 +1,12 @@
 # @augur/kit-common
 
+## 0.15.0
+
+### Minor Changes
+
+- 479b7ef: Adds the `door` token group for Quill's door gallery: the light that rises from a door by how much waits behind it. `door-light-present`, `door-light-strong` and `door-light-needs` are its strengths (numbers, used as percentages in `color-mix`), `door-light-reach-present` and `door-light-reach` how far up it reaches, `door-light-swell` and `door-light-spill` what focus does to it, and `door-drift-strength`, `door-bloom` and `door-bloom-focus` how much it moves at rest. Nothing is renamed or removed.
+- eeb9ed3: Common gains five parts for a place to work in that never scrolls: SectionDialog (a small dialog with its sections as tabs down the side, no primary action), FitParts (parts side by side while each has `part-min-width`, the rest behind a switch), CheckList and CheckRow (things checked, the one that needs you lit from its edge), StepList (an ordered way through one job) and PagedList (a page at a time, Newer and Older). New structure tokens: `dialog-section-width`, `dialog-section-height`, `section-tabs-width` and `part-min-width`.
+
 ## 0.14.0
 
 ### Minor Changes

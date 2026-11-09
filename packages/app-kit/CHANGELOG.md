@@ -1,5 +1,18 @@
 # @augur/app-kit
 
+## 0.17.0
+
+### Minor Changes
+
+- 479b7ef: Adds the door gallery's model: `DoorDescriptor` (a door as plain configuration, with `door.schema.json` and `validateDoor`), and `scoreDoors`, a pure scorer that turns signals into each door's step (quiet, present, strong, needs you) and its reasons. Its weights and thresholds are a rule (`DEFAULT_RULE`) an app can tune; "needs you" comes only from something the person can act on, and at most two doors are strong. `placeDoors` sends doors past the cap to the radial menu.
+- 479b7ef: Adds `DoorGallery`, `Door`, `DoorLight`, `AskLine` and `StepLabel`: an ask line on top and a row of doors, each lit by how much waits behind it. Adding a door is one more descriptor, with no change to a part. The light is ink, and green only for needs you; it is still under reduced motion and on a deployment that draws no blur. Every door's name says its job, its step and its reasons. Also adds `useInRing`, so a part can tell whether a radial menu is round it.
+
+### Patch Changes
+
+- Updated dependencies [479b7ef]
+- Updated dependencies [eeb9ed3]
+  - @augur/kit-common@0.15.0
+
 ## 0.16.0
 
 ### Minor Changes
