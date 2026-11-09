@@ -4,7 +4,7 @@
  * its children by slot. Long lists and tables draw only the rows in view (the app contract, 6.9).
  */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Button, Checkbox, Icon, Notice, Select, TextField, type IconName } from '@augur/kit-common';
+import { Button, Checkbox, Icon, Notice, Select, Tag, TextField, type IconName } from '@augur/kit-common';
 import { About } from '../about.js';
 import { Editor } from '../editor.js';
 import { List, Table, type ListItem, type TableColumn, type TableRow } from '../list.js';
@@ -13,7 +13,7 @@ import { PageHead, Section } from '../page.js';
 import { Palette } from '../palette.js';
 import { Reel } from '../reel.js';
 import { SelectionBar } from '../selection-bar.js';
-import { Details, Facts, Rows, State, Tag } from '../states.js';
+import { Details, Facts, Rows, State } from '../states.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
 import type { QuillRemoteElementName } from './vocabulary.js';
 
