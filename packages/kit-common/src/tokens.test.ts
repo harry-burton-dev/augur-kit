@@ -12,6 +12,14 @@ describe('tokens', () => {
     expect(tokens['space-5']).toBe('28px');
   });
 
+  it('has the door gallery\'s light, strongest for needs you', () => {
+    const n = (name: keyof typeof tokens) => Number.parseFloat(tokens[name]);
+    expect(n('door-light-present')).toBeLessThan(n('door-light-strong'));
+    expect(n('door-light-strong')).toBeLessThan(n('door-light-needs'));
+    expect(n('door-light-reach-present')).toBeLessThan(n('door-light-reach'));
+    expect(n('door-bloom')).toBeLessThan(n('door-bloom-focus'));
+  });
+
   it('builds var() references', () => {
     expect(token('ink')).toBe('var(--ink)');
   });
