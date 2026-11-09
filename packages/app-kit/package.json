@@ -16,12 +16,14 @@
     },
     "./remote/allowlist.json": "./remote-allowlist.json",
     "./theme.css": "./theme.css",
-    "./kit.css": "./dist/kit.css"
+    "./kit.css": "./dist/kit.css",
+    "./door.schema.json": "./door.schema.json"
   },
   "files": [
     "dist",
     "theme.css",
-    "remote-allowlist.json"
+    "remote-allowlist.json",
+    "door.schema.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && tailwindcss -i src/kit.css -o dist/kit.css --minify",

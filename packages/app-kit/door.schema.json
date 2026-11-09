@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Door",
+  "description": "One door in Quill's door gallery: an app's way in, lit by how much waits behind it. Plain data, so it can come from config or, later, an app's manifest. validateDoor in doors.ts checks the same rules, and also that the icon is one of Common's.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "line", "icon", "reads", "order"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,39}$", "description": "Stable key: scores and focus are kept by it." },
+    "name": { "type": "string", "minLength": 1, "maxLength": 40, "description": "The job, as a verb phrase." },
+    "line": { "type": "string", "minLength": 1, "maxLength": 60, "description": "One plain line under the name." },
+    "icon": { "type": "string", "minLength": 1, "description": "A Common IconName (Lucide, through Common's Icon)." },
+    "reads": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["change", "moved", "incident", "contradiction", "meeting", "due", "coming", "new-thing", "question", "queue"] },
+      "description": "Which signals score this door. An empty list means it never lights."
+    },
+    "order": { "type": "number", "description": "Its place, left to right. Doors never reorder by score." },
+    "place": { "enum": ["door", "ring"], "description": "ring keeps it off the screen and in the ring's More." },
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["why", "who"],
+      "properties": { "why": { "type": "string", "minLength": 1 }, "who": { "type": "string", "minLength": 1 } },
+      "description": "The door stays, looks unavailable and says why and who can change it."
+    },
+    "firstDay": { "type": "string", "minLength": 1, "maxLength": 80, "description": "What it says when the person follows nothing yet." }
+  }
+}
