@@ -174,3 +174,53 @@ describe('the other parts an admin screen needs', () => {
     expect(drops.some((d) => d.includes('state'))).toBe(true);
   });
 });
+
+describe('checks, a way through one job, and a list a page at a time', () => {
+  it('draws the kit’s CheckList, StepList and PagedList, and sends each act, open and more back', async () => {
+    const acted: string[] = [];
+    let paged!: HTMLElementTagNameMap['quill-paged-list'];
+    const { drops } = describeScreen((el) => {
+      const checks = el('quill-check-list');
+      checks.label = 'Health';
+      checks.rows = [
+        { id: 'disk', title: 'Disk space', detail: '82% used', tone: 'ok' },
+        { id: 'backup', title: 'Backup', detail: 'None in 3 days', tone: 'needs', action: { label: 'Back up now' } },
+        { id: 'odd', title: 'Odd', tone: 'loud' as never },
+      ];
+      checks.addEventListener('act', (e) => acted.push(`check:${(e as CustomEvent<string>).detail}`));
+      const steps = el('quill-step-list');
+      steps.label = 'Recover';
+      steps.steps = [
+        { id: 'stop', title: 'Stop the service', done: true },
+        { id: 'restore', title: 'Restore', detail: 'From last night', action: 'Restore' },
+        { id: 'tell', title: 'Tell people', unavailable: 'Not from here yet.' },
+      ];
+      steps.addEventListener('act', (e) => acted.push(`step:${(e as CustomEvent<string>).detail}`));
+      paged = el('quill-paged-list');
+      paged.label = 'History';
+      paged.pageSize = 2;
+      paged.total = 9;
+      paged.noun = 'upgrades';
+      paged.items = [1, 2, 3].map((n) => ({ id: `u${n}`, title: `Upgrade ${n}`, detail: 'done', status: 'done' as const }));
+      paged.addEventListener('open', (e) => acted.push(`open:${(e as CustomEvent<string>).detail}`));
+      paged.addEventListener('more', () => acted.push('more'));
+      return [checks, steps, paged];
+    });
+    expect(drops.some((d) => d.includes('tone'))).toBe(true);
+    // A tone it doesn't know is dropped; the row stays, said as information.
+    expect(document.querySelectorAll('.augur-check-row')).toHaveLength(3);
+    expect(document.querySelectorAll('.augur-check-row')[2]!.getAttribute('data-tone')).toBe('info');
+    expect(document.querySelector('.augur-check-row[data-tone="needs"]')?.textContent).toContain('Needs you');
+    press(button('Back up now')!);
+    expect(document.querySelectorAll('.augur-step-item')).toHaveLength(3);
+    expect(document.body.textContent).toContain('Not from here yet.');
+    press(button('Restore')!);
+    expect(document.body.textContent).toContain('1–2 of 3');
+    press(button('Upgrade 1')!);
+    press(button('Older')!);
+    expect(document.body.textContent).toContain('Upgrade 3');
+    press(button('Show')!);
+    await flush();
+    expect(acted).toEqual(['check:backup', 'step:restore', 'open:u1', 'more']);
+  });
+});

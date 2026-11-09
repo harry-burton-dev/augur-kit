@@ -368,6 +368,51 @@ export const QUILL_REMOTE_ELEMENTS = {
     properties: { status: oneOf('needs', 'running', 'queued', 'paused', 'done', 'failed', 'warning'), label: S, markOnly: B },
     events: {},
   },
+  'quill-check-list': {
+    part: 'CheckList',
+    // Things checked, each with what was found and one way to act on it. A row that needs the person is lit
+    // with the needs-you light, and the tone is always said in words too.
+    properties: {
+      label: S,
+      rows: {
+        array: {
+          object: { id: S, title: S, detail: S, tone: oneOf('ok', 'needs', 'problem', 'info'), action: { object: { label: S, disabled: B, reason: S }, required: ['label'] } },
+          required: ['id', 'title'],
+        },
+      },
+    },
+    events: { act: 'the row’s id' },
+  },
+  'quill-step-list': {
+    part: 'StepList',
+    // An ordered way through one job, each step with what to do, why, and one action. For where a process
+    // has got to, use quill-steps.
+    properties: {
+      label: S,
+      steps: {
+        array: {
+          object: { id: S, title: S, detail: S, action: S, done: B, unavailable: S },
+          required: ['id', 'title'],
+        },
+      },
+    },
+    events: { act: 'the step’s id' },
+  },
+  'quill-paged-list': {
+    part: 'PagedList',
+    // A list shown a page at a time instead of scrolling, with Newer and Older drawn by the host. With
+    // `total` above the items sent and a `more` listener, the last page offers to load more.
+    properties: {
+      label: S,
+      items: { array: { object: { id: S, title: S, detail: S, meta: S, status: oneOf('needs', 'running', 'queued', 'paused', 'done', 'failed', 'warning') }, required: ['id', 'title'] } },
+      pageSize: N,
+      total: N,
+      noun: S,
+      empty: S,
+      busy: B,
+    },
+    events: { open: 'the item’s id', more: 'nothing' },
+  },
 } as const satisfies Record<string, RemoteElementSpec>;
 
 export type QuillRemoteElementName = keyof typeof QUILL_REMOTE_ELEMENTS;

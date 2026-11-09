@@ -84,6 +84,9 @@ export interface QuillRemoteProperties {
   'quill-steps': { label: string; steps: { label: string; state: 'done' | 'now' | 'next' }[] };
   'quill-progress': { label: string; value?: number; valueText?: string };
   'quill-status': { status: 'needs' | 'running' | 'queued' | 'paused' | 'done' | 'failed' | 'warning'; label?: string; markOnly?: boolean };
+  'quill-check-list': { label: string; rows: { id: string; title: string; detail?: string; tone?: 'ok' | 'needs' | 'problem' | 'info'; action?: { label: string; disabled?: boolean; reason?: string } }[] };
+  'quill-step-list': { label: string; steps: { id: string; title: string; detail?: string; action?: string; done?: boolean; unavailable?: string }[] };
+  'quill-paged-list': { label: string; items: { id: string; title: string; detail?: string; meta?: string; status?: 'needs' | 'running' | 'queued' | 'paused' | 'done' | 'failed' | 'warning' }[]; pageSize?: number; total?: number; noun?: string; empty?: string; busy?: boolean };
 }
 
 /** One option of a Choice or a CheckboxGroup: one that can't be picked now says why. */
@@ -129,6 +132,9 @@ export interface QuillRemoteEvents {
   'quill-steps': Record<never, never>;
   'quill-progress': Record<never, never>;
   'quill-status': Record<never, never>;
+  'quill-check-list': { act: string };
+  'quill-step-list': { act: string };
+  'quill-paged-list': { open: string; more: undefined };
 }
 
 // Every element has both, and nothing else does.

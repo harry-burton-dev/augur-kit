@@ -1019,6 +1019,111 @@
         "markOnly": "boolean"
       },
       "events": {}
+    },
+    "quill-check-list": {
+      "part": "CheckList",
+      "properties": {
+        "label": "string",
+        "rows": {
+          "array": {
+            "object": {
+              "id": "string",
+              "title": "string",
+              "detail": "string",
+              "tone": {
+                "enum": [
+                  "ok",
+                  "needs",
+                  "problem",
+                  "info"
+                ]
+              },
+              "action": {
+                "object": {
+                  "label": "string",
+                  "disabled": "boolean",
+                  "reason": "string"
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ]
+          }
+        }
+      },
+      "events": {
+        "act": "the row’s id"
+      }
+    },
+    "quill-step-list": {
+      "part": "StepList",
+      "properties": {
+        "label": "string",
+        "steps": {
+          "array": {
+            "object": {
+              "id": "string",
+              "title": "string",
+              "detail": "string",
+              "action": "string",
+              "done": "boolean",
+              "unavailable": "string"
+            },
+            "required": [
+              "id",
+              "title"
+            ]
+          }
+        }
+      },
+      "events": {
+        "act": "the step’s id"
+      }
+    },
+    "quill-paged-list": {
+      "part": "PagedList",
+      "properties": {
+        "label": "string",
+        "items": {
+          "array": {
+            "object": {
+              "id": "string",
+              "title": "string",
+              "detail": "string",
+              "meta": "string",
+              "status": {
+                "enum": [
+                  "needs",
+                  "running",
+                  "queued",
+                  "paused",
+                  "done",
+                  "failed",
+                  "warning"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ]
+          }
+        },
+        "pageSize": "number",
+        "total": "number",
+        "noun": "string",
+        "empty": "string",
+        "busy": "boolean"
+      },
+      "events": {
+        "open": "the item’s id",
+        "more": "nothing"
+      }
     }
   }
 }

@@ -87,5 +87,8 @@ declare global {
     'quill-steps': QuillRemoteElement<'quill-steps'>;
     'quill-progress': QuillRemoteElement<'quill-progress'>;
     'quill-status': QuillRemoteElement<'quill-status'>;
+    'quill-check-list': QuillRemoteElement<'quill-check-list'>;
+    'quill-step-list': QuillRemoteElement<'quill-step-list'>;
+    'quill-paged-list': QuillRemoteElement<'quill-paged-list'>;
   }
 }

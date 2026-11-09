@@ -91,3 +91,35 @@ function Dropped() {
 
 /** An element outside the vocabulary (an iframe here) is dropped with what's inside it; the rest still draws. */
 export const OutsideTheVocabulary: Story = { args: { receiver: createQuillReceiver() }, render: () => <Dropped /> };
+
+function Health() {
+  const receiver = useSandbox(() => {
+    const checks = document.createElement('quill-check-list');
+    checks.label = 'Health';
+    checks.rows = [
+      { id: 'services', title: 'Services', detail: 'All 9 answering', tone: 'ok', action: { label: 'See' } },
+      { id: 'backup', title: 'Backup', detail: 'None in the last 3 days', tone: 'needs', action: { label: 'Back up now' } },
+      { id: 'disk', title: 'Disk space', detail: '91% used on the data disk', tone: 'problem', action: { label: 'See' } },
+    ];
+    const steps = document.createElement('quill-step-list');
+    steps.label = 'Going back a release';
+    steps.steps = [
+      { id: 'backup', title: 'Back up', detail: 'So nothing is lost going back', done: true, action: 'Back up again' },
+      { id: 'back', title: 'Go back to 0.23.1', detail: 'The services restart one at a time', action: 'Go back' },
+      { id: 'tell', title: 'Tell people', unavailable: 'There’s no way to tell them from here yet.' },
+    ];
+    const history = document.createElement('quill-paged-list');
+    history.label = 'History';
+    history.pageSize = 3;
+    history.total = 14;
+    history.noun = 'upgrades';
+    history.items = ['0.24.0', '0.23.1', '0.23.0', '0.22.2', '0.22.1'].map((v, i) => ({ id: v, title: `Upgraded to ${v}`, detail: `${i + 2} Nov`, status: i === 0 ? ('failed' as const) : ('done' as const) }));
+    history.addEventListener('more', () => undefined);
+    history.addEventListener('open', () => undefined);
+    return [checks, steps, history];
+  });
+  return <QuillRemote receiver={receiver} />;
+}
+
+/** Checks with the one that needs you lit, a way through one job, and history a page at a time: Common's parts, described by an app. */
+export const ChecksStepsAndPages: Story = { args: { receiver: createQuillReceiver() }, render: () => <Health /> };
