@@ -4,8 +4,9 @@
  * its children by slot. Long lists and tables draw only the rows in view (the app contract, 6.9).
  */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Button, Checkbox, Icon, Notice, Select, TextField, type IconName } from '@augur/kit-common';
+import { AskTwice, Button, Checkbox, CheckboxGroup, Choice, Dialog, Icon, Notice, Progress, Select, Status, Steps, TextField, type IconName } from '@augur/kit-common';
 import { About } from '../about.js';
+import { DateField } from '../date.js';
 import { Editor } from '../editor.js';
 import { List, Table, type ListItem, type TableColumn, type TableRow } from '../list.js';
 import { More } from '../more.js';
@@ -14,6 +15,7 @@ import { Palette } from '../palette.js';
 import { Reel } from '../reel.js';
 import { SelectionBar } from '../selection-bar.js';
 import { Details, Facts, Rows, State, Tag } from '../states.js';
+import { TagPicker } from '../tag-picker.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
 import type { QuillRemoteElementName } from './vocabulary.js';
 
@@ -151,6 +153,122 @@ function RemotePalette({ parts }: { parts: RemoteParts }) {
   );
 }
 
+/** A field whose value is a string the person picks: Choice and DateField. */
+function RemoteChoice({ parts }: { parts: RemoteParts }) {
+  const { value, label = '', options = [], ...rest } = p(parts);
+  const [held, setHeld] = useHeld<string | null>(value ?? null);
+  return (
+    <Choice
+      {...rest}
+      label={label}
+      options={options}
+      value={held}
+      onChange={(next) => {
+        setHeld(next);
+        parts.events.change?.(next);
+      }}
+    />
+  );
+}
+
+function RemoteDateField({ parts }: { parts: RemoteParts }) {
+  const { value, label = '', ...rest } = p(parts);
+  const [held, setHeld] = useHeld<string>(value ?? '');
+  return (
+    <DateField
+      {...rest}
+      label={label}
+      value={held}
+      onChange={(next) => {
+        setHeld(next);
+        parts.events.change?.(next);
+      }}
+    />
+  );
+}
+
+/**
+ * Values held as a list. The sandbox echoes a new array each time, so they are compared as one
+ * line, which no value can confuse: a comma would, so each is quoted.
+ */
+function useHeldList(value: unknown): [string[], (next: string[]) => void] {
+  const given = Array.isArray(value) ? (value as string[]) : [];
+  const [held, setHeld] = useHeld<string>(JSON.stringify(given));
+  return [JSON.parse(held) as string[], (next) => setHeld(JSON.stringify(next))];
+}
+
+function RemoteCheckboxGroup({ parts }: { parts: RemoteParts }) {
+  const { value, label = '', options = [], ...rest } = p(parts);
+  const [held, setHeld] = useHeldList(value);
+  return (
+    <CheckboxGroup
+      {...rest}
+      label={label}
+      value={held}
+      onChange={(next) => {
+        setHeld(next);
+        parts.events.change?.(next);
+      }}
+    >
+      {(options as { value: string; label: string; detail?: string; disabled?: boolean; reason?: string }[]).map(({ label: text, ...option }) => (
+        <Checkbox key={option.value} {...option}>
+          {text}
+        </Checkbox>
+      ))}
+    </CheckboxGroup>
+  );
+}
+
+function RemoteTagPicker({ parts }: { parts: RemoteParts }) {
+  const { value, label = '', options = [], creatable, ...rest } = p(parts);
+  const [held, setHeld] = useHeldList(value);
+  return (
+    <TagPicker
+      {...rest}
+      label={label}
+      options={options}
+      value={held}
+      onChange={(next) => {
+        setHeld(next);
+        parts.events.change?.(next);
+      }}
+      onCreate={creatable && parts.events.create ? (word) => parts.events.create!(word) : undefined}
+    />
+  );
+}
+
+/**
+ * A dialog whose work is done in the sandbox: a submit sends the fields' values and the dialog waits,
+ * busy, until the app closes it or says why not. Closing it here closes it at once, and tells the app.
+ */
+function RemoteDialog({ parts }: { parts: RemoteParts }) {
+  const { open, heading = '', busy, error, ...rest } = p(parts);
+  const [held, setHeld] = useHeld<boolean>(Boolean(open));
+  const [waiting, setWaiting] = useState(false);
+  useEffect(() => setWaiting(false), [open, error, busy]);
+  return (
+    <Dialog
+      {...rest}
+      open={held}
+      heading={heading}
+      busy={Boolean(busy) || waiting}
+      error={error}
+      fields={parts.slots.fields?.length ? parts.slots.fields : undefined}
+      onSubmit={(values) => {
+        setWaiting(true);
+        parts.events.submit?.(values);
+        return false;
+      }}
+      onClose={() => {
+        setHeld(false);
+        parts.events.close?.(false);
+      }}
+    >
+      {parts.children.length ? parts.children : undefined}
+    </Dialog>
+  );
+}
+
 const icon = (name: unknown, size = 16) => (typeof name === 'string' ? <Icon name={name as IconName} size={size} /> : undefined);
 
 export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => ReactNode> = {
@@ -263,5 +381,30 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
     const { label = '', items = [], ...rest } = p(parts);
     const open = parts.events.open;
     return <Reel {...rest} label={label} items={(items as { id: string; title: string }[]).map((item) => ({ ...item, onOpen: () => open?.(item.id) }))} />;
+  },
+  'quill-dialog': (parts) => <RemoteDialog parts={parts} />,
+  'quill-ask-twice': (parts) => {
+    const { label = '', confirm = '', icon: name, ...rest } = p(parts);
+    return (
+      <AskTwice {...rest} confirm={confirm} icon={icon(name)} onPress={() => parts.events.press?.()}>
+        {label}
+      </AskTwice>
+    );
+  },
+  'quill-choice': (parts) => <RemoteChoice parts={parts} />,
+  'quill-checkbox-group': (parts) => <RemoteCheckboxGroup parts={parts} />,
+  'quill-date-field': (parts) => <RemoteDateField parts={parts} />,
+  'quill-tag-picker': (parts) => <RemoteTagPicker parts={parts} />,
+  'quill-steps': (parts) => {
+    const { label = '', steps = [] } = p(parts);
+    return <Steps label={label} steps={steps} />;
+  },
+  'quill-progress': (parts) => {
+    const { label = '', ...rest } = p(parts);
+    return <Progress {...rest} label={label} />;
+  },
+  'quill-status': (parts) => {
+    const { status = 'queued', ...rest } = p(parts);
+    return <Status {...rest} status={status} />;
   },
 };

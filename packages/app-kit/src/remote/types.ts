@@ -75,6 +75,24 @@ export interface QuillRemoteProperties {
   'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing & { id: string } };
   'quill-add-tile': { label: string; reason?: string };
   'quill-reel': { label: string; tone?: 'action' | 'new' | 'upcoming' | 'quiet'; items: { id: string; title: string; when?: string; urgent?: boolean; from?: string }[]; reveal?: 'pull' | 'all'; noun?: string };
+  'quill-dialog': { open?: boolean; eyebrow?: string; heading: string; summary?: string; size?: 'decision' | 'glance' | 'read'; actionLabel?: string; busyLabel?: string; cancelLabel?: string; danger?: boolean; light?: boolean; busy?: boolean; error?: string };
+  'quill-ask-twice': { label: string; confirm: string; size?: 'md' | 'sm'; icon?: string; disabled?: boolean; reason?: string; busy?: boolean; busyLabel?: string };
+  'quill-choice': Omit<Field, 'state'> & { options: RemoteOption[]; value?: string; name?: string };
+  'quill-checkbox-group': Omit<Field, 'state'> & { options: RemoteOption[]; value?: string[]; max?: number; name?: string };
+  'quill-date-field': Field & { value?: string; name?: string; empty?: string; quick?: { label: string; value: string }[] };
+  'quill-tag-picker': Omit<Field, 'state' | 'message'> & { options: { value: string; label: string; detail?: string; disabled?: boolean; icon?: string }[]; value?: string[]; max?: number; placeholder?: string; name?: string; creatable?: boolean };
+  'quill-steps': { label: string; steps: { label: string; state: 'done' | 'now' | 'next' }[] };
+  'quill-progress': { label: string; value?: number; valueText?: string };
+  'quill-status': { status: 'needs' | 'running' | 'queued' | 'paused' | 'done' | 'failed' | 'warning'; label?: string; markOnly?: boolean };
+}
+
+/** One option of a Choice or a CheckboxGroup: one that can't be picked now says why. */
+export interface RemoteOption {
+  value: string;
+  label: string;
+  detail?: string;
+  disabled?: boolean;
+  reason?: string;
 }
 
 /** Each event's detail, the value the listener's `event.detail` holds. */
@@ -102,6 +120,15 @@ export interface QuillRemoteEvents {
   'quill-kind-tile': { open: undefined };
   'quill-add-tile': { press: undefined };
   'quill-reel': { open: string };
+  'quill-dialog': { submit: Record<string, string>; close: false };
+  'quill-ask-twice': { press: undefined };
+  'quill-choice': { change: string };
+  'quill-checkbox-group': { change: string[] };
+  'quill-date-field': { change: string };
+  'quill-tag-picker': { change: string[]; create: string };
+  'quill-steps': Record<never, never>;
+  'quill-progress': Record<never, never>;
+  'quill-status': Record<never, never>;
 }
 
 // Every element has both, and nothing else does.
