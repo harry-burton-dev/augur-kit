@@ -14,10 +14,11 @@
 .aerie-bar[data-dragging] { transition: none; cursor: grabbing; }
 .aerie-bar button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 .aerie-bar-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* docked: the bar stands up along the left edge, under the band */
+/* docked: the bar stands the full height of the left edge, and the band starts beside it. The shell stays
+   see-through; the rail's one edge, top to bottom, is the only line where the bar meets it. */
 .aerie-bar[data-mode='app'] {
-  top: calc(var(--band-top) - 1px); width: var(--bar-rail); height: calc(100% - var(--band-top) + 1px);
-  flex-direction: column; border-bottom: 0; border-right: 1px solid var(--grey-hairline);
+  top: 0; width: var(--bar-rail); height: 100%;
+  flex-direction: column; border-top: 0; border-bottom: 0; border-right: 1px solid var(--grey-hairline);
 }
 
 .aerie-bar .aerie-bar-grip {
@@ -62,6 +63,9 @@
 .aerie-bar[data-mode='app'] .aerie-bar-tile[aria-current]::after { left: auto; right: 0; top: var(--bar-inset); bottom: var(--bar-inset); width: var(--bar-mark); height: auto; }
 .aerie-bar-fixed { flex: none; border-bottom: 1px solid var(--grey-5); }
 .aerie-bar-pair { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--grey-hairline); }
+/* docked, Home and Apps sit in the corner square, level with the band */
+.aerie-bar[data-mode='app'] .aerie-bar-pair { flex: none; height: var(--band-top); }
+.aerie-bar[data-mode='app'] .aerie-bar-pair .aerie-bar-half { min-height: 0; padding: var(--space-1); }
 .aerie-bar-pair[data-solo] { grid-template-columns: 1fr; }
 .aerie-bar[data-mode='app'] .aerie-bar-half { min-height: var(--bar-rail-pair); gap: var(--space-1); padding: var(--space-2) var(--space-1); font-size: var(--type-small); }
 .aerie-bar .aerie-bar-half svg { width: var(--bar-icon-small); height: var(--bar-icon-small); }
