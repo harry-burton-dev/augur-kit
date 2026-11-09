@@ -41,3 +41,4 @@ export { EditInPlace, type EditInPlaceProps } from './edit-in-place.js';
 export { QuillRemote, createQuillReceiver, type QuillRemoteProps, type QuillReceiver, type QuillRemoteConnection } from './remote/receiver.js';
 export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, checkRemoteValue, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType, type RemoteCheck } from './remote/vocabulary.js';
 export { VIRTUAL_FROM } from './remote/renderers.js';
+export { thingProps, type ThingMark } from './thing.js';

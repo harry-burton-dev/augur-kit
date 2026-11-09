@@ -31,6 +31,7 @@ import { State } from './states.js';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 import { writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';
+import { thingProps, type ThingMark } from './thing.js';
 
 /** A thing to do about one row, shown as a word at its end ("Approve", "Open"). */
 export interface ListAction {
@@ -62,6 +63,8 @@ export interface ListItem {
   reason?: string;
   /** More about the row, folded under it: a chevron at its end opens it in place (an expanding row). */
   more?: ReactNode;
+  /** The row is a thing with actions: the shell's radial menu opens on it (the app contract, 6.4). */
+  thing?: ThingMark;
 }
 
 export interface ListProps {
@@ -160,7 +163,7 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
   }
   const pinging = items.find((i) => i.status === 'needs' && !i.disabled)?.id;
   const row = (item: ListItem) => (
-    <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined}>
+    <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined} {...thingProps(item.thing, { id: item.id, label: item.title })}>
       {(() => {
         const content = (
           <>
@@ -322,6 +325,11 @@ export interface TableProps<R extends TableRow = TableRow> {
   noun?: string;
   columns: TableColumn<R>[];
   rows: R[];
+  /**
+   * Every row is a thing of this kind, for the shell's radial menu (the app contract, 6.4): its id is the
+   * row's, its label the value in the column `label` names.
+   */
+  thing?: { kind: string; label?: string };
   /** The starting sort; the table keeps its own after that. */
   sort?: TableSort | null;
   onSort?: (sort: TableSort | null) => void;
@@ -435,6 +443,7 @@ export function Table<R extends TableRow = TableRow>({
   actions,
   virtual,
   pageSize,
+  thing,
   className,
 }: TableProps<R>) {
   const [sort, setSort] = useState<TableSort | null>(initialSort);
@@ -491,6 +500,13 @@ export function Table<R extends TableRow = TableRow>({
     return String(value ?? '');
   };
   const descriptor: SortDescriptor | undefined = sort ? { column: sort.key, direction: sort.dir === 'asc' ? 'ascending' : 'descending' } : undefined;
+  // A thing's label comes from one of the table's own columns, never from anything else the row holds.
+  const labelKey = thing?.label !== undefined && columns.some((c) => c.key === thing.label) ? thing.label : undefined;
+  const thingLabel = (row: R) => {
+    if (labelKey === undefined || !Object.hasOwn(row, labelKey)) return undefined;
+    const v = (row as Record<string, unknown>)[labelKey];
+    return v == null ? undefined : String(v);
+  };
   const stateRow = (body: ReactNode, tone?: 'error') => (
     <AriaRow id="__state" className="quill-table-state-row">
       <Cell colSpan={span} className="quill-table-state" data-error={tone ? '' : undefined}>
@@ -531,7 +547,7 @@ export function Table<R extends TableRow = TableRow>({
     );
   const virtualRows = Boolean(virtual && !paged && !loading && !error && visible.length);
   const renderRow = (row: R) => (
-    <AriaRow key={row.id} id={row.id} className="quill-table-row">
+    <AriaRow key={row.id} id={row.id} className="quill-table-row" {...thingProps(thing && { kind: thing.kind }, { id: String(row.id), label: thingLabel(row) })}>
       {selectable ? (
         <Cell className="quill-table-sel">
           <AriaCheckbox slot="selection" aria-label="Select" className="quill-check">

@@ -30,6 +30,15 @@ export interface RemoteListItem {
   actions?: Action[];
   disabled?: boolean;
   reason?: string;
+  /** The row is a thing with actions, for the shell's radial menu: its kind, as `contributes.radial` names it. */
+  thing?: RemoteThing;
+}
+
+/** A thing with actions (the app contract, 6.4): its kind, and its id and label if not the item's own. */
+export interface RemoteThing {
+  kind: string;
+  id?: string;
+  label?: string;
 }
 
 export interface RemoteTableColumn {
@@ -49,7 +58,7 @@ export interface QuillRemoteProperties {
   'quill-about': { what: string; owner?: { name: string; detail?: string; tone?: 'you' | 'team' | 'department' | 'org' }; floor?: string };
   'quill-more': { shown: number; total: number; noun: string; step?: number; busy?: boolean };
   'quill-list': { label: string; noun?: [string, string]; items: RemoteListItem[]; density?: 'comfortable' | 'compact'; loading?: boolean; error?: string; empty?: string; bar?: boolean; look?: 'well' | 'plain' };
-  'quill-table': { label?: string; noun?: string; columns: RemoteTableColumn[]; rows: ({ id: string } & Record<string, string | number | boolean | null>)[]; sort?: { key: string; dir: 'asc' | 'desc' } | null; selectable?: boolean; selected?: string[]; density?: 'default' | 'compact'; filterable?: boolean; loading?: boolean; error?: string; empty?: string; pageSize?: number };
+  'quill-table': { label?: string; noun?: string; columns: RemoteTableColumn[]; rows: ({ id: string } & Record<string, string | number | boolean | null>)[]; sort?: { key: string; dir: 'asc' | 'desc' } | null; selectable?: boolean; selected?: string[]; density?: 'default' | 'compact'; filterable?: boolean; loading?: boolean; error?: string; empty?: string; pageSize?: number; thing?: { kind: string; label?: string } };
   'quill-rows': { items?: { label: string; value: string }[]; loading?: boolean; count?: number; empty?: string; error?: string };
   'quill-facts': { items?: { value: string | number; label: string }[]; loading?: boolean; count?: number };
   'quill-details': { items: { label: string; value?: string; note?: string; explained?: boolean }[]; limit?: number; missing?: string };
@@ -63,7 +72,7 @@ export interface QuillRemoteProperties {
   'quill-editor': Field & { value?: string; name?: string; placeholder?: string; rows?: number; guide?: string };
   'quill-palette': { open: boolean; placeholder: string; query: string; items: { id: string; label: string; detail?: string; meta?: string; icon?: string; group?: string; locked?: string }[]; none?: string; lead?: string };
   'quill-tiles': { label: string };
-  'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string };
+  'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing & { id: string } };
   'quill-add-tile': { label: string; reason?: string };
   'quill-reel': { label: string; tone?: 'action' | 'new' | 'upcoming' | 'quiet'; items: { id: string; title: string; when?: string; urgent?: boolean; from?: string }[]; reveal?: 'pull' | 'all'; noun?: string };
 }

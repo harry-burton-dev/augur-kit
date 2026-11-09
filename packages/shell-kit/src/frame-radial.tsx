@@ -68,9 +68,12 @@ export function FrameRadial({ source, onRun, words, children }: FrameRadialProps
       ref={pane}
       className="aerie-frame-pane"
       onContextMenu={(e: MouseEvent) => {
+        // A part with its own menu (Quill's `ring`) already took this one: never open two.
+        if (e.defaultPrevented) return;
         if (pressed.current || open(e.target, e.clientX || e.clientY ? { x: e.clientX, y: e.clientY } : undefined)) e.preventDefault();
       }}
       onKeyDown={(e: KeyboardEvent) => {
+        if (e.defaultPrevented) return;
         if ((e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) && open(e.target)) {
           e.preventDefault();
           e.stopPropagation();

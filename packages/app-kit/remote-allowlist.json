@@ -185,7 +185,17 @@
                 }
               },
               "disabled": "boolean",
-              "reason": "string"
+              "reason": "string",
+              "thing": {
+                "object": {
+                  "kind": "string",
+                  "id": "string",
+                  "label": "string"
+                },
+                "required": [
+                  "kind"
+                ]
+              }
             },
             "required": [
               "id",
@@ -262,6 +272,15 @@
               "id": "string"
             }
           }
+        },
+        "thing": {
+          "object": {
+            "kind": "string",
+            "label": "string"
+          },
+          "required": [
+            "kind"
+          ]
         },
         "sort": {
           "object": {
@@ -672,7 +691,18 @@
         "needsLabel": "string",
         "owner": "string",
         "locked": "string",
-        "note": "string"
+        "note": "string",
+        "thing": {
+          "object": {
+            "kind": "string",
+            "id": "string",
+            "label": "string"
+          },
+          "required": [
+            "kind",
+            "id"
+          ]
+        }
       },
       "events": {
         "open": "nothing"

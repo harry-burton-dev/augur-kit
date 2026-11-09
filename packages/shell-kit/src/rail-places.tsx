@@ -12,8 +12,16 @@ export interface RailPlacesProps {
   cap?: number;
   /** Where in the app the person is, below its own address, so the place or thing there is marked. */
   current?: string;
-  /** A place or a thing was chosen: its path below the app's own address. */
-  onOpen: (path: string) => void;
+  /** A place or a thing was chosen: its path below the app's own address, and the place it is or sits under. */
+  onOpen: (path: string, place: string) => void;
+  /** A place itself was chosen. Given, a place's tile calls this instead of `onOpen`. */
+  onPlace?: (place: string) => void;
+  /** The place the person is on, by id. Given, it marks the place instead of `current`. */
+  currentPlace?: string;
+  /** Something that needs the person is through this place. */
+  lit?: (place: string) => boolean;
+  /** …and it is the first thing that does: its light breathes. */
+  lead?: (place: string) => boolean;
   /** The kit's words, where the shell or a deployment wants its own. */
   words?: Partial<FrameWords>;
 }
@@ -36,8 +44,12 @@ function sound(place: FramePlace, items: readonly FrameUnderItem[] | undefined):
   });
 }
 
-/** A place whose own path leaves the app isn't drawn (the registry refuses such a manifest). */
-function placeInside(place: FramePlace) {
+/**
+ * A place whose own path leaves the app isn't drawn (the registry refuses such a manifest). When the shell
+ * opens places by id (`onPlace`), a place with no path of its own and nothing under it needs no path.
+ */
+function placeInside(place: FramePlace, byId: boolean) {
+  if (byId && place.path === undefined && !place.fills) return true;
   if (insideApp(placePath(place))) return true;
   drop(`Aerie: the place ${place.id} was dropped: its path “${placePath(place)}” isn’t inside the app.`);
   return false;
@@ -51,9 +63,9 @@ function placeInside(place: FramePlace) {
  * through them all. An app with one place and nothing under it shows no list: one child is the parent.
  * Goes inside `RailPages`.
  */
-export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, words }: RailPlacesProps) {
+export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, onPlace, currentPlace, lit, lead, words }: RailPlacesProps) {
   const w = { ...FRAME_WORDS, ...words };
-  const filled = useMemo(() => places.filter(placeInside).map((p) => ({ place: p, items: sound(p, under?.[p.id]) })), [places, under]);
+  const filled = useMemo(() => places.filter((p) => placeInside(p, !!onPlace)).map((p) => ({ place: p, items: sound(p, under?.[p.id]) })), [places, under, onPlace]);
   if (filled.length === 1 && !filled[0]!.items.length) return null;
   const here = (path: string) => current !== undefined && current === path;
   return (
@@ -63,7 +75,15 @@ export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, wo
         const { shown, more } = capUnder(items, cap);
         return (
           <div key={place.id} className="aerie-rail-place">
-            <BarTile kind="page" icon={iconOf(place.icon) ?? 'list'} name={place.label} current={here(path)} onPress={() => onOpen(path)} />
+            <BarTile
+              kind="page"
+              icon={iconOf(place.icon) ?? 'list'}
+              name={place.label}
+              current={currentPlace !== undefined ? currentPlace === place.id : here(path)}
+              lit={lit?.(place.id)}
+              lead={lead?.(place.id)}
+              onPress={() => (onPlace ? onPlace(place.id) : onOpen(path, place.id))}
+            />
             {shown.length || more ? (
               <div className="aerie-rail-items" role="group" aria-label={place.label}>
                 {shown.map((item, i) => {
@@ -75,7 +95,7 @@ export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, wo
                       className="aerie-bar-tile aerie-rail-under"
                       aria-current={here(item.path) ? 'page' : undefined}
                       title={item.detail}
-                      onClick={() => onOpen(item.path)}
+                      onClick={() => onOpen(item.path, place.id)}
                     >
                       {icon ? <Icon name={icon} /> : null}
                       <span>{item.label}</span>
@@ -83,7 +103,7 @@ export function RailPlaces({ places, under, cap = UNDER_CAP, current, onOpen, wo
                   );
                 })}
                 {more ? (
-                  <button type="button" className="aerie-bar-tile aerie-rail-more" onClick={() => onOpen(path)}>
+                  <button type="button" className="aerie-bar-tile aerie-rail-more" onClick={() => onOpen(path, place.id)}>
                     <span>{w.andMore(more)}</span>
                   </button>
                 ) : null}

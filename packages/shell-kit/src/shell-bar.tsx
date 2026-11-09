@@ -1,6 +1,7 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { AppBar, BarDivider, BarTile, RailBlock, RailPages, RailPair, StartMenuDivider, StartMenuFolder, StartMenuItem, useAppBar } from './app-bar.js';
 import type { ShellApp, ShellAppGroup, ShellModel } from './shell-model.js';
+import { RailPlaces } from './rail-places.js';
 
 /** Where the apps with no group of their own go. */
 const UNGROUPED: ShellAppGroup = { id: '', name: 'Apps', icon: 'apps' };
@@ -85,7 +86,22 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
               </RailPair>
               {running.map((id) => openTile(id, 'app'))}
             </RailBlock>
-            {pages.length ? (
+            {pages.some((p) => p.fills) ? (
+              // An app on the app contract: its places, with what it put under those that fill (6.3).
+              <RailPages>
+                <RailPlaces
+                  places={pages.map((p) => ({ id: p.id, label: p.name, icon: p.icon, ...(p.path !== undefined ? { path: p.path } : {}), ...(p.fills ? { fills: true } : {}) }))}
+                  under={model.under[current.id] ?? {}}
+                  cap={model.underCap}
+                  current={model.path || undefined}
+                  currentPlace={model.path ? undefined : page}
+                  lit={(id) => lit(current.id, id)}
+                  lead={(id) => leads(current.id, id)}
+                  onPlace={(id) => model.openPage(id)}
+                  onOpen={(path, id) => model.openPath(path, id)}
+                />
+              </RailPages>
+            ) : pages.length ? (
               <RailPages>
                 {pages.map((p) => (
                   <BarTile key={p.id} kind="page" icon={p.icon} name={p.name} current={page === p.id} lit={lit(current.id, p.id)} lead={leads(current.id, p.id)} onPress={() => model.openPage(p.id)} />

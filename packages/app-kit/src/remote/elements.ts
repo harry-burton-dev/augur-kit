@@ -10,7 +10,7 @@ import type { QuillRemoteEvents, QuillRemoteProperties } from './types.js';
 import { QUILL_REMOTE_ELEMENTS, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 
 export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
-export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteTableColumn } from './types.js';
+export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteTableColumn, RemoteThing } from './types.js';
 
 /** A Quill remote element as the sandbox holds it: its properties, set like any other. */
 export type QuillRemoteElement<N extends QuillRemoteElementName = QuillRemoteElementName> = HTMLElement & Partial<QuillRemoteProperties[N]>;

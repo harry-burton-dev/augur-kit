@@ -57,6 +57,8 @@ const fieldState = oneOf('idle', 'attention', 'error', 'warning', 'valid');
 const field = { label: S, hint: S, required: B, optional: B, disabled: B, reason: S, state: fieldState, message: S } as const;
 const action = { object: { id: S, label: S, disabled: B, reason: S }, required: ['id', 'label'] } as const;
 const noun = { tuple: [S, S] } as const;
+/** A thing with actions, for the shell's radial menu (6.4): its kind, as `contributes.radial` names it. */
+const thing = { object: { kind: S, id: S, label: S }, required: ['kind'] } as const;
 
 export const QUILL_REMOTE_ELEMENTS = {
   'quill-page-head': {
@@ -113,6 +115,7 @@ export const QUILL_REMOTE_ELEMENTS = {
             actions: { array: action },
             disabled: B,
             reason: S,
+            thing,
           },
           required: ['id', 'title'],
         },
@@ -138,6 +141,8 @@ export const QUILL_REMOTE_ELEMENTS = {
         },
       },
       rows: { array: { record: 'scalar', required: { id: S } } },
+      /** Every row is a thing of this kind; its label is the value in the column `label` names. */
+      thing: { object: { kind: S, label: S }, required: ['kind'] },
       sort: { object: { key: S, dir: oneOf('asc', 'desc') }, required: ['key', 'dir'] },
       selectable: B,
       selected: { array: S },
@@ -241,7 +246,7 @@ export const QUILL_REMOTE_ELEMENTS = {
   },
   'quill-kind-tile': {
     part: 'KindTile',
-    properties: { kind: oneOf('collection', 'folder', 'series', 'document', 'library'), name: S, eyebrow: S, count: S, state: S, needs: B, needsLabel: S, owner: S, locked: S, note: S },
+    properties: { kind: oneOf('collection', 'folder', 'series', 'document', 'library'), name: S, eyebrow: S, count: S, state: S, needs: B, needsLabel: S, owner: S, locked: S, note: S, thing: { object: thing.object, required: ['kind', 'id'] } },
     events: { open: 'nothing' },
   },
   'quill-add-tile': {
