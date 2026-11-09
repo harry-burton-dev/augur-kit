@@ -1,0 +1,34 @@
+/* Directions for where the docked rail meets the band (story Aerie/Directions/Rail joint).
+   Harry's principle (9 Nov 2026): the rail belongs to the shell's ground. So in all three the band and the
+   rail are one solid surface in an L, and the app sits inside it; they differ in how the joint is drawn.
+   Only the directions story loads this file; the kit's own CSS is unchanged until one is picked.
+   Every value is a token. */
+
+/* All three: band and rail share one solid grey, so nothing shows through mid-glide. */
+[data-joint] .aerie-bar[data-mode='app'] { background: var(--grey-2); top: var(--band-top); height: calc(100% - var(--band-top)); border-top: 0; }
+[data-joint] .aerie-shell[data-bar='app'] .aerie-band { background: var(--grey-2); }
+[data-joint] .aerie-shell[data-bar='app'] .aerie-band::before { display: none; }
+[data-joint] .aerie-shell .aerie-band { transition: opacity var(--motion-slow) var(--ease-standard), background var(--motion-bar) var(--ease-out); }
+/* the rail's width, wide or narrow, for the parts that line up with its edge */
+[data-joint] { --joint-rail: var(--bar-tile); }
+[data-joint]:has(.aerie-bar[data-narrow]) { --joint-rail: var(--bar-rail-narrow); }
+/* the connection strip starts at the rail's edge, so it sits in the app's corner, under the joint */
+[data-joint]:has(.aerie-shell[data-bar='app']) .aerie-connection { left: var(--joint-rail); }
+
+/* A, Corner: one hairline along the band's foot turns down the rail's edge, on the same pixel. */
+[data-joint='corner'] .aerie-shell[data-bar='app'] .aerie-band::after {
+  content: ''; position: absolute; left: calc(var(--joint-rail) - 1px); right: 0; bottom: 0; height: 1px; background: var(--grey-hairline);
+}
+
+/* B, Field: no line at all. The step from the shell's grey to the app's darker ground is the only edge. */
+[data-joint='field'] .aerie-bar[data-mode='app'] { border-right: 0; }
+
+/* C, Keystone: the rail rises the full height and Home and Apps sit in the corner square, level with the
+   band, so the corner is a place rather than a gap. One line turns the corner as in A. */
+[data-joint='keystone'] .aerie-bar[data-mode='app'] { top: 0; height: 100%; }
+[data-joint='keystone'] .aerie-bar[data-mode='app'] .aerie-bar-pair { height: var(--band-top); }
+[data-joint='keystone'] .aerie-bar[data-mode='app'] .aerie-bar-half { min-height: 0; padding: var(--space-1); }
+[data-joint='keystone'] .aerie-shell[data-bar='app'] .aerie-band { left: var(--joint-rail); }
+[data-joint='keystone'] .aerie-shell[data-bar='app'] .aerie-band::after {
+  content: ''; position: absolute; left: -1px; right: 0; bottom: 0; height: 1px; background: var(--grey-hairline);
+}
