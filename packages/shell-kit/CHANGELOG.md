@@ -1,5 +1,12 @@
 # @augur/shell-kit
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [99d782c]
+  - @augur/kit-common@0.14.0
+
 ## 0.10.0
 
 ### Minor Changes
