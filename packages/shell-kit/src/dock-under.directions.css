@@ -1,0 +1,39 @@
+/* A second version of the docked rail (story Aerie/Directions/Dock under the band), for Harry to compare with
+   the full-height dock. The rail sits under the band, one hairline runs right across at the band's foot, and the
+   floors join the rail at its foot instead of standing at the right edge. The floor switcher's own redesign is
+   coming; this only moves it. Only the story loads this file. Every value is a token. */
+
+/* the rail starts under the band, and the band runs the full width again */
+[data-dock='under'] .aerie-bar[data-mode='app'] { top: var(--band-top); height: calc(100% - var(--band-top)); }
+[data-dock='under'] .aerie-bar[data-mode='app'] .aerie-bar-pair { height: auto; }
+[data-dock='under'] .aerie-bar[data-mode='app'] .aerie-bar-pair .aerie-bar-half { min-height: var(--bar-rail-pair); padding: var(--space-2) var(--space-1); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-band { left: 0; }
+
+/* one line, right across, at the band's foot */
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-band::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--grey-hairline);
+}
+
+/* the floors join the rail, at its foot, as small tiles like the rail's own: mark over name */
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge {
+  left: 0; right: auto; top: auto; bottom: 0; transform: none; width: var(--bar-tile);
+  padding: var(--space-2) 0; border: 0; border-top: 1px solid var(--grey-hairline); border-radius: 0;
+}
+[data-dock='under'] .aerie-shell[data-bar='app']:has(.aerie-bar[data-narrow]) .aerie-gauge { width: var(--bar-rail-narrow); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge:hover,
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge:has(:focus-visible) { background: none; backdrop-filter: none; box-shadow: none; border-color: var(--grey-hairline); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge ol { align-items: stretch; gap: 0; }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge ol::before { display: none; }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge button {
+  width: 100%; flex-direction: column-reverse; justify-content: center; align-items: center; gap: var(--space-1);
+  padding: var(--space-2) var(--space-1); text-align: center;
+}
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge button:hover { background: color-mix(in srgb, var(--grey-9) 6%, transparent); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-label > span { width: auto; padding: 0; align-items: center; }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-label b { display: block; font-size: var(--type-label); line-height: var(--leading-small); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-label b em,
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-label > span > span,
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge .aerie-pinned { display: none; }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge button[aria-current] { box-shadow: inset calc(var(--bar-mark) * -1) 0 0 var(--floor-mark); }
+[data-dock='under'] .aerie-shell[data-bar='app'] .aerie-gauge button[aria-current] .aerie-notch { box-shadow: none; }
