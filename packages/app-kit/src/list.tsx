@@ -19,17 +19,19 @@ import {
   Table as AriaTable,
   TableBody,
   TableHeader,
+  ListLayout,
   TableLayout,
   Virtualizer,
   Checkbox as AriaCheckbox,
   type Selection,
   type SortDescriptor,
 } from 'react-aria-components';
-import { Button, Icon, Status, cx, statusUrgency, type IconName, type StatusName } from '@augur/kit-common';
+import { Button, Icon, SearchField, Status, cx, statusUrgency, type IconName, type StatusName } from '@augur/kit-common';
 import { State } from './states.js';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
 import { writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';
+import { thingProps, type ThingMark } from './thing.js';
 
 /** A thing to do about one row, shown as a word at its end ("Approve", "Open"). */
 export interface ListAction {
@@ -59,6 +61,10 @@ export interface ListItem {
   disabled?: boolean;
   /** Why it can't be opened; it takes the detail line's place. */
   reason?: string;
+  /** More about the row, folded under it: a chevron at its end opens it in place (an expanding row). */
+  more?: ReactNode;
+  /** The row is a thing with actions: the shell's radial menu opens on it (the app contract, 6.4). */
+  thing?: ThingMark;
 }
 
 export interface ListProps {
@@ -74,6 +80,10 @@ export interface ListProps {
   empty?: string;
   /** Whether to show the bar that counts the rows. */
   bar?: boolean;
+  /** `well`: rows in a well (Key). `plain`: no well, a hairline under each row, for a short list inside a page. */
+  look?: 'well' | 'plain';
+  /** The word on an expanding row's chevron, read aloud with the row's title: "More about". */
+  moreLabel?: string;
   onOpen?: (item: ListItem) => void;
   onAction?: (item: ListItem, action: ListAction) => void;
   onRetry?: () => void;
@@ -82,8 +92,18 @@ export interface ListProps {
    * for no menu. Inside a RingProvider (AppFrame has one); outside one, nothing is drawn.
    */
   ringFor?: (item: ListItem) => RingSubject | undefined;
+  /**
+   * For long lists: draw only the rows in view (React Aria's virtualizer), so thousands of rows stay
+   * quick. Rows keep the density's fixed height, and the list scrolls inside itself past
+   * `measure-list-virtual`. It takes effect only when no row has a `group` or `more`, which need
+   * rows of their own height; such a list draws every row.
+   */
+  virtual?: boolean;
   className?: string;
 }
+
+/** Row heights in px for the virtualizer; they match `.quill-list-row`'s min-height in kit.css. */
+const LIST_ROW_HEIGHT = { comfortable: 60, compact: 44 } as const;
 
 /** A row's words and controls, opening the radial menu where the row has one. */
 function RowRing({ ring, children }: { ring: () => RingSubject | undefined; children: ReactNode }) {
@@ -100,23 +120,34 @@ function RowRing({ ring, children }: { ring: () => RingSubject | undefined; chil
 
 /**
  * Things you can act on, one per row: a lead mark, a title, a line of detail,
- * a time or count at the end, then the row's own actions as words. The first
+ * a time or count at the end, then the row's own actions as words. A row with
+ * `more` folds it under itself and opens it in place from the chevron at its
+ * end. `look="plain"` drops the well for a short list inside a page. The first
  * row that needs you pings; the rest are a still green. Arrows, Home, End and
  * Enter come from React Aria's grid list.
  */
-export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, onOpen, onAction, onRetry, ringFor, className }: ListProps) {
+export function List({ label, noun = ['item', 'items'], items, density = 'comfortable', loading, error, empty = 'Nothing here.', bar = true, look = 'well', moreLabel = 'More about', onOpen, onAction, onRetry, ringFor, virtual, className }: ListProps) {
+  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(new Set());
+  const fold = (id: string) =>
+    setUnfolded((was) => {
+      const next = new Set(was);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   const [one, many] = noun;
   const count = items.length;
   const head = bar ? <div className="quill-list-bar quill-label">{loading ? `${many}…` : `${count} ${count === 1 ? one : many}`}</div> : null;
+  const virtualRows = Boolean(virtual && !loading && !error && count && items.every((i) => i.group === undefined && i.more === undefined));
   const wrap = (body: ReactNode) => (
-    <div className={cx('quill-list', className)} data-density={density}>
+    <div className={cx('quill-list', className)} data-density={density} data-look={look} data-virtual={virtualRows ? '' : undefined}>
       {head}
       {body}
     </div>
   );
   if (loading)
     return wrap(
-      <div aria-busy="true" aria-label={label}>
+      <div role="status" aria-busy="true" aria-label={label}>
         <span className="quill-list-skel" />
         <span className="quill-list-skel" />
         <span className="quill-list-skel" />
@@ -131,6 +162,84 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
     else groups.push([item.group, [item]]);
   }
   const pinging = items.find((i) => i.status === 'needs' && !i.disabled)?.id;
+  const row = (item: ListItem) => (
+    <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined} {...thingProps(item.thing, { id: item.id, label: item.title })}>
+      {(() => {
+        const content = (
+          <>
+          {item.icon && !item.status ? (
+            <Icon name={item.icon} size={16} className="quill-list-icon" />
+          ) : (
+            <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
+          )}
+          <span className="quill-list-text">
+            <b>{item.title}</b>
+            {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
+          </span>
+          {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
+          {item.more !== undefined ? (
+            <button
+              type="button"
+              className="quill-list-fold"
+              aria-expanded={unfolded.has(item.id)}
+              aria-label={`${moreLabel} ${item.title}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                fold(item.id);
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <Icon name="chevron-down" size={16} />
+            </button>
+          ) : null}
+          {(item.actions ?? []).slice(0, 2).map((action, i) => {
+            const off = Boolean(item.disabled || action.disabled);
+            return (
+              <Button
+                key={action.id}
+                kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
+                size="sm"
+                disabled={off}
+                reason={action.disabled ? action.reason : item.reason}
+                aria-label={`${action.label}: ${item.title}`}
+                onPress={() => onAction?.(item, action)}
+              >
+                {action.label}
+              </Button>
+            );
+          })}
+          </>
+        );
+        const row = ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
+        return item.more !== undefined && unfolded.has(item.id) ? (
+          <>
+            <span className="quill-list-line">{row}</span>
+            <div className="quill-list-more">{item.more}</div>
+          </>
+        ) : (
+          row
+        );
+      })()}
+    </GridListItem>
+  );
+  if (virtualRows)
+    return wrap(
+      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: LIST_ROW_HEIGHT[density] }}>
+        <GridList
+          aria-label={label}
+          className="quill-list-rows"
+          items={items}
+          dependencies={[onAction, ringFor, pinging, moreLabel]}
+          disabledKeys={items.filter((r) => r.disabled).map((r) => r.id)}
+          onAction={(key) => {
+            const item = items.find((r) => r.id === key);
+            if (item && !item.disabled) onOpen?.(item);
+          }}
+        >
+          {row}
+        </GridList>
+      </Virtualizer>,
+    );
   return wrap(
     groups.map(([name, rows]) => (
       <div key={name ?? ''}>
@@ -148,43 +257,7 @@ export function List({ label, noun = ['item', 'items'], items, density = 'comfor
             if (item && !item.disabled) onOpen?.(item);
           }}
         >
-          {rows.map((item) => (
-            <GridListItem key={item.id} id={item.id} textValue={item.title} className="quill-list-row" data-disabled-row={item.disabled ? '' : undefined}>
-              {(() => {
-                const content = (
-                  <>
-                  {item.icon && !item.status ? (
-                    <Icon name={item.icon} size={16} className="quill-list-icon" />
-                  ) : (
-                    <span className="quill-list-lead" data-status={item.status} data-first={item.id === pinging ? '' : undefined} aria-hidden="true" />
-                  )}
-                  <span className="quill-list-text">
-                    <b>{item.title}</b>
-                    {item.disabled && item.reason ? <span className="quill-list-why">{item.reason}</span> : item.detail ? <span>{item.detail}</span> : null}
-                  </span>
-                  {item.meta ? <span className="quill-list-meta">{item.meta}</span> : null}
-                  {(item.actions ?? []).slice(0, 2).map((action, i) => {
-                    const off = Boolean(item.disabled || action.disabled);
-                    return (
-                      <Button
-                        key={action.id}
-                        kind={i === 0 && item.status === 'needs' && !off ? 'secondary' : 'ghost'}
-                        size="sm"
-                        disabled={off}
-                        reason={action.disabled ? action.reason : item.reason}
-                        aria-label={`${action.label}: ${item.title}`}
-                        onPress={() => onAction?.(item, action)}
-                      >
-                        {action.label}
-                      </Button>
-                    );
-                  })}
-                  </>
-                );
-                return ringFor ? <RowRing ring={() => ringFor(item)}>{content}</RowRing> : content;
-              })()}
-            </GridListItem>
-          ))}
+          {rows.map(row)}
         </GridList>
       </div>
     )),
@@ -216,24 +289,28 @@ export interface TableSort {
   dir: 'asc' | 'desc';
 }
 
-/** "4 min ago", "3 h ago", "2 d ago", then the date. */
+/** "4 min ago", "3 h ago", "2 d ago", or ahead "in 4 min", "in 3 h", "in 2 d", then the date. */
 export const relativeTime = (value: unknown, now = Date.now(), formats: AppFormats = {}): string => {
   const t = value instanceof Date ? value.getTime() : Date.parse(String(value));
   if (Number.isNaN(t)) return String(value ?? '');
-  const mins = Math.round((now - t) / 60000);
+  const mins = Math.abs(Math.round((now - t) / 60000));
+  const away = (n: number, unit: string) => (t > now ? `in ${n} ${unit}` : `${n} ${unit} ago`);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 60) return away(mins, 'min');
   const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} h ago`;
+  if (hours < 24) return away(hours, 'h');
   const days = Math.round(hours / 24);
-  if (days < 30) return `${days} d ago`;
+  if (days < 30) return away(days, 'd');
   return writeDate(t, { dateStyle: 'medium' }, formats);
 };
 
+/** A row's own value for a column: never one inherited from Object (a column keyed `constructor`). */
+const cellValue = (row: TableRow, key: string): unknown => (Object.hasOwn(row, key) ? row[key] : undefined);
+
 /** Sort comparison for one column: status by urgency, numbers and dates by value, text by locale. */
 export const compareBy = <R extends TableRow>(column: TableColumn<R>, a: R, b: R): number => {
-  const av = a[column.key];
-  const bv = b[column.key];
+  const av = cellValue(a, column.key);
+  const bv = cellValue(b, column.key);
   if (column.kind === 'status') return statusUrgency.indexOf(av as StatusName) - statusUrgency.indexOf(bv as StatusName);
   if (column.kind === 'number') return Number(av) - Number(bv);
   if (column.kind === 'date') return Date.parse(String(av)) - Date.parse(String(bv));
@@ -248,6 +325,11 @@ export interface TableProps<R extends TableRow = TableRow> {
   noun?: string;
   columns: TableColumn<R>[];
   rows: R[];
+  /**
+   * Every row is a thing of this kind, for the shell's radial menu (the app contract, 6.4): its id is the
+   * row's, its label the value in the column `label` names.
+   */
+  thing?: { kind: string; label?: string };
   /** The starting sort; the table keeps its own after that. */
   sort?: TableSort | null;
   onSort?: (sort: TableSort | null) => void;
@@ -272,6 +354,12 @@ export interface TableProps<R extends TableRow = TableRow> {
    * and empty states look the same either way.
    */
   virtual?: boolean;
+  /**
+   * For long tables that shouldn't scroll: show this many rows at a time, with the count and Back and On
+   * keys under them. Filtering and sorting cover every row; a new filter or sort goes back to the first
+   * page. Takes the place of `virtual` when both are set.
+   */
+  pageSize?: number;
   className?: string;
 }
 
@@ -299,7 +387,7 @@ function useShownRows<R extends TableRow>(rows: R[], columns: TableColumn<R>[], 
       columns.map(
         (c): ColumnDef<RowFeatures, R> => ({
           id: c.key,
-          accessorFn: (row: R) => row[c.key] as never,
+          accessorFn: (row: R) => cellValue(row, c.key) as never,
           sortFn: (a, b) => compareBy(c, a.original, b.original),
           sortUndefined: false,
         }),
@@ -309,7 +397,7 @@ function useShownRows<R extends TableRow>(rows: R[], columns: TableColumn<R>[], 
   const matches = useCallback<FilterFn<RowFeatures, R>>(
     (row, id, value: string) => {
       const c = columns.find((x) => x.key === id);
-      const v = row.original[id];
+      const v = cellValue(row.original, id);
       return (c?.text ? c.text(v, row.original) : String(v ?? '')).toLowerCase().includes(value);
     },
     [columns],
@@ -354,6 +442,8 @@ export function Table<R extends TableRow = TableRow>({
   onRetry,
   actions,
   virtual,
+  pageSize,
+  thing,
   className,
 }: TableProps<R>) {
   const [sort, setSort] = useState<TableSort | null>(initialSort);
@@ -363,6 +453,12 @@ export function Table<R extends TableRow = TableRow>({
   const selected = selectedIds ? new Set(selectedIds) : own;
   const q = filter.trim().toLowerCase();
   const visible = useShownRows(rows, columns, sort, q);
+  const [page, setPage] = useState(0);
+  const paged = Boolean(pageSize && pageSize > 0);
+  const size = paged ? Math.floor(pageSize!) || 1 : visible.length;
+  const pages = paged ? Math.max(1, Math.ceil(visible.length / size)) : 1;
+  const at = Math.min(page, pages - 1);
+  const shown = paged ? visible.slice(at * size, (at + 1) * size) : visible;
   const sortBy = (key: string) => {
     const c = columns.find((x) => x.key === key);
     if (!c) return;
@@ -370,6 +466,7 @@ export function Table<R extends TableRow = TableRow>({
     const second = first === 'asc' ? 'desc' : 'asc';
     const next: TableSort | null = !sort || sort.key !== key ? { key, dir: first } : sort.dir === first ? { key, dir: second } : null;
     setSort(next);
+    setPage(0);
     onSort?.(next);
   };
   const select = (keys: Selection) => {
@@ -381,8 +478,15 @@ export function Table<R extends TableRow = TableRow>({
   const span = columns.length + (selectable ? 1 : 0);
   const end = (c: TableColumn<R>) => c.align === 'end' || c.kind === 'number';
   const formats = useFormats();
+  const count = (n: number) => {
+    try {
+      return n.toLocaleString(formats.locale);
+    } catch {
+      return n.toLocaleString();
+    }
+  };
   const cell = (c: TableColumn<R>, row: R): ReactNode => {
-    const value = row[c.key];
+    const value = cellValue(row, c.key);
     if (c.format) return c.format(value, row);
     if (c.kind === 'status') return <Status status={String(value) as StatusName} />;
     if (c.kind === 'date') {
@@ -396,6 +500,13 @@ export function Table<R extends TableRow = TableRow>({
     return String(value ?? '');
   };
   const descriptor: SortDescriptor | undefined = sort ? { column: sort.key, direction: sort.dir === 'asc' ? 'ascending' : 'descending' } : undefined;
+  // A thing's label comes from one of the table's own columns, never from anything else the row holds.
+  const labelKey = thing?.label !== undefined && columns.some((c) => c.key === thing.label) ? thing.label : undefined;
+  const thingLabel = (row: R) => {
+    if (labelKey === undefined || !Object.hasOwn(row, labelKey)) return undefined;
+    const v = (row as Record<string, unknown>)[labelKey];
+    return v == null ? undefined : String(v);
+  };
   const stateRow = (body: ReactNode, tone?: 'error') => (
     <AriaRow id="__state" className="quill-table-state-row">
       <Cell colSpan={span} className="quill-table-state" data-error={tone ? '' : undefined}>
@@ -434,9 +545,9 @@ export function Table<R extends TableRow = TableRow>({
         </Button>
       </>,
     );
-  const virtualRows = Boolean(virtual && !loading && !error && visible.length);
+  const virtualRows = Boolean(virtual && !paged && !loading && !error && visible.length);
   const renderRow = (row: R) => (
-    <AriaRow key={row.id} id={row.id} className="quill-table-row">
+    <AriaRow key={row.id} id={row.id} className="quill-table-row" {...thingProps(thing && { kind: thing.kind }, { id: String(row.id), label: thingLabel(row) })}>
       {selectable ? (
         <Cell className="quill-table-sel">
           <AriaCheckbox slot="selection" aria-label="Select" className="quill-check">
@@ -453,7 +564,7 @@ export function Table<R extends TableRow = TableRow>({
       ))}
     </AriaRow>
   );
-  if (!body && !virtualRows) body = visible.map(renderRow);
+  if (!body && !virtualRows) body = shown.map(renderRow);
   return (
     <div className={cx('quill-table', className)} data-density={density} data-virtual={virtualRows ? '' : undefined}>
       <div className="quill-table-bar">
@@ -463,22 +574,25 @@ export function Table<R extends TableRow = TableRow>({
         {actions}
         {filterable ? (
           filtering ? (
-            <label className="quill-table-filter">
-              <Icon name="find" size={16} />
-              <input
-                type="search"
-                aria-label={`Filter ${noun}`}
-                value={filter}
-                autoFocus
-                onChange={(e) => setFilter(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Escape') return;
-                  e.preventDefault();
-                  if (filter) setFilter('');
-                  else setFiltering(false);
-                }}
-              />
-            </label>
+            <SearchField
+              className="quill-table-filter"
+              label={`Filter ${noun}`}
+              value={filter}
+              autoFocus
+              onChange={(next) => {
+                setFilter(next);
+                setPage(0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Escape') return;
+                e.preventDefault();
+                if (filter) {
+                  setFilter('');
+                  setPage(0);
+                }
+                else setFiltering(false);
+              }}
+            />
           ) : (
             <button type="button" className="quill-table-find" aria-label={`Filter ${noun}`} onClick={() => setFiltering(true)}>
               <Icon name="find" size={16} />
@@ -534,6 +648,19 @@ export function Table<R extends TableRow = TableRow>({
           </AriaTable>
         </Virtualized>
       </div>
+      {paged && !loading && !error && visible.length > size ? (
+        <div className="quill-table-pager">
+          <span className="quill-table-pages" aria-live="polite">
+            {count(at * size + 1)}–{count(at * size + shown.length)} of {count(visible.length)}
+          </span>
+          <Button kind="secondary" size="sm" icon={<Icon name="back" size={16} />} disabled={at === 0} reason="This is the first page." aria-label={`Back: the ${noun} before these`} onPress={() => setPage(at - 1)}>
+            Back
+          </Button>
+          <Button kind="secondary" size="sm" icon={<Icon name="arrow" size={16} />} disabled={at === pages - 1} reason="This is the last page." aria-label={`On: the next ${noun}`} onPress={() => setPage(at + 1)}>
+            On
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

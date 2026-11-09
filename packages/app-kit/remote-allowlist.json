@@ -1,0 +1,761 @@
+{
+  "schema": "augur.quill-remote/v1",
+  "elements": {
+    "quill-page-head": {
+      "part": "PageHead",
+      "properties": {
+        "trail": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string"
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        },
+        "eyebrow": "string",
+        "heading": "string",
+        "summary": "string",
+        "actions": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string",
+              "disabled": "boolean",
+              "reason": "string",
+              "kind": {
+                "enum": [
+                  "primary",
+                  "secondary",
+                  "tertiary",
+                  "ghost",
+                  "danger"
+                ]
+              },
+              "danger": "boolean"
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        },
+        "level": "number"
+      },
+      "events": {
+        "trail": "the step’s id",
+        "action": "the action’s id"
+      },
+      "children": "elements"
+    },
+    "quill-section": {
+      "part": "Section",
+      "properties": {
+        "label": "string",
+        "count": "number",
+        "limit": "number",
+        "action": "string",
+        "why": "string",
+        "level": "number"
+      },
+      "events": {
+        "action": "nothing"
+      },
+      "children": "elements"
+    },
+    "quill-selection-bar": {
+      "part": "SelectionBar",
+      "properties": {
+        "count": "number",
+        "noun": {
+          "tuple": [
+            "string",
+            "string"
+          ]
+        },
+        "actions": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string",
+              "disabled": "boolean",
+              "reason": "string",
+              "danger": "boolean"
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        }
+      },
+      "events": {
+        "action": "the action’s id",
+        "clear": "nothing"
+      }
+    },
+    "quill-about": {
+      "part": "About",
+      "properties": {
+        "what": "string",
+        "owner": {
+          "object": {
+            "name": "string",
+            "detail": "string",
+            "tone": {
+              "enum": [
+                "you",
+                "team",
+                "department",
+                "org"
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "floor": "string"
+      },
+      "events": {},
+      "slots": [
+        "lifecycle",
+        "links",
+        "history"
+      ]
+    },
+    "quill-more": {
+      "part": "More",
+      "properties": {
+        "shown": "number",
+        "total": "number",
+        "noun": "string",
+        "step": "number",
+        "busy": "boolean"
+      },
+      "events": {
+        "more": "nothing"
+      }
+    },
+    "quill-list": {
+      "part": "List",
+      "properties": {
+        "label": "string",
+        "noun": {
+          "tuple": [
+            "string",
+            "string"
+          ]
+        },
+        "items": {
+          "array": {
+            "object": {
+              "id": "string",
+              "title": "string",
+              "detail": "string",
+              "meta": "string",
+              "status": {
+                "enum": [
+                  "needs",
+                  "running",
+                  "queued",
+                  "paused",
+                  "done",
+                  "failed",
+                  "warning"
+                ]
+              },
+              "icon": "icon",
+              "group": "string",
+              "actions": {
+                "array": {
+                  "object": {
+                    "id": "string",
+                    "label": "string",
+                    "disabled": "boolean",
+                    "reason": "string"
+                  },
+                  "required": [
+                    "id",
+                    "label"
+                  ]
+                }
+              },
+              "disabled": "boolean",
+              "reason": "string",
+              "thing": {
+                "object": {
+                  "kind": "string",
+                  "id": "string",
+                  "label": "string"
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ]
+          }
+        },
+        "density": {
+          "enum": [
+            "comfortable",
+            "compact"
+          ]
+        },
+        "loading": "boolean",
+        "error": "string",
+        "empty": "string",
+        "bar": "boolean",
+        "look": {
+          "enum": [
+            "well",
+            "plain"
+          ]
+        }
+      },
+      "events": {
+        "open": "the item’s id",
+        "action": "{ item, action }: the ids",
+        "retry": "nothing"
+      }
+    },
+    "quill-table": {
+      "part": "Table",
+      "properties": {
+        "label": "string",
+        "noun": "string",
+        "columns": {
+          "array": {
+            "object": {
+              "key": "string",
+              "label": "string",
+              "kind": {
+                "enum": [
+                  "text",
+                  "number",
+                  "date",
+                  "status"
+                ]
+              },
+              "align": {
+                "enum": [
+                  "start",
+                  "end"
+                ]
+              },
+              "wrap": "boolean",
+              "sortable": "boolean",
+              "sortFirst": {
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "label"
+            ]
+          }
+        },
+        "rows": {
+          "array": {
+            "record": "scalar",
+            "required": {
+              "id": "string"
+            }
+          }
+        },
+        "thing": {
+          "object": {
+            "kind": "string",
+            "label": "string"
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "sort": {
+          "object": {
+            "key": "string",
+            "dir": {
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          "required": [
+            "key",
+            "dir"
+          ]
+        },
+        "selectable": "boolean",
+        "selected": {
+          "array": "string"
+        },
+        "density": {
+          "enum": [
+            "default",
+            "compact"
+          ]
+        },
+        "filterable": "boolean",
+        "loading": "boolean",
+        "error": "string",
+        "empty": "string",
+        "pageSize": "number"
+      },
+      "events": {
+        "sort": "{ key, dir } or null",
+        "select": "the picked ids",
+        "open": "the row’s id",
+        "retry": "nothing"
+      },
+      "slots": [
+        "actions"
+      ]
+    },
+    "quill-rows": {
+      "part": "Rows",
+      "properties": {
+        "items": {
+          "array": {
+            "object": {
+              "label": "string",
+              "value": "string"
+            },
+            "required": [
+              "label",
+              "value"
+            ]
+          }
+        },
+        "loading": "boolean",
+        "count": "number",
+        "empty": "string",
+        "error": "string"
+      },
+      "events": {}
+    },
+    "quill-facts": {
+      "part": "Facts",
+      "properties": {
+        "items": {
+          "array": {
+            "object": {
+              "value": {
+                "oneOf": [
+                  "string",
+                  "number"
+                ]
+              },
+              "label": "string"
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          }
+        },
+        "loading": "boolean",
+        "count": "number"
+      },
+      "events": {}
+    },
+    "quill-details": {
+      "part": "Details",
+      "properties": {
+        "items": {
+          "array": {
+            "object": {
+              "label": "string",
+              "value": "string",
+              "note": "string",
+              "explained": "boolean"
+            },
+            "required": [
+              "label"
+            ]
+          }
+        },
+        "limit": "number",
+        "missing": "string"
+      },
+      "events": {}
+    },
+    "quill-state": {
+      "part": "State",
+      "properties": {
+        "kind": {
+          "enum": [
+            "empty",
+            "loading",
+            "error",
+            "offline"
+          ]
+        },
+        "heading": "string",
+        "body": "string",
+        "action": "string",
+        "size": {
+          "enum": [
+            "region",
+            "line",
+            "page"
+          ]
+        }
+      },
+      "events": {
+        "action": "nothing"
+      }
+    },
+    "quill-notice": {
+      "part": "Notice",
+      "properties": {
+        "tone": {
+          "enum": [
+            "needs",
+            "warning",
+            "refused",
+            "info"
+          ]
+        },
+        "label": "string",
+        "heading": "string",
+        "action": "string",
+        "more": "number"
+      },
+      "events": {
+        "action": "nothing"
+      },
+      "children": "text"
+    },
+    "quill-tag": {
+      "part": "Tag",
+      "properties": {
+        "label": "string",
+        "icon": "icon",
+        "removeLabel": "string",
+        "quiet": "boolean"
+      },
+      "events": {
+        "remove": "nothing"
+      }
+    },
+    "quill-button": {
+      "part": "Button",
+      "properties": {
+        "label": "string",
+        "kind": {
+          "enum": [
+            "primary",
+            "secondary",
+            "tertiary",
+            "ghost",
+            "danger"
+          ]
+        },
+        "size": {
+          "enum": [
+            "md",
+            "sm"
+          ]
+        },
+        "icon": "icon",
+        "disabled": "boolean",
+        "reason": "string",
+        "busy": "boolean",
+        "busyLabel": "string"
+      },
+      "events": {
+        "press": "nothing"
+      }
+    },
+    "quill-text-field": {
+      "part": "TextField",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "state": {
+          "enum": [
+            "idle",
+            "attention",
+            "error",
+            "warning",
+            "valid"
+          ]
+        },
+        "message": "string",
+        "value": "string",
+        "name": "string",
+        "type": {
+          "enum": [
+            "text",
+            "email",
+            "url",
+            "tel",
+            "password",
+            "search"
+          ]
+        },
+        "placeholder": "string",
+        "multiline": "boolean",
+        "rows": "number",
+        "maxLength": "number",
+        "readOnly": "boolean",
+        "busy": "boolean"
+      },
+      "events": {
+        "change": "the value",
+        "commit": "the value"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-select": {
+      "part": "Select",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "state": {
+          "enum": [
+            "idle",
+            "attention",
+            "error",
+            "warning",
+            "valid"
+          ]
+        },
+        "message": "string",
+        "options": {
+          "array": {
+            "oneOf": [
+              "string",
+              {
+                "object": {
+                  "value": "string",
+                  "label": "string",
+                  "detail": "string",
+                  "disabled": "boolean"
+                },
+                "required": [
+                  "value",
+                  "label"
+                ]
+              }
+            ]
+          }
+        },
+        "value": "string",
+        "placeholder": "string",
+        "empty": "string",
+        "name": "string",
+        "readOnly": "boolean",
+        "busy": "boolean"
+      },
+      "events": {
+        "change": "the value"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-checkbox": {
+      "part": "Checkbox",
+      "properties": {
+        "label": "string",
+        "detail": "string",
+        "value": "string",
+        "checked": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "name": "string"
+      },
+      "events": {
+        "change": "whether it is checked"
+      },
+      "mirror": {
+        "change": "checked"
+      }
+    },
+    "quill-editor": {
+      "part": "Editor",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "required": "boolean",
+        "optional": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "state": {
+          "enum": [
+            "idle",
+            "attention",
+            "error",
+            "warning",
+            "valid"
+          ]
+        },
+        "message": "string",
+        "value": "string",
+        "name": "string",
+        "placeholder": "string",
+        "rows": "number",
+        "guide": "string"
+      },
+      "events": {
+        "change": "the value",
+        "commit": "the value"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-palette": {
+      "part": "Palette",
+      "properties": {
+        "open": "boolean",
+        "placeholder": "string",
+        "query": "string",
+        "items": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string",
+              "detail": "string",
+              "meta": "string",
+              "icon": "icon",
+              "group": "string",
+              "locked": "string"
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        },
+        "none": "string",
+        "lead": "string"
+      },
+      "events": {
+        "close": "nothing",
+        "query": "the query",
+        "pick": "the item’s id"
+      },
+      "mirror": {
+        "query": "query"
+      }
+    },
+    "quill-tiles": {
+      "part": "Tiles",
+      "properties": {
+        "label": "string"
+      },
+      "events": {},
+      "children": "elements"
+    },
+    "quill-kind-tile": {
+      "part": "KindTile",
+      "properties": {
+        "kind": {
+          "enum": [
+            "collection",
+            "folder",
+            "series",
+            "document",
+            "library"
+          ]
+        },
+        "name": "string",
+        "eyebrow": "string",
+        "count": "string",
+        "state": "string",
+        "needs": "boolean",
+        "needsLabel": "string",
+        "owner": "string",
+        "locked": "string",
+        "note": "string",
+        "thing": {
+          "object": {
+            "kind": "string",
+            "id": "string",
+            "label": "string"
+          },
+          "required": [
+            "kind",
+            "id"
+          ]
+        }
+      },
+      "events": {
+        "open": "nothing"
+      }
+    },
+    "quill-add-tile": {
+      "part": "AddTile",
+      "properties": {
+        "label": "string",
+        "reason": "string"
+      },
+      "events": {
+        "press": "nothing"
+      }
+    },
+    "quill-reel": {
+      "part": "Reel",
+      "properties": {
+        "label": "string",
+        "tone": {
+          "enum": [
+            "action",
+            "new",
+            "upcoming",
+            "quiet"
+          ]
+        },
+        "items": {
+          "array": {
+            "object": {
+              "id": "string",
+              "title": "string",
+              "when": "string",
+              "urgent": "boolean",
+              "from": "string"
+            },
+            "required": [
+              "id",
+              "title"
+            ]
+          }
+        },
+        "reveal": {
+          "enum": [
+            "pull",
+            "all"
+          ]
+        },
+        "noun": "string"
+      },
+      "events": {
+        "open": "the item’s id"
+      }
+    }
+  }
+}

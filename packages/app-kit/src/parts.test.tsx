@@ -1,9 +1,12 @@
 // @vitest-environment happy-dom
-import { act, type ReactNode } from 'react';
+import { act, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { DateField, dayDistance, parseDay } from './date.js';
-import { List, Table } from './list.js';
+import { Dialog } from '@augur/kit-common';
+import { DateField, DropZone, dayDistance, parseDay } from './date.js';
+import { List, Table, relativeTime } from './list.js';
+import { Palette } from './palette.js';
+import { TimeField } from './time.js';
 import { PageHead, Section } from './page.js';
 import { Details, Notice, State } from './states.js';
 import { Refs, Tally, Timeline } from './things.js';
@@ -157,6 +160,20 @@ describe('the parts apps took from the Lit kit', () => {
       expect(drawn()[0]).toBe('Row 0000');
     });
 
+    it('shows a page at a time with Back and On, and goes back to the first on a new sort', () => {
+      draw(<Table noun="rows" pageSize={10} virtual columns={columns} rows={many} />);
+      expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(false);
+      expect(drawn()).toEqual(many.slice(0, 10).map((r) => r.name));
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^1–10 of 3,?000$/);
+      expect(button('Back: the rows before these').getAttribute('aria-disabled')).toBe('true');
+      act(() => button('On: the next rows').click());
+      expect(drawn()[0]).toBe('Row 0010');
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^11–20 of/);
+      act(() => [...document.querySelectorAll<HTMLElement>('.quill-table-head[data-allows-sorting]')][1]!.click());
+      expect(drawn()[0]).toBe('Row 2999');
+      expect(document.querySelector('.quill-table-pages')!.textContent).toMatch(/^1–10 of/);
+    });
+
     it('looks as it always did while loading or empty', () => {
       draw(<Table noun="rows" virtual columns={columns} rows={[]} empty="No rows yet." />);
       expect(document.querySelector('.quill-table')!.hasAttribute('data-virtual')).toBe(false);
@@ -271,10 +288,10 @@ describe('picking tags', () => {
     expect(tagChoices(people, [], 'ada lee', true).some((c) => c.add)).toBe(false);
   });
 
-  it('shows the chosen as tags, takes one off with its ×, and says when it’s full', () => {
+  it('shows the chosen as ruled words, takes one off with its ×, and says when it’s full', () => {
     const change = vi.fn();
     draw(<TagPicker label="Developers" options={people} defaultValue={['u1', 'u2']} max={2} onChange={change} />);
-    expect([...document.querySelectorAll('.augur-tag-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
+    expect([...document.querySelectorAll('.quill-tag-picker-word')].map((t) => t.textContent)).toEqual(['Nora Briggs', 'Ben Norris']);
     expect(document.querySelector('input')!.placeholder).toContain('most it takes: 2');
     act(() => button('Remove Nora Briggs').click());
     expect(change).toHaveBeenLastCalledWith(['u2']);
@@ -315,7 +332,7 @@ describe('lifecycles and people', () => {
     expect(rows[1]).toMatchObject({ disabled: true, reason: 'Already chosen.' });
   });
 
-  it('looks after typing, and gathers what’s picked as chips', async () => {
+  it('looks after typing, and gathers what’s picked in a list under it', async () => {
     const search = vi.fn(async () => [
       { kind: 'person' as const, id: 'u1', name: 'Nora Briggs', detail: 'Ops' },
       { kind: 'team' as const, id: 't1', name: 'Ops', size: 4 },
@@ -333,7 +350,9 @@ describe('lifecycles and people', () => {
     expect(rows).toHaveLength(1);
     await act(async () => rows[0]!.click());
     expect(change).toHaveBeenLastCalledWith([{ kind: 'person', id: 'u1', name: 'Nora Briggs', detail: 'Ops' }]);
-    expect(document.querySelector('.quill-ref-name')!.textContent).toBe('Nora Briggs');
+    expect(document.querySelector('.quill-people-one .augur-person-text')!.textContent).toContain('Nora Briggs');
+    await act(async () => document.querySelector<HTMLElement>('[aria-label="Take off Nora Briggs"]')!.click());
+    expect(change).toHaveBeenLastCalledWith([]);
     expect(document.querySelector('input')!.value).toBe('');
   });
 });
@@ -348,17 +367,25 @@ describe('filtering', () => {
     expect(filterValue(filters, { tag: ['t1', 'gone'], since: [], other: ['x'] })).toEqual({ tag: ['t1'] });
   });
 
-  it('counts, shows what’s on as tags, takes one off, and clears them all', () => {
+  it('counts, says what’s on in words on its ruled line, and clears it all', () => {
     const change = vi.fn();
     draw(<FilterBar label="Filter documents" filters={filters} value={{ tag: ['t1', 't2'] }} sorts={[{ value: 'title', label: 'Title' }]} sort="title" count={3} noun={['document', 'documents']} onChange={change} />);
     expect(text()).toContain('3 documents');
-    expect(text()).toContain('Sort: Title');
     expect(button('Tags, 2 chosen')).toBeDefined();
-    expect([...document.querySelectorAll('.quill-filter-chips .augur-tag-word')].map((t) => t.textContent)).toEqual(['Travel', 'Leave']);
-    act(() => button('Remove Tags: Travel').click());
-    expect(change).toHaveBeenLastCalledWith({ tag: ['t2'] }, 'title');
+    expect([...document.querySelectorAll('.quill-filter-words')].map((t) => t.textContent)).toEqual(['Travel, Leave', 'any', 'Title']);
     act(() => button('Clear all').click());
     expect(change).toHaveBeenLastCalledWith({}, 'title');
+  });
+
+  it('starts with the saved views and says which is on', async () => {
+    const view = vi.fn();
+    draw(<FilterBar label="Filter documents" filters={filters} value={{}} views={[{ value: 'mine', label: 'Mine' }, { value: 'all', label: 'Everything' }]} view="mine" onView={view} onChange={() => {}} />);
+    expect(document.querySelector('.quill-filter-view')!.textContent).toBe('Mine');
+    expect(document.querySelector('.quill-filter-clear')).toBeNull();
+    await act(async () => (document.querySelector('.quill-filter-open') as HTMLElement).click());
+    const all = [...document.querySelectorAll<HTMLElement>('[role="menuitemradio"]')].find((i) => i.textContent?.includes('Everything'))!;
+    await act(async () => all.click());
+    expect(view).toHaveBeenLastCalledWith('all');
   });
 
   it('adds a choice from a filter’s menu, and replaces it for a single one', async () => {
@@ -419,5 +446,188 @@ describe('writing and trees', () => {
     expect(rows()).toEqual(['Policies', 'HR', 'IT', 'Other']);
     act(() => (document.querySelectorAll('[role="row"]')[2] as HTMLElement).click());
     expect(chosen).toHaveBeenCalledWith(expect.objectContaining({ id: 'it' }));
+  });
+});
+
+describe('fields in a Dialog', () => {
+  const primary = () => [...document.querySelectorAll('button')].find((b) => b.textContent === 'Go')!;
+  const enter = (el: HTMLElement) => act(async () => void el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+  const type = (input: HTMLInputElement, value: string) =>
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+  it('Enter in a PeoplePicker looks, and leaves the Dialog alone', async () => {
+    const onClose = vi.fn();
+    const search = vi.fn(async () => []);
+    draw(<Dialog open heading="Share" actionLabel="Go" onClose={onClose} fields={<PeoplePicker label="With" search={search} />} />);
+    const input = document.querySelector('input')!;
+    type(input, 'Nora');
+    await enter(input);
+    expect(search).toHaveBeenCalledWith('Nora');
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Enter in a DateField presses the primary with the day just typed', async () => {
+    const onClose = vi.fn();
+    const onChange = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<DateField label="Due" name="due" quick={[]} onChange={onChange} now={new Date(2026, 10, 6)} />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '13 nov');
+    await enter(input);
+    expect(onClose).toHaveBeenCalledWith({ due: '2026-11-13' });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('Enter in a DateField holds on a day it can’t read', async () => {
+    const onClose = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<DateField label="Due" name="due" quick={[]} />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, 'soonish');
+    await enter(input);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(text()).toContain('Try “13 Nov”');
+  });
+
+  it('Enter in a TimeField presses the primary with the time just typed', async () => {
+    const onClose = vi.fn();
+    draw(<Dialog open heading="Move" actionLabel="Go" onClose={onClose} fields={<TimeField label="At" name="at" />} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '9am');
+    await enter(input);
+    expect(onClose).toHaveBeenCalledWith({ at: '09:00' });
+  });
+
+  it('a second Enter in a DateField keeps the day', async () => {
+    const onChange = vi.fn();
+    draw(<DateField label="Due" quick={[]} onChange={onChange} now={new Date(2026, 10, 6)} />);
+    const input = document.querySelector('input')!;
+    act(() => input.focus());
+    type(input, '13 nov');
+    await enter(input);
+    await enter(input);
+    expect(onChange.mock.calls).toEqual([['2026-11-13']]);
+  });
+
+  it.each([
+    ['TagPicker', <TagPicker key="f" label="Tags" name="f" required disabled options={[{ value: 'a', label: 'A' }]} />],
+    ['DateField', <DateField key="f" label="Due" name="f" quick={[]} required disabled />],
+    ['TimeField', <TimeField key="f" label="At" name="f" required disabled />],
+  ])('a required, disabled, empty %s doesn’t hold the primary', async (_name, field) => {
+    const onSubmit = vi.fn();
+    draw(<Dialog open heading="Tag" actionLabel="Go" onClose={() => {}} onSubmit={onSubmit} fields={field} />);
+    await act(async () => primary().click());
+    expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
+  it('holds the primary until a required TagPicker has a tag, and says so', async () => {
+    const onSubmit = vi.fn();
+    const Form = () => {
+      const [tags, setTags] = useState<string[]>([]);
+      return (
+        <Dialog
+          open
+          heading="Tag"
+          actionLabel="Go"
+          onClose={() => {}}
+          onSubmit={onSubmit}
+          fields={
+            <>
+              <TagPicker label="Tags" name="tags" required options={[{ value: 'a', label: 'A' }]} value={tags} onChange={setTags} />
+              <button type="button" onClick={() => setTags(['a'])}>
+                Add
+              </button>
+            </>
+          }
+        />
+      );
+    };
+    draw(<Form />);
+    await act(async () => primary().click());
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(document.querySelector<HTMLElement>('.quill-tag-picker')!.dataset.state).toBe('attention');
+    expect(text()).toContain('Needs you.');
+    await act(async () => button('Add').click());
+    expect(text()).not.toContain('Needs you.');
+    await act(async () => primary().click());
+    expect(onSubmit).toHaveBeenCalledWith({ tags: 'a' });
+  });
+});
+
+describe('saying why', () => {
+  it('a DateField with a reason stays focusable, says why and can’t be changed', () => {
+    const onChange = vi.fn();
+    draw(<DateField label="Due" disabled reason="Only its owner can move the date." defaultValue="2026-11-13" onChange={onChange} />);
+    const input = document.querySelector('input')!;
+    expect(input.disabled).toBe(false);
+    expect(input.readOnly).toBe(true);
+    expect(input.getAttribute('aria-disabled')).toBe('true');
+    expect(text()).toContain('Only its owner can move the date.');
+    act(() => input.focus());
+    act(() => void input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })));
+    act(() => input.blur());
+    expect(onChange).not.toHaveBeenCalled();
+    expect(input.value).toContain('13');
+  });
+
+  it('a DropZone with a reason keeps its key focusable, says why and takes nothing', () => {
+    draw(<DropZone disabled reason="This library is read-only." />);
+    const key = button('Choose files');
+    expect(key.disabled).toBe(false);
+    expect(key.getAttribute('aria-disabled')).toBe('true');
+    expect(text()).toContain('This library is read-only.');
+    const open = vi.spyOn(document.querySelector<HTMLInputElement>('input[type="file"]')!, 'click');
+    act(() => key.click());
+    expect(open).not.toHaveBeenCalled();
+  });
+});
+
+describe('the palette', () => {
+  const items = ['One', 'Two', 'Three'].map((label) => ({ id: label, label }));
+  const press = (key: string) => act(() => void document.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })));
+  const palette = (list: typeof items, onPick = vi.fn()) => <Palette open onClose={() => {}} placeholder="Find" query="" onQuery={() => {}} items={list} onPick={onPick} />;
+
+  it('keeps the chosen row in sight as the keys move it', () => {
+    const scrolled: string[] = [];
+    const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(function (this: HTMLElement) {
+      scrolled.push(this.textContent ?? '');
+    });
+    draw(palette(items));
+    press('ArrowDown');
+    press('ArrowDown');
+    expect(scrolled.at(-1)).toContain('Three');
+    spy.mockRestore();
+  });
+
+  it('marks the row Enter will open when the list shrinks under it', () => {
+    const onPick = vi.fn();
+    draw(palette(items, onPick));
+    press('ArrowDown');
+    press('ArrowDown');
+    act(() => root!.render(palette(items.slice(0, 2), onPick)));
+    expect(document.querySelector('[role="option"][aria-selected="true"]')?.textContent).toContain('Two');
+    press('Enter');
+    expect(onPick).toHaveBeenCalledWith(items[1]);
+  });
+});
+
+describe('dates in a table', () => {
+  const now = Date.parse('2026-11-06T12:00:00Z');
+  it.each([
+    ['2026-11-06T12:00:10Z', 'just now'],
+    ['2026-11-06T12:20:00Z', 'in 20 min'],
+    ['2026-11-06T15:00:00Z', 'in 3 h'],
+    ['2026-11-09T12:00:00Z', 'in 3 d'],
+    ['2026-11-06T11:40:00Z', '20 min ago'],
+  ])('reads %s as %s', (value, said) => {
+    expect(relativeTime(value, now)).toBe(said);
+  });
+
+  it('gives the date for anything a month or more away', () => {
+    expect(relativeTime('2027-01-06T12:00:00Z', now)).toContain('2027');
   });
 });

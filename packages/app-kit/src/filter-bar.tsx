@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Button as AriaButton, Input, Menu, MenuItem, MenuTrigger, Popover, SearchField, type Key, type Selection } from 'react-aria-components';
-import { Icon, Tag, cx, type IconName, type SelectOption } from '@augur/kit-common';
+import { Button as AriaButton, Menu, MenuItem, MenuTrigger, Popover, type Key, type Selection } from 'react-aria-components';
+import { Icon, SearchField, cx, type IconName, type SelectOption } from '@augur/kit-common';
 
 /** One way to narrow a list: its button in the bar, and the choices it opens. */
 export interface FilterDef {
@@ -37,6 +37,12 @@ export interface FilterBarProps {
   onChange: (value: FilterValue, sort: string) => void;
   /** After the count: the page's own buttons, such as Save view. */
   actions?: ReactNode;
+  /** Saved views, at the start of the line: "My open runs", "Failed this week". */
+  views?: SelectOption[];
+  /** The view on now, by value. */
+  view?: string;
+  /** A view was picked: the page sets its filters and sort from it. */
+  onView?: (view: string) => void;
   className?: string;
 }
 
@@ -53,14 +59,15 @@ function Choices({ id, label, options, chosen, single, search, button, onPick }:
         if (!o) setWord('');
       }}
     >
-      <AriaButton className="quill-filter-open" data-on={chosen.length && id !== 'sort' ? '' : undefined} aria-label={id === 'sort' ? undefined : chosen.length ? `${label}, ${chosen.length} chosen` : label}>
+      <AriaButton className="quill-filter-open" data-on={chosen.length && id !== 'sort' && id !== 'view' ? '' : undefined} aria-label={id === 'sort' || id === 'view' ? undefined : chosen.length ? `${label}, ${chosen.length} chosen` : label}>
         {button}
       </AriaButton>
-      <Popover className="augur-popover augur-menu quill-filter-panel" placement="bottom start" offset={6}>
+      <Popover className="augur-popover augur-menu augur-sheet-list quill-filter-panel" placement="bottom start" offset={1}>
+        <p className="augur-sheet-heading" aria-hidden="true">
+          {label}
+        </p>
         {search ? (
-          <SearchField aria-label={`Find a ${label.toLocaleLowerCase()}`} value={word} onChange={setWord} className="quill-filter-find" autoFocus>
-            <Input className="augur-input" placeholder="Find…" />
-          </SearchField>
+          <SearchField label={`Find a ${label.toLocaleLowerCase()}`} placeholder="Find…" value={word} onChange={setWord} className="quill-filter-find" autoFocus />
         ) : null}
         <Menu
           aria-label={label}
@@ -97,50 +104,73 @@ function Choices({ id, label, options, chosen, single, search, button, onPick }:
   );
 }
 
+/** What a filter has on, in its own words: two at most, then how many more. */
+const wordsFor = (f: FilterDef, chosen: string[]) => {
+  const words = chosen.map((v) => f.options.find((o) => o.value === v)?.label).filter(Boolean) as string[];
+  return words.length > 2 ? `${words.slice(0, 2).join(', ')} +${words.length - 2}` : words.join(', ');
+};
+
 /**
- * The bar above a long list: a button for each way to narrow it, a sort, how
- * many there are, and room for the page's own actions (Save view). What's on
- * shows below as tags, each with its ×, and one press clears them all. The
- * bar holds no list itself; it says what changed and the page asks again.
- * Keys come from React Aria's menu: arrows move, Enter or Space picks, Esc
- * closes and goes back to the button.
+ * The bar above a long list, as one ruled line (picked 6 Nov 2026): saved views
+ * at the start, then each way to narrow it as its name in small mono capitals
+ * and what it has on in words ("any" when nothing), how many match, the sort,
+ * and room for the page's own actions (Save view). Press a part to drop its
+ * Sheet of choices under it; nothing else needs a row of chips. One press
+ * clears everything. The bar holds no list itself; it says what changed and
+ * the page asks again. Keys come from React Aria's menu: arrows move, Enter or
+ * Space picks, Esc closes and goes back to the part.
  */
-export function FilterBar({ label, filters, value, sorts = [], sort = '', count, noun = ['item', 'items'], busy, onChange, actions, className }: FilterBarProps) {
-  const on = filters.flatMap((f) => (value[f.id] ?? []).map((v) => ({ filter: f, option: f.options.find((o) => o.value === v) })).filter((c) => c.option));
+export function FilterBar({ label, filters, value, sorts = [], sort = '', count, noun = ['item', 'items'], busy, onChange, actions, views = [], view, onView, className }: FilterBarProps) {
+  const anyOn = filters.some((f) => (value[f.id] ?? []).length);
   const sortLabel = sorts.find((s) => s.value === sort)?.label ?? sorts[0]?.label;
+  const viewLabel = views.find((v) => v.value === view)?.label;
   const set = (id: string, values: string[]) => onChange(filterValue(filters, { ...value, [id]: values }), sort);
   return (
     <div className={cx('quill-filter-bar', className)} data-busy={busy || undefined}>
       <div className="quill-filter-row" role="group" aria-label={label}>
-        <div className="quill-filter-filters">
-          {filters.map((f) => {
-            const n = (value[f.id] ?? []).length;
-            return (
-              <Choices
-                key={f.id}
-                id={f.id}
-                label={f.label}
-                options={f.options}
-                chosen={value[f.id] ?? []}
-                single={f.single}
-                search={f.search}
-                onPick={(v) => set(f.id, v)}
-                button={
-                  <>
-                    {f.label}
-                    {n ? (
-                      <span className="quill-filter-n" aria-hidden="true">
-                        {n}
-                      </span>
-                    ) : null}
-                    <Icon name="chevron-down" size={16} />
-                  </>
-                }
-              />
-            );
-          })}
-        </div>
+        {views.length ? (
+          <Choices
+            id="view"
+            label="Saved views"
+            options={views}
+            chosen={view ? [view] : []}
+            single
+            onPick={(v) => v[0] && onView?.(v[0])}
+            button={
+              <>
+                <span className="quill-filter-key">View</span>
+                <span className="quill-filter-words quill-filter-view">{viewLabel ?? <span className="quill-filter-any">none</span>}</span>
+              </>
+            }
+          />
+        ) : null}
+        {filters.map((f) => {
+          const chosen = value[f.id] ?? [];
+          return (
+            <Choices
+              key={f.id}
+              id={f.id}
+              label={f.label}
+              options={f.options}
+              chosen={chosen}
+              single={f.single}
+              search={f.search}
+              onPick={(v) => set(f.id, v)}
+              button={
+                <>
+                  <span className="quill-filter-key">{f.label}</span>
+                  <span className="quill-filter-words">{chosen.length ? wordsFor(f, chosen) : <span className="quill-filter-any">any</span>}</span>
+                </>
+              }
+            />
+          );
+        })}
         <div className="quill-filter-end">
+          {anyOn ? (
+            <button type="button" className="quill-filter-clear" onClick={() => onChange({}, sort)}>
+              Clear all
+            </button>
+          ) : null}
           {count === undefined ? null : (
             <span className="quill-filter-count" aria-live="polite">
               {count} {count === 1 ? noun[0] : noun[1]}
@@ -156,8 +186,8 @@ export function FilterBar({ label, filters, value, sorts = [], sort = '', count,
               onPick={(v) => v[0] && onChange(value, v[0])}
               button={
                 <>
-                  <Icon name="sort" size={16} />
-                  Sort: <strong>{sortLabel}</strong>
+                  <span className="quill-filter-key">Sort</span>
+                  <span className="quill-filter-words">{sortLabel}</span>
                 </>
               }
             />
@@ -165,16 +195,6 @@ export function FilterBar({ label, filters, value, sorts = [], sort = '', count,
           {actions}
         </div>
       </div>
-      {on.length ? (
-        <div className="quill-filter-chips">
-          {on.map(({ filter, option }) => (
-            <Tag key={`${filter.id}:${option!.value}`} label={option!.label} icon={option!.icon} removeLabel={`${filter.label}: ${option!.label}`} onRemove={() => set(filter.id, (value[filter.id] ?? []).filter((v) => v !== option!.value))} />
-          ))}
-          <button type="button" className="quill-filter-clear" onClick={() => onChange({}, sort)}>
-            Clear all
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -1,0 +1,109 @@
+/**
+ * The properties and event details of Quill's remote elements, as an app's sandbox sets them. They
+ * mirror the kit parts' own props where those can cross a bridge: data, never functions or markup
+ * (a part's markup props are slots, its callbacks are events).
+ */
+import type { QuillRemoteElementName } from './vocabulary.js';
+
+type Field = {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  optional?: boolean;
+  disabled?: boolean;
+  reason?: string;
+  state?: 'idle' | 'attention' | 'error' | 'warning' | 'valid';
+  message?: string;
+};
+
+type Id = { id: string; label: string };
+type Action = Id & { disabled?: boolean; reason?: string };
+
+export interface RemoteListItem {
+  id: string;
+  title: string;
+  detail?: string;
+  meta?: string;
+  status?: string;
+  icon?: string;
+  group?: string;
+  actions?: Action[];
+  disabled?: boolean;
+  reason?: string;
+  /** The row is a thing with actions, for the shell's radial menu: its kind, as `contributes.radial` names it. */
+  thing?: RemoteThing;
+}
+
+/** A thing with actions (the app contract, 6.4): its kind, and its id and label if not the item's own. */
+export interface RemoteThing {
+  kind: string;
+  id?: string;
+  label?: string;
+}
+
+export interface RemoteTableColumn {
+  key: string;
+  label: string;
+  kind?: 'text' | 'number' | 'date' | 'status';
+  align?: 'start' | 'end';
+  wrap?: boolean;
+  sortable?: boolean;
+  sortFirst?: 'asc' | 'desc';
+}
+
+export interface QuillRemoteProperties {
+  'quill-page-head': { trail?: Id[]; eyebrow?: string; heading: string; summary?: string; actions?: (Action & { kind?: string; danger?: boolean })[]; level?: number };
+  'quill-section': { label: string; count?: number; limit?: number; action?: string; why?: string; level?: number };
+  'quill-selection-bar': { count: number; noun: [string, string]; actions: (Action & { danger?: boolean })[] };
+  'quill-about': { what: string; owner?: { name: string; detail?: string; tone?: 'you' | 'team' | 'department' | 'org' }; floor?: string };
+  'quill-more': { shown: number; total: number; noun: string; step?: number; busy?: boolean };
+  'quill-list': { label: string; noun?: [string, string]; items: RemoteListItem[]; density?: 'comfortable' | 'compact'; loading?: boolean; error?: string; empty?: string; bar?: boolean; look?: 'well' | 'plain' };
+  'quill-table': { label?: string; noun?: string; columns: RemoteTableColumn[]; rows: ({ id: string } & Record<string, string | number | boolean | null>)[]; sort?: { key: string; dir: 'asc' | 'desc' } | null; selectable?: boolean; selected?: string[]; density?: 'default' | 'compact'; filterable?: boolean; loading?: boolean; error?: string; empty?: string; pageSize?: number; thing?: { kind: string; label?: string } };
+  'quill-rows': { items?: { label: string; value: string }[]; loading?: boolean; count?: number; empty?: string; error?: string };
+  'quill-facts': { items?: { value: string | number; label: string }[]; loading?: boolean; count?: number };
+  'quill-details': { items: { label: string; value?: string; note?: string; explained?: boolean }[]; limit?: number; missing?: string };
+  'quill-state': { kind?: 'empty' | 'loading' | 'error' | 'offline'; heading: string; body?: string; action?: string; size?: 'region' | 'line' | 'page' };
+  'quill-notice': { tone?: 'needs' | 'warning' | 'refused' | 'info'; label?: string; heading?: string; action?: string; more?: number };
+  'quill-tag': { label: string; icon?: string; removeLabel?: string; quiet?: boolean };
+  'quill-button': { label: string; kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger'; size?: 'md' | 'sm'; icon?: string; disabled?: boolean; reason?: string; busy?: boolean; busyLabel?: string };
+  'quill-text-field': Field & { value?: string; name?: string; type?: 'text' | 'email' | 'url' | 'tel' | 'password' | 'search'; placeholder?: string; multiline?: boolean; rows?: number; maxLength?: number; readOnly?: boolean; busy?: boolean };
+  'quill-select': Field & { options: ({ value: string; label: string; detail?: string; disabled?: boolean } | string)[]; value?: string; placeholder?: string; empty?: string; name?: string; readOnly?: boolean; busy?: boolean };
+  'quill-checkbox': { label: string; detail?: string; value?: string; checked?: boolean; disabled?: boolean; reason?: string; name?: string };
+  'quill-editor': Field & { value?: string; name?: string; placeholder?: string; rows?: number; guide?: string };
+  'quill-palette': { open: boolean; placeholder: string; query: string; items: { id: string; label: string; detail?: string; meta?: string; icon?: string; group?: string; locked?: string }[]; none?: string; lead?: string };
+  'quill-tiles': { label: string };
+  'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing & { id: string } };
+  'quill-add-tile': { label: string; reason?: string };
+  'quill-reel': { label: string; tone?: 'action' | 'new' | 'upcoming' | 'quiet'; items: { id: string; title: string; when?: string; urgent?: boolean; from?: string }[]; reveal?: 'pull' | 'all'; noun?: string };
+}
+
+/** Each event's detail, the value the listener's `event.detail` holds. */
+export interface QuillRemoteEvents {
+  'quill-page-head': { trail: string; action: string };
+  'quill-section': { action: undefined };
+  'quill-selection-bar': { action: string; clear: undefined };
+  'quill-about': Record<never, never>;
+  'quill-more': { more: undefined };
+  'quill-list': { open: string; action: { item: string; action: string }; retry: undefined };
+  'quill-table': { sort: { key: string; dir: 'asc' | 'desc' } | null; select: string[]; open: string; retry: undefined };
+  'quill-rows': Record<never, never>;
+  'quill-facts': Record<never, never>;
+  'quill-details': Record<never, never>;
+  'quill-state': { action: undefined };
+  'quill-notice': { action: undefined };
+  'quill-tag': { remove: undefined };
+  'quill-button': { press: undefined };
+  'quill-text-field': { change: string; commit: string };
+  'quill-select': { change: string };
+  'quill-checkbox': { change: boolean };
+  'quill-editor': { change: string; commit: string };
+  'quill-palette': { close: undefined; query: string; pick: string };
+  'quill-tiles': Record<never, never>;
+  'quill-kind-tile': { open: undefined };
+  'quill-add-tile': { press: undefined };
+  'quill-reel': { open: string };
+}
+
+// Every element has both, and nothing else does.
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+export const typesCoverVocabulary: Same<keyof QuillRemoteProperties, QuillRemoteElementName> & Same<keyof QuillRemoteEvents, QuillRemoteElementName> = true;

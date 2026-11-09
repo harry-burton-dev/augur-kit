@@ -1,8 +1,8 @@
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { LabelContext, Provider, TextContext } from 'react-aria-components';
 import MarkdownIt from 'markdown-it';
 import { getSchema } from '@tiptap/core';
-import { EditorContent, useEditor, useEditorState, type Editor as TiptapEditor } from '@tiptap/react';
+import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor, useEditorState, type Editor as TiptapEditor, type ReactNodeViewProps } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
@@ -32,7 +32,21 @@ const KINDS: RefKind[] = ['entity', 'document', 'intent', 'person', 'team'];
 const GROUP: Record<RefKind, string> = { person: 'People', team: 'Teams', entity: 'Things', intent: 'Intents', document: 'Documents' };
 
 /** A mention that also knows what kind of thing it points at. */
+/** A mention in the text: a square chip, its kind's icon and its name (Sheet on select, picked 6 Nov 2026). */
+function MentionChip({ node, selected }: ReactNodeViewProps) {
+  const kind = String(node.attrs.kind ?? 'person') as RefKind;
+  return (
+    <NodeViewWrapper as="span" className={cx('quill-mention', selected && 'ProseMirror-selectednode')} data-kind={kind} data-type="mention" data-id={node.attrs.id}>
+      <Icon name={refIcon({ kind })} size={12} />
+      {String(node.attrs.label ?? node.attrs.id ?? '')}
+    </NodeViewWrapper>
+  );
+}
+
 const AugurMention = Mention.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(MentionChip, { as: 'span', className: 'quill-mention-view' });
+  },
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -235,6 +249,8 @@ export default function EditorEngine({
           onKeyDown: ({ event }: SuggestionKeyDownProps) => {
             const l = list.current;
             if (event.key === 'Escape') {
+              // Returning true only prevents the default: a Dialog around it would still close.
+              event.stopPropagation();
               l.close();
               return true;
             }
@@ -302,13 +318,14 @@ export default function EditorEngine({
         list: Boolean(e?.isActive('bulletList')),
         numbered: Boolean(e?.isActive('orderedList')),
         quote: Boolean(e?.isActive('blockquote')),
+        from: e ? e.state.selection.from : 0,
       };
     },
   });
 
   useFieldCheck({
     check: () => {
-      if (required && editor?.isEmpty) {
+      if (required && !disabled && editor?.isEmpty) {
         setCheck({ state: 'attention', message: NEEDS_YOU });
         return false;
       }
@@ -373,10 +390,25 @@ export default function EditorEngine({
   const bar: [kind: 'bold' | 'italic' | 'list' | 'numbered' | 'quote', words: string, on: boolean, face: ReactNode][] = [
     ['bold', 'Bold (Ctrl B)', Boolean(view?.bold), <b key="b">B</b>],
     ['italic', 'Italic (Ctrl I)', Boolean(view?.italic), <i key="i">I</i>],
-    ['list', 'List', Boolean(view?.list), 'List'],
+    ['list', 'List', Boolean(view?.list), <Icon key="l" name="list" size={14} />],
     ['numbered', 'Numbered list', Boolean(view?.numbered), '1.'],
-    ['quote', 'Quote', Boolean(view?.quote), 'Quote'],
+    ['quote', 'Quote', Boolean(view?.quote), <span key="q" className="quill-editor-quote">“</span>],
   ];
+  // The Sheet rises just over the line where the selection starts, kept inside the field.
+  const box = useRef<HTMLDivElement>(null);
+  const [barAt, setBarAt] = useState({ left: 0, top: 0 });
+  const selecting = Boolean(view?.selecting && !disabled);
+  const from = view?.from ?? 0;
+  useLayoutEffect(() => {
+    if (!selecting || !editor || !box.current) return;
+    try {
+      const at = editor.view.coordsAtPos(from);
+      const edge = box.current.getBoundingClientRect();
+      setBarAt({ left: Math.max(0, at.left - edge.left), top: Math.max(0, at.top - edge.top) });
+    } catch {
+      setBarAt({ left: 0, top: 0 });
+    }
+  }, [selecting, from, editor]);
   let last = '';
   return (
     <div className={cx('augur-field augur-control relative quill-editor', className)} data-state={shown.state} data-unavailable={disabled || undefined}>
@@ -389,9 +421,9 @@ export default function EditorEngine({
         <FieldHead label={label} required={required} optional={optional} />
         <FieldHint hint={hint} />
       </Provider>
-      <div className="augur-field-box quill-editor-box">
-        {view?.selecting && !disabled ? (
-          <div className="quill-editor-bar" role="toolbar" aria-label="Format the selection">
+      <div ref={box} className="augur-field-box quill-editor-box">
+        {selecting ? (
+          <div className="quill-editor-bar" role="toolbar" aria-label="Format the selection" style={{ '--bar-at': `${barAt.left}px`, '--bar-top': `${barAt.top}px` } as CSSProperties}>
             {bar.map(([kind, words, on, face]) => (
               <button key={kind} type="button" aria-label={words.replace(/ \(.*\)$/, '')} title={words} aria-pressed={on} onMouseDown={keep} onClick={() => format(kind)}>
                 {face}

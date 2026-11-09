@@ -3,6 +3,7 @@ import { floorBeside, floorDirection, floorKindOf, floorMeaning, type FloorDirec
 import type { Water } from './water.js';
 import { arcOrder, arcSlot } from './shell-menu.js';
 import { backgrounds, type BackgroundChoice } from './background.js';
+import { UNDER_CAP, type FrameUnderItem } from './frame.js';
 
 export type NotificationLevel = 'needs' | 'info' | 'running' | 'done' | 'failed';
 
@@ -52,6 +53,10 @@ export interface ShellPage {
   id: string;
   name: string;
   icon: string;
+  /** Where it opens, below the app's own address (a place of an app on the app contract). */
+  path?: string;
+  /** The app fills what sits under it at run time; the host puts that in `ShellModel.under`. */
+  fills?: boolean;
 }
 
 /** A group of apps: one tile on the desktop's app bar, whose start menu lists them. */
@@ -203,6 +208,7 @@ export interface ShellParts {
  * `<Shell>` draws it and redraws on every change.
  *
  * Events: ui-toggle `{ open }`, ui-open-app `{ id }`, ui-home, ui-page `{ app, id }`,
+ * ui-path `{ app, page, path }` (a thing under a place, or "and n more"),
  * ui-close-app `{ id }`, ui-bar-hint,
  * ui-open-notification `{ notification }`, ui-notification-action
  * `{ notification, index }`, ui-notifications `{ notifications, muted }`,
@@ -248,6 +254,18 @@ export class ShellModel extends EventTarget {
   running: string[] = [];
   /** The open app's page, by id; empty is its first. */
   page = '';
+  /**
+   * Where in the open app the person is, below its own address, when the host knows it: marks the
+   * thing under a place that is open. Cleared on a page, an app or Home.
+   */
+  path = '';
+  /**
+   * What each app put under its places (`ctx.frame.under`), by app id, then place id. The host owns it and
+   * sets it from the app's session; closing an app drops its entry, so a reopened app starts empty.
+   */
+  under: Record<string, Record<string, FrameUnderItem[]>> = {};
+  /** How many things show under one place: the deployment's number, 50 unless it says. */
+  underCap = UNDER_CAP;
   /** The part of the open app you're in, said under its name; empty says only the app. */
   area = '';
   /**
@@ -767,7 +785,10 @@ export class ShellModel extends EventTarget {
 
   openApp(id: string) {
     if (!this.running.includes(id)) this.running = [...this.running, id];
-    if (id !== this.current) this.page = '';
+    if (id !== this.current) {
+      this.page = '';
+      this.path = '';
+    }
     this.setCurrent(id);
     this.emit('ui-open-app', { id });
     this.close();
@@ -777,6 +798,7 @@ export class ShellModel extends EventTarget {
   goHome() {
     this.current = '';
     this.page = '';
+    this.path = '';
     this.emit('ui-home', {});
     this.close();
   }
@@ -784,15 +806,34 @@ export class ShellModel extends EventTarget {
   /** One of the open app's pages, from the rail. */
   openPage(id: string) {
     this.page = id;
+    this.path = '';
     this.emit('ui-page', { app: this.current, id });
+    this.requestUpdate();
+  }
+
+  /**
+   * A thing under one of the open app's places, or "and n more", from the rail: its path below the app's
+   * own address, and the place it sits under.
+   */
+  openPath(path: string, page?: string) {
+    if (page) this.page = page;
+    this.path = path;
+    this.emit('ui-path', { app: this.current, page: this.page || this.openNow?.pages?.[0]?.id || '', path });
+    this.requestUpdate();
   }
 
   /** Closes an open app; if it was the one in front, the last one opened before it comes forward, or the desktop. */
   closeApp(id: string) {
     this.running = this.running.filter((a) => a !== id);
+    if (id in this.under) {
+      const rest = { ...this.under };
+      delete rest[id];
+      this.under = rest;
+    }
     if (this.current === id) {
       this.current = this.running[this.running.length - 1] ?? '';
       this.page = '';
+      this.path = '';
     }
     this.emit('ui-close-app', { id });
   }

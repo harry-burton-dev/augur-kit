@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { ComboBox, Input, ListBox, ListBoxItem, Popover, type Key } from 'react-aria-components';
-import { FieldHead, FieldHint, Icon, Tag, cx, useFieldCheck, useReason, useValue, type FieldProps, type IconName, type SelectOption } from '@augur/kit-common';
+import { FieldHead, FieldHint, Icon, NEEDS_YOU, cx, useFieldCheck, useMessage, useReason, useValue, type FieldProps, type IconName, type SelectOption } from '@augur/kit-common';
 
 /** A tag to pick from. `detail` is a quiet word beside it, such as an email. */
 export type TagOption = SelectOption & { icon?: IconName };
@@ -43,7 +43,19 @@ export function TagPicker({ label, hint, required, optional, disabled, reason, c
   const input = useRef<HTMLInputElement>(null);
   const { reasoned, describe, caption } = useReason(disabled, reason);
   const full = max > 0 && chosen.length >= max;
-  useFieldCheck({ check: () => true, focus: () => input.current?.focus(), name, value: () => chosen.join(',') });
+  const [asked, setAsked] = useState(false);
+  const gap = Boolean(asked && required && !chosen.length);
+  const { describedBy, line } = useMessage(gap ? NEEDS_YOU : undefined);
+  useFieldCheck({
+    check: () => {
+      if (!required || chosen.length || disabled) return true;
+      setAsked(true);
+      return false;
+    },
+    focus: () => input.current?.focus(),
+    name,
+    value: () => chosen.join(','),
+  });
   const choices = full ? [] : tagChoices(options, chosen, typed, Boolean(onCreate));
   const labelOf = (v: string) => options.find((o) => o.value === v)?.label ?? v;
   const pick = (key: Key | null) => {
@@ -57,6 +69,7 @@ export function TagPicker({ label, hint, required, optional, disabled, reason, c
   return (
     <ComboBox
       className={cx('augur-field augur-control relative quill-tag-picker', className)}
+      data-state={gap ? 'attention' : undefined}
       data-unavailable={disabled || undefined}
       items={choices}
       inputValue={typed}
@@ -68,26 +81,37 @@ export function TagPicker({ label, hint, required, optional, disabled, reason, c
       isDisabled={disabled && !reasoned}
       isReadOnly={reasoned}
       isRequired={required}
+      isInvalid={gap}
+      validationBehavior="aria"
       aria-label={label}
     >
       <FieldHead label={label} required={required} optional={optional} />
       <FieldHint hint={hint} />
       <div className="augur-field-box quill-tag-picker-box" onClick={() => input.current?.focus()}>
         {chosen.map((v) => (
-          <Tag key={v} label={labelOf(v)} onRemove={disabled ? undefined : () => setChosen(chosen.filter((c) => c !== v))} />
+          <span key={v} className="quill-tag-picker-word">
+            {labelOf(v)}
+            {disabled ? null : (
+              <button type="button" aria-label={`Remove ${labelOf(v)}`} onClick={() => setChosen(chosen.filter((c) => c !== v))}>
+                <Icon name="close" size={12} />
+              </button>
+            )}
+          </span>
         ))}
         <Input
           ref={input}
           className="augur-input quill-tag-picker-input"
           placeholder={full ? `That’s the most it takes: ${max}.` : chosen.length ? '' : placeholder}
           {...describe}
+          aria-describedby={[describe['aria-describedby'], describedBy].filter(Boolean).join(' ') || undefined}
           onKeyDown={(e) => {
             if (e.key === 'Backspace' && !typed && chosen.length && !disabled) setChosen(chosen.slice(0, -1));
           }}
         />
       </div>
+      {line()}
       {caption}
-      <Popover className="augur-popover augur-list" offset={6}>
+      <Popover className="augur-popover augur-list augur-sheet-list" offset={1}>
         <ListBox className="outline-none">
           {(row: (typeof choices)[number]) => (
             <ListBoxItem id={row.id} textValue={row.option?.label ?? row.add} className="augur-option">

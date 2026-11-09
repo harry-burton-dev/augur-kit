@@ -1,10 +1,12 @@
 import { useId, type ReactNode } from 'react';
+import { Icon } from './icon.js';
 
 /**
  * Nothing is obtuse (Shell principles, in the AUGUR handbook): a control that can't be used now
  * stays where it is, stays focusable, and says why in one sentence: who can,
  * what it's waiting for, or what would turn it on. The reason shows under the
- * control on hover and focus, and is read with it.
+ * control on hover and focus, and is read with it. A small lock mark sits on the
+ * control's corner all the time, so you can see it is off before you ask why.
  */
 export function useReason(disabled: boolean | undefined, reason: string | undefined) {
   const id = useId();
@@ -13,7 +15,14 @@ export function useReason(disabled: boolean | undefined, reason: string | undefi
     reasoned,
     /** Props for the control: still in the tab order, but announced as unavailable, with the reason as its description. */
     describe: reasoned ? { 'aria-disabled': true as const, 'aria-describedby': id } : {},
-    caption: reasoned ? <Reason id={id}>{reason}</Reason> : null,
+    caption: reasoned ? (
+      <>
+        <span className="augur-reason-mark" aria-hidden="true">
+          <Icon name="lock" size={12} />
+        </span>
+        <Reason id={id}>{reason}</Reason>
+      </>
+    ) : null,
   };
 }
 

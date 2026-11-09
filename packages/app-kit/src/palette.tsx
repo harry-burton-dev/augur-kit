@@ -29,16 +29,20 @@ export interface PaletteProps {
   onPick: (item: PaletteItem) => void;
   /** What it says when nothing matches. */
   none?: string;
+  /** A word or two before the field, in small capitals ("Go to"); left out, a find icon. */
+  lead?: string;
+  /** How many were found, after the field: given the count, say it ("4 found"). Left out, nothing shows. */
+  found?: (count: number) => string;
 }
 
 /**
  * Find and go, from anywhere in an app: press `/` (the app wires the key) and
- * type. Focus racks to the palette (PDR-010): the app stays where it is,
+ * type. It drops as a ruled strip and gets out of the way once you've gone. Focus racks to the palette (PDR-010): the app stays where it is,
  * out of focus, behind it. ↑ ↓ move, Enter goes, Esc closes and gives focus
  * back. The field keeps focus throughout and points at the chosen row, so a
  * screen reader hears each one.
  */
-export function Palette({ open, onClose, placeholder, query, onQuery, items, onPick, none = 'Nothing matches. Try fewer words.' }: PaletteProps) {
+export function Palette({ open, onClose, placeholder, query, onQuery, items, onPick, none = 'Nothing matches. Try fewer words.', lead, found }: PaletteProps) {
   const [at, setAt] = useState(0);
   const id = useId();
   const field = useRef<HTMLInputElement>(null);
@@ -49,11 +53,19 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
   }, [open]);
   useRack(open, { returnTo: opener });
   useEffect(() => setAt(0), [query, open]);
-  const chosen = items[Math.min(at, items.length - 1)];
+  const active = Math.max(Math.min(at, items.length - 1), 0);
+  const chosen = items[active];
+  const row = chosen ? `${id}-${chosen.id}` : undefined;
+  // Keys and typing keep the chosen row in sight; a row under the pointer already is.
+  const pointing = useRef(false);
+  useEffect(() => {
+    if (open && row && !pointing.current) document.getElementById(row)?.parentElement?.scrollIntoView?.({ block: 'nearest' });
+  }, [open, query, row]);
 
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowDown') setAt((at + 1) % Math.max(items.length, 1));
-    else if (e.key === 'ArrowUp') setAt((at - 1 + items.length) % Math.max(items.length, 1));
+    pointing.current = false;
+    if (e.key === 'ArrowDown') setAt((active + 1) % Math.max(items.length, 1));
+    else if (e.key === 'ArrowUp') setAt((active - 1 + items.length) % Math.max(items.length, 1));
     else if (e.key === 'Enter') {
       if (chosen && !chosen.locked) onPick(chosen);
     } else return;
@@ -65,7 +77,7 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
       <Modal className="quill-palette">
         <AriaDialog aria-label={placeholder} className="outline-none">
           <div className="quill-palette-field">
-            <Icon name="find" size={18} />
+            {lead ? <span className="quill-palette-lead">{lead}</span> : <Icon name="find" size={18} />}
             <input
               ref={field}
               autoFocus
@@ -73,13 +85,18 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
               role="combobox"
               aria-expanded
               aria-controls={`${id}-list`}
-              aria-activedescendant={chosen ? `${id}-${chosen.id}` : undefined}
+              aria-activedescendant={row}
               aria-autocomplete="list"
               placeholder={placeholder}
               value={query}
               onChange={(e) => onQuery(e.target.value)}
               onKeyDown={onKey}
             />
+            {found && query.trim() ? (
+              <span className="quill-palette-found" aria-live="polite">
+                {found(items.length)}
+              </span>
+            ) : null}
           </div>
           <ul id={`${id}-list`} role="listbox" aria-label={placeholder} className="quill-palette-list">
             {items.map((item, i) => (
@@ -88,10 +105,13 @@ export function Palette({ open, onClose, placeholder, query, onQuery, items, onP
                 <div
                   id={`${id}-${item.id}`}
                   role="option"
-                  aria-selected={i === at}
+                  aria-selected={i === active}
                   aria-disabled={item.locked ? true : undefined}
                   className="quill-palette-item"
-                  onPointerMove={() => setAt(i)}
+                  onPointerMove={() => {
+                    pointing.current = true;
+                    setAt(i);
+                  }}
                   onClick={() => !item.locked && onPick(item)}
                 >
                   <Icon name={item.locked ? 'lock' : (item.icon ?? 'document')} size={16} />

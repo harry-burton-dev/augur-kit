@@ -15,7 +15,7 @@ export interface ButtonProps extends Omit<AriaButtonProps, 'isDisabled' | 'isPen
   disabled?: boolean;
   /** Why it is disabled, in one sentence. With one, it stays focusable and the reason shows on hover and focus. */
   reason?: string;
-  /** Working: the press is taken but does nothing more, and it says so. */
+  /** Working: the press is taken but does nothing more, and it says so. No spinner: ink runs along the key's bottom edge. */
   busy?: boolean;
   /** What it says while busy, in place of its label. */
   busyLabel?: string;
@@ -101,7 +101,6 @@ export function Button({ kind = 'secondary', size = 'md', ai, disabled, reason, 
         data-unavailable={disabled || undefined}
         className="augur-button relative inline-flex items-center justify-center gap-2 font-sans whitespace-nowrap cursor-pointer select-none outline-none"
       >
-        {busy ? <span className="augur-spinner" aria-hidden="true" /> : null}
         {armed ? (
           <>
             <span>{confirmLabel ?? 'Press again to confirm'}</span>

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { cx, Icon, type IconName } from '@augur/kit-common';
 import { RingMore, useRingTarget, type RingSubject } from './radial-menu.js';
+import { thingProps, type ThingMark } from './thing.js';
 
 /**
- * What a tile is. Each kind has its own physical shape, so you can tell a
- * thing's kind before you read it: a collection is a solid block, a folder
- * has a tab, a series is a stack, a document is a page.
+ * What a tile is. Each kind has its own icon and word at the top of the
+ * tile, so you can tell a thing's kind at a glance.
  */
 export type TileKind = 'collection' | 'folder' | 'series' | 'document' | 'library';
 
@@ -30,24 +30,26 @@ export interface KindTileProps {
   onOpen: () => void;
   /** The radial menu on the tile. */
   ring?: () => RingSubject | undefined;
+  /** The tile is a thing with actions: the shell's radial menu opens on it (the app contract, 6.4). Give it an `id`: a tile has none of its own. */
+  thing?: ThingMark;
 }
 
 const ICONS: Record<TileKind, IconName> = { collection: 'library', folder: 'folder', series: 'series', document: 'document', library: 'library' };
 
 /**
- * One thing in a place, as a tile you can walk into. Hover lifts it as a real
- * object would lift; pressing it presses it down. Right-click, the
+ * One thing in a place, as a tile you can walk into: a flat card in a well.
+ * Pointed at, it comes up as a soft key; pressed, it goes down. Right-click, the
  * context-menu key or a long press opens its radial menu, and so does its
  * "more" mark, which shows while the tile is hovered or holds focus (PDR-010,
  * amendment 6). The mark sits beside the tile's button, not in it, so each
  * stays one control.
  */
-export function KindTile({ kind, name, eyebrow, count, state, needs, needsLabel, owner, locked, note, onOpen, ring }: KindTileProps) {
+export function KindTile({ kind, name, eyebrow, count, state, needs, needsLabel, owner, locked, note, onOpen, ring, thing }: KindTileProps) {
   const menu = useRingTarget(() => ring?.());
   const described = [eyebrow, count, state, owner ? `from ${owner}` : '', needs ? (needsLabel ?? 'Needs you') : '', note, locked].filter(Boolean).join(', ');
   return (
     <span className="quill-tile-place" data-kind={kind}>
-      <button type="button" className="quill-tile" data-kind={kind} data-locked={locked ? '' : undefined} aria-description={described} title={locked} onClick={onOpen} {...menu}>
+      <button type="button" className="quill-tile" data-kind={kind} data-locked={locked ? '' : undefined} aria-description={described} title={locked} onClick={onOpen} {...menu} {...thingProps(thing, { label: name })}>
         {needs ? <span className="quill-tile-ribbon" aria-hidden="true" /> : null}
         <span className="quill-tile-top" aria-hidden="true">
           <span className="quill-tile-eyebrow">

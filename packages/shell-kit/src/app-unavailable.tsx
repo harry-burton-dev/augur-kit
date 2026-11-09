@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Button, Heading, Icon, Progress, type IconName } from '@augur/kit-common';
+import { Button, Icon, Progress, type IconName } from '@augur/kit-common';
 
 export type AppState = 'loading' | 'failed' | 'needs-newer' | 'limited';
 
@@ -26,20 +26,25 @@ const WORDS: Record<AppState, string> = {
 /**
  * One screen for an app that can't show yet, instead of hiding it: loading,
  * failed, needing a newer AUGUR, or kept to some floors or roles. It says
- * which, why, and who can change it (Nothing is obtuse).
+ * which, why, and who can change it (Nothing is obtuse). Drawn as Line (picked
+ * 6 Nov 2026): the app's name stands on a horizon line, the state in mono over
+ * it and the reason under it. While it opens the line is Common's Progress; when
+ * it failed the line is red.
  */
 export function AppUnavailable({ app, state, reason, who, onRetry, words }: AppUnavailableProps) {
   const title = { ...WORDS, ...words }[state];
   return (
     <div className="aerie-unavailable" data-state={state} aria-busy={state === 'loading' || undefined}>
-      <span className="aerie-unavailable-mark" aria-hidden="true">
-        <Icon name={app.icon} size={32} />
-      </span>
-      <Heading eyebrow={title} heading={app.name} summary={reason} level={1} />
-      {state === 'loading' ? <Progress label={`${title} ${app.name}`} /> : null}
+      <p className="aerie-unavailable-state">
+        <Icon name={app.icon} size={16} />
+        {title}
+      </p>
+      <h1 className="aerie-unavailable-name">{app.name}</h1>
+      {state === 'loading' ? <Progress label={`${title} ${app.name}`} /> : <span className="aerie-unavailable-horizon" aria-hidden="true" />}
+      {reason ? <p className="aerie-unavailable-reason">{reason}</p> : null}
       {who ? <div className="aerie-unavailable-who">{who}</div> : null}
       {state === 'failed' && onRetry ? (
-        <Button kind="secondary" onPress={onRetry}>
+        <Button kind="secondary" size="sm" onPress={onRetry}>
           Try again
         </Button>
       ) : null}

@@ -7,6 +7,7 @@
 @import './shell.css' layer(components);
 @import './app-bar.css' layer(components);
 @import './backgrounds.css' layer(components);
+@import './frame.css' layer(components);
 @source './';
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';
@@ -14,34 +15,49 @@
 @source not './**/*.fixture.tsx';
 
 @layer components {
-  /* An app that can't show yet. */
-  .aerie-unavailable { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-5); max-width: var(--measure-read); margin: 0 auto; padding: var(--band-top) var(--edge) var(--band-bottom); }
-  .aerie-unavailable-mark { display: grid; place-items: center; width: var(--space-8); height: var(--space-8); border-radius: var(--radius-card); background: var(--surface-raised); color: var(--ink-muted); }
-  .aerie-unavailable[data-state='failed'] .aerie-unavailable-mark { color: var(--danger); }
-  .aerie-unavailable .augur-progress { width: 100%; }
-  .aerie-unavailable-who { color: var(--ink-muted); }
-
-  /* The connection line, under the band. */
-  .aerie-connection {
-    position: fixed; top: var(--band-top); left: 50%; z-index: var(--layer-chrome); transform: translateX(-50%);
-    display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
-    border-radius: var(--radius-pill); background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur));
-    border: 1px solid var(--hairline-strong); color: var(--ink); font-size: var(--type-meta); line-height: var(--leading-meta);
+  /* An app that can't show yet: Line (picked 6 Nov 2026). Its name stands on a horizon line, the state in
+     mono over it and the reason in mono under it. No box and no mark tile; the line is red when it failed,
+     and Common's Progress while it opens. */
+  .aerie-unavailable { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); max-width: var(--measure-read); margin: 0 auto; padding: var(--band-top) var(--edge) var(--band-bottom); }
+  .aerie-unavailable-state {
+    margin: 0; display: flex; align-items: center; gap: var(--space-2); color: var(--ink-muted);
+    font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
   }
-  .aerie-connection[data-state='offline'], .aerie-connection[data-state='reconnecting'] { padding-right: var(--space-5); }
-  .aerie-connection[data-state='reconnecting'] span { animation: aerie-breathe var(--motion-still) var(--ease-standard) infinite; }
-  .aerie-connection[data-state='expired'] { border-color: color-mix(in srgb, var(--warning) 55%, transparent); }
+  .aerie-unavailable-name { margin: 0; color: var(--ink); font-size: var(--type-title); line-height: var(--leading-title); font-weight: 500; }
+  .aerie-unavailable-horizon { display: block; height: 1px; margin: var(--space-1) 0 var(--space-2); background: var(--hairline-strong); }
+  .aerie-unavailable[data-state='failed'] .aerie-unavailable-horizon { background: var(--danger); }
+  .aerie-unavailable .augur-progress { width: 100%; margin: var(--space-1) 0 var(--space-2); }
+  .aerie-unavailable-reason { margin: 0; color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small); }
+  .aerie-unavailable-who { margin-top: var(--space-3); color: var(--ink-muted); }
+  .aerie-unavailable > .augur-button { align-self: flex-start; margin-top: var(--space-3); }
+
+  /* The connection line, under the band: Line (picked 6 Nov 2026). The state's name and its sentence in
+     mono, on a line across the screen that carries the state: dashed offline, running while it reconnects,
+     broken off when the session ended. Dimmed ground behind, never blur. */
+  .aerie-connection {
+    position: fixed; top: var(--band-top); left: 0; right: 0; z-index: var(--layer-chrome);
+    display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--edge);
+    background: var(--scrim); color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-small); line-height: var(--leading-small);
+  }
+  .aerie-connection-name { flex: none; color: var(--ink); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 500; }
+  .aerie-connection-words { flex: 1; min-width: 0; }
+  .aerie-connection-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--hairline-strong); }
+  .aerie-connection[data-state='offline'] .aerie-connection-line { background: repeating-linear-gradient(90deg, var(--ink-muted) 0 var(--space-2), transparent var(--space-2) var(--space-3)); }
+  .aerie-connection[data-state='reconnecting'] .aerie-connection-line {
+    background: linear-gradient(90deg, var(--ink), var(--ink)) no-repeat 0 0 / 25% 100%, var(--hairline);
+    animation: aerie-line-run var(--motion-run) var(--ease-standard) infinite;
+  }
+  .aerie-connection[data-state='expired'] .aerie-connection-line { right: 50%; background: var(--ink); }
 }
 
-/* Reduced motion, from the system or AUGUR's own switch: the reconnecting line stops breathing. */
+/* Reduced motion, from the system or AUGUR's own switch: the reconnecting line stops running. */
 @layer components {
   @media (prefers-reduced-motion: reduce) {
-    .aerie-connection[data-state='reconnecting'] span { animation: none; }
+    .aerie-connection[data-state='reconnecting'] .aerie-connection-line { animation: none; }
   }
   :root[data-motion='reduce'] {
-    .aerie-connection[data-state='reconnecting'] span { animation: none; }
+    .aerie-connection[data-state='reconnecting'] .aerie-connection-line { animation: none; }
   }
 }
 
-@keyframes aerie-rise { from { opacity: 0; transform: translateY(var(--space-4)); } to { opacity: 1; transform: none; } }
-@keyframes aerie-breathe { 50% { opacity: 0.5; } }
+@keyframes aerie-line-run { from { background-position: -30% 0, 0 0; } to { background-position: 130% 0, 0 0; } }

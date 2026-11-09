@@ -1,8 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Input, TextField as AriaTextField } from 'react-aria-components';
-import { FieldHead, FieldHint, Icon, cx, useFieldCheck, useReason, useValue, type FieldProps } from '@augur/kit-common';
+import { FieldHead, FieldHint, Icon, IconButton, Person, cx, useFieldCheck, useReason, useValue, type FieldProps } from '@augur/kit-common';
 import { List, type ListItem } from './list.js';
-import { Refs } from './things.js';
 
 /** A person or a team, as the picker shows and returns them. */
 export interface Principal {
@@ -30,7 +29,7 @@ export interface PeoplePickerProps extends Omit<FieldProps, 'state' | 'message' 
   check?: (p: Principal) => string | undefined | void;
   /** `people`, `teams`, or `both` (the default). */
   kinds?: 'people' | 'teams' | 'both';
-  /** Choices gather above the field as chips; without it, each choice is handed over and the field empties. */
+  /** Choices gather under the field as a list in a well, each saying who they are and what they can do; without it, each choice is handed over and the field empties. */
   multiple?: boolean;
   /** The ones chosen so far, with `multiple`. Left out, the picker keeps its own. */
   value?: Principal[];
@@ -65,7 +64,8 @@ export const principalRows = (found: Principal[], chosen: Principal[], check?: P
 /**
  * Find people and teams by name. Typing looks after a short pause (Enter looks
  * now, Esc clears). The ones that can't be chosen stay in the list, dimmed,
- * and say why. With `multiple`, choices gather as chips you can take off again.
+ * and say why. With `multiple`, choices gather under the field as a list in a well,
+ * each with a key to take it off again.
  */
 export function PeoplePicker({ label, hint, disabled, reason, className, search, check, kinds = 'both', multiple, value, defaultValue = [], onChange, onPick, placeholder = 'A name, an email or a team', pause = 200, name }: PeoplePickerProps) {
   const [chosen, setChosen] = useValue<Principal[]>(value, defaultValue, onChange);
@@ -121,13 +121,6 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
       <AriaTextField value={query} onChange={typed} isDisabled={disabled && !reasoned} isReadOnly={reasoned} aria-label={label}>
         <FieldHead label={label} />
         <FieldHint hint={hint} />
-        {multiple && chosen.length ? (
-          <Refs
-            className="quill-people-chosen"
-            refs={chosen.map((p) => ({ kind: p.kind, id: p.id, label: p.name }))}
-            onRemove={disabled ? undefined : (r) => setChosen(chosen.filter((p) => principalKey(p) !== `${r.kind}:${r.id}`))}
-          />
-        ) : null}
         <div className="augur-field-box quill-people-box">
           <Icon name="find" size={16} />
           <Input
@@ -143,6 +136,8 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
                 setQuery('');
                 void find('');
               } else if (e.key === 'Enter') {
+                // Enter looks: a Dialog around it must not take it as its primary.
+                e.stopPropagation();
                 e.preventDefault();
                 void find(query);
               }
@@ -169,6 +164,17 @@ export function PeoplePicker({ label, hint, disabled, reason, className, search,
             onRetry={() => void find(query)}
           />
         </div>
+      ) : null}
+      {multiple && chosen.length ? (
+        <ul className="quill-people-chosen" aria-label={`Chosen, ${chosen.length}`}>
+          {chosen.map((p) => (
+            <li key={principalKey(p)} className="quill-people-one">
+              <Person name={p.name} detail={p.kind === 'team' ? [p.detail, p.size !== undefined ? `${p.size} ${p.size === 1 ? 'person' : 'people'}` : ''].filter(Boolean).join(' · ') || 'Team' : p.detail} />
+              {p.meta ? <span className="quill-people-meta">{p.meta}</span> : null}
+              {disabled ? null : <IconButton icon="close" size="sm" label={`Take off ${p.name}`} onPress={() => setChosen(chosen.filter((c) => principalKey(c) !== principalKey(p)))} />}
+            </li>
+          ))}
+        </ul>
       ) : null}
     </div>
   );

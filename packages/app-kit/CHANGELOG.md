@@ -1,5 +1,115 @@
 # @augur/app-kit
 
+## 0.15.0
+
+### Minor Changes
+
+- 5f85a4f: The shell's own bar draws the open app's places through RailPlaces when any of its pages `fills`. It is fed from the model: `ShellPage.path` and `fills`, `ShellModel.under` (by app, then place), `underCap` (the deployment's number, 50 unless it says) and `path`. Choosing a thing under a place, or "and n more", calls `openPath` and fires `ui-path` with `{ app, page, path }`. Pages that don't fill look as before. RailPlaces gains `onPlace`, `currentPlace`, `lit` and `lead`, and `onOpen` now also gives the place.
+
+  Quill: a thing an app marks for the shell's radial menu. List items and kind tiles take `thing: { kind, id?, label? }`, and a table takes `thing: { kind, label? }` (label is a column key) for all of its rows. Each is drawn as `data-thing`, `data-thing-id` and `data-thing-label`, and the remote vocabulary carries the same. A kind that isn't a short lower-case word is dropped with a reason. `thingProps` is exported.
+
+## 0.14.1
+
+### Patch Changes
+
+- Updated dependencies [d07a1eb]
+  - @augur/kit-common@0.13.0
+
+## 0.14.0
+
+### Minor Changes
+
+- 02c69ee: Quill's remote vocabulary for the app contract's third major (ADR 0076): `@augur/app-kit/remote` defines the `quill-*` elements an app's sandbox describes its screen with, and `QuillRemote` draws them on the host with the kit, dropping anything outside the vocabulary with a console reason. The allowlist ships as `@augur/app-kit/remote/allowlist.json`. `List` takes `virtual` for long lists, sized by Common's new `measure-list-virtual` token, and lists and tables from a sandbox draw only the rows in view from 200 rows.
+
+  Every property the vocabulary names states its shape down to the fields of a list's items, with the values an enum takes, and the host keeps only what fits. A part that fails to draw stops only itself. Common's `Icon` draws nothing for a name that isn't one of its own icons, such as `constructor`.
+
+### Patch Changes
+
+- Updated dependencies [02c69ee]
+  - @augur/kit-common@0.12.0
+
+## 0.13.0
+
+### Minor Changes
+
+- ab0fea1: Fixes from the 6 November review.
+
+  A `Select` that is unavailable, read-only or busy no longer changes from the keyboard: arrow keys and typing on the closed field used to change its value and call `onChange`. A required `Select` no longer says "Needs you." straight after its first pick.
+
+  In a `Dialog` or `SideSheet`, Enter in a one-line `TextField`, `DateField` or `TimeField` now presses the primary, with what was just typed. Enter in a `PeoplePicker` only looks, and Esc on the Editor's mention list closes the list and not the Dialog. A second Enter in a `DateField` or `TimeField` no longer clears it.
+
+  A Dialog now collects `Checkbox` and `Toggle` as `'true'` or `'false'`, and `CheckboxGroup` as its ticked values joined with commas, so `onSubmit` and `onClose` can carry keys they didn't before. A required `TagPicker` or `CheckboxGroup` now holds the primary and asks with "Needs you."
+
+  `DateField` now honours `reason`, and `DropZone` takes one: each stays focusable and says why. Common exports `warnNoReason`.
+
+  With the browser offline, `useData` and `useChange` now try and fail in words, with `AppError` status 0, instead of pausing. `DataView` shows the offline state rather than loading for ever, and a Dialog waiting on a change is let go. A change made offline is not held for later. Loads run again when the connection returns. `DataView` no longer says it is loading while `enabled` is false: it shows `empty` if it has one, otherwise nothing.
+
+  A failed load of Markdown no longer blanks `Reader`: it shows the plain text, says so and offers a reload, the only thing that helps in Chromium. A failed load of the Editor stays in the Editor's place, with the same offer, instead of taking the app with it, and a required Editor still holds a Dialog's primary.
+
+  A disabled field no longer holds a Dialog's primary, with or without a reason, even when it is required and empty.
+
+  `Palette` keeps the chosen row in sight as the keys move it, and marks the row Enter will open when the list shrinks. A `Table` date in the future reads "in 3 d", not "just now" (`relativeTime`).
+
+### Patch Changes
+
+- Updated dependencies [ab0fea1]
+  - @augur/kit-common@0.11.0
+
+## 0.12.0
+
+### Minor Changes
+
+- c1c66b8: Data marks drawn as Key (picked 6 Nov 2026). Tree, PathTree, Path, Refs, Lifecycle, Timeline, Tiles and Reel sit in a well, like a field, and the thing you're on comes up as a soft key. Counts, times, days and kinds are mono. The path tree dims by distance only, with no blur, and a row that needs you shows a green dot instead of a glow. Tiles are flat Key cards that show their kind by icon and word, not by shape. A reel's front card is a key and the rest are dimmed. Floors on Path and Refs show by icon, not colour, so green only means "needs you". Signal keeps its animated lights, each set in a small well. UrgentEdge is a raised strip with a red lip and an Open key. New story pages: Quill/Path, Quill/Timeline, Quill/Tiles, Common/Urgent edge.
+- 0f8bfbd: Files and media drawn as Tray (picked 6 Nov 2026). DropZone is now a well that owns its section, its Choose button a small key; dragging over lightens it and turns its edge ink, no longer green (green means "needs you"). New parts: `UploadList` (rows in a well, each file's progress a line along its row's foot, a failed file red with its reason and Retry, past `show` rows the rest fold into "N more" so it never scrolls), `Attachment` (a file on a message or record as a small key, with a sending line, a red edge when it fails and a round remove button), `Picture` (an image that keeps its shape while it loads and says so if it can't), and `FilePreview` (a file to read in place, paged with Back and On, or why it can't be shown, with Download). Helpers `fileIcon`, `fileSize` and `splitName`. Story pages under Quill/Files. No changes to existing props.
+- 7cc358d: Search, links, key caps and skeletons in the Key look, and busy in the Groove look (picked 6 Nov 2026). New in Common: `SearchField`, the one search field (a well with a find mark that matches as you type, a shortcut key shown while empty and Esc to clear once you write); `Link`, never underlined, ink words that lift as a soft key when pointed at, the same inside and outside AUGUR; `KeyCap`, a key to press drawn as a small real key, with `keys` for a combination; and `Skeleton`, empty wells in the shape of what is loading. A busy Button no longer spins: ink runs along its bottom edge, and a busy Toggle runs the same line under its switch. Menus, dialogs, side sheets and the first-run guide draw their keys as `KeyCap`. Quill's FilterBar and table filter, and Common's Activity, now use `SearchField`; the Palette keeps its own Rail field. No props removed; the `augur-spinner` class stays for apps that drew their own.
+- e0c4073: First-run guide, in the Lamp look: `Guide` shows an app's parts one at a time (the page dims, the part stays lit, the words sit on the dim) with Next, Back and Esc to skip, and `FirstSteps` is a short checklist section for an app's start page. Every word is a prop. Their stories sit in a new Patterns area of the Storybook.
+- c3c5603: Empty, loading and error states drawn on the horizon (Harry's pick, 6 Nov). Quill `State` has no box: the sentence sits on a groove, loading draws the line across, an error turns it red with a diamond, and offline amber. Its action is now a Keycap button. New `size="page"` for a whole page, and new `StateBoundary`, which shows a State when a part throws while drawing. Common `Progress` is the same line, filled with ink instead of green, and the current step in `Steps` is ink too: green means only "needs you". `Rows` no longer puts `role="alert"` on a list item.
+- 0c1a803: New inputs, picked from the input directions. Common: `ComboBox` (type to find one in a long list, its matches on a sheet), `MultiSelect` (several from a set, words and a count in the well), `NumberField` (step keys at the end, a unit in small capitals), `Slider` (a fader, or `steps`), and a `minus` icon. Quill: `TimeField` (written as you'd say it, with an echo of the time it reads) and `DateRangeField` (two date fields joined by a line, with the days it spans).
+- 704c086: Lists, tables and detail rows drawn as Key (picked 6 Nov 2026): List, Table and Rows sit in a well, like a field, with no lines between rows. The row you point at lightens and a picked table row comes up as a soft key. Headings, counts, times and numbers are mono. Table gets an additive `pageSize` prop: it shows that many rows at a time, with the count and Back and On keys under them, so a long table doesn't need to scroll. Carbon-style story pages for List, Table and Rows; the long table story moves to Quill/Table.
+- 703ff74: People and activity in the picked looks (6 Nov 2026). Person and People are drawn as a Disc: a flat grey disc with Instrument Sans initials, ringed in the floor's colour, and you ringed in plain ink, never green. New `here` prop on Person and People: someone away is dimmed back and it's read aloud. New in Common: `Presence` (who is here now), `Comments` (points that stay open until settled, settled ones fold to a line, replies one step in), `Activity` (what needs you pulled above, a find field, a line where you last looked, pages instead of scrolling) and `Notifications` with `NotificationItem` (key rows in a well, unread raised). Quill's PeoplePicker gathers its choices under the field as a list in a well, each with what they can do and a key to take it off.
+- 24fccd7: The pickers in the Rail look Harry picked (round M), drawn on one ruled line like page frame A. FilterBar is one ruled line with saved views at its start (new `views`, `view` and `onView` props) and what each filter has on in words, so the row of chips under it is gone. Palette is a ruled strip that dims what's behind it and never blurs it (new `lead` and `found` props). The DateField calendar is a ruled month with the chosen day underlined in ink instead of green. TagPicker writes its tags as ruled words, and Common's Segmented puts an ink bar under the chosen word. List gets a `plain` look and expanding rows (`more` on an item, `moreLabel`). FilterBar, DataView and Palette get their own story pages.
+- f1742c3: The radial menu has two rings. Its actions are wedges in a solid disc, each in its fixed direction with its name inside, and Cancel sits in the hub. An action's targets fan out on an outer ring in its direction, up to five (`RING_TARGETS_MOST`), and open as a list beside it past that. The ring opens where it was opened and moves in from an edge whole, so no verb changes direction. Keys 1 to 8 pick a direction. One readout under the ring says where you are (thing, verb, place), why an action can't be done and who can change it, and what a choice would change. Unavailable actions are hatched and locked, the selected one is ink, and danger is the only colour. A held action fills the hub. The disc has no blur or shadow and opens with one quick fade. New Quill tokens: `ring-hub`, `ring-outer`, `ring-band` and `ring-seam`. Every prop and type an app passes today works as before.
+- 0689319: Consequence focus for the radial menu (V6). An action can name what it `touches` (`RingTouch`: id, label, effect). While it has focus, each thing on the page marked with `useRingTouch(id)` steps forward out of the rack. It is framed in ink (red for what danger breaks), with its effect and a lead from the subject. The readout lists every touch in words, so things scrolled off screen are still named. A held action that touches something is letterboxed until it is let go. The letterbox shows what it does, what it touches, how to cancel and, when the app gives `undo`, how to undo it. With reduced motion it is letterboxed between the two presses. `useRack` takes `holes` to keep more than one box sharp. Common's `Letterbox` gains `passive`, which draws the frame without a dialog while focus stays where the decision is being made.
+- 4244f65: Two new overlay parts in Common, in the looks Harry picked: `SideSheet` (Leaf), for create and edit work too big for a dialog, from the right edge over the dimmed page, with steps for a bigger flow and stacking when one is opened from another; and `InfoPop` (Slip), a press-to-open why beside a label or setting that can hold one link.
+- ea33587: New parts from the copy, code and folds round, in the looks Harry picked on 6 Nov 2026. Common gets `Snippet`, code to copy drawn as one key you press anywhere (Press to take): it folds long code to its first lines, works inline in a sentence, and says what to do if the browser refuses. Common also gets `Folds` and `Fold`, headings that open a section, sitting in a tray where the open one rises as a key over a Well (Drawer). Quill gets `EditInPlace`, which changes one value where it sits with a Rename key beside it, Save and Cancel while editing, and a refused save that keeps your words (Key beside). Each has Carbon-style stories and tests, and the directions page is gone.
+- b5abdb1: Every corner is square. The radius tokens (`radius-key`, `radius-control`, `radius-inset`, `radius-card`, `radius-pill`) are all 0, so keys, wells, tabs, tags, cards, dialogs, notices, popovers, toasts and the old pills sit with the square Sheet menus and tips. The few corners written as raw pixels are square too. Only true circles (radios, status dots, avatars) stay round. The token names stay, so nothing an app uses is removed.
+- 6cb8608: Writing and reading in the picked looks (6 Nov 2026). The Editor's format bar is a small Sheet of keys over where the selection starts, and a mention is a square chip in the Key look with its kind's icon, in the Editor and in Prose; the mention list is a Sheet. Reader takes `flow` (`scroll`, `leaves` set out as pages that turn and never scroll, or `horizon` with all but your section dimmed), `spread` and `onLeaf`, and its handle `turn`, `leaf` and `leafOf`. Contents takes `leaves` to show each heading's page as a ledger. New `ReadingView` puts them together: Turn pages or Scroll, Page or Desk, switched by the reader and remembered with `remember`. The directions page goes.
+
+### Patch Changes
+
+- c61d798: Dialogs, notices and toasts in the Sheet look (picked 6 Nov 2026). Dialog is a solid square sheet with a mono heading strip and a ruled footer, over a dimmed page with no blur; a failure is stamped "Not done". New in Common: one notice family, `Notice` (inline or actionable, its tone stamped as a word in mono; new `label` prop), `Toast` and `Toasts` (their time left drains along the bottom edge and stops while held). Quill's `Notice` and Aerie's `Toasts` are now Common's, under the same names.
+- 5e55ec3: The editor no longer fails to draw in a real browser. When an editor is replaced, as on a remount, its toolbar stops reading the old, destroyed editor. Chromatic found this in the Writing and Editor states stories.
+
+  A virtual `Table` is now at most `measure-table-virtual` tall (a new app token, 640px) and scrolls inside itself. Before this it grew to every row's height, 280,000px for the 5,000-row story, so only the first screen of rows was ever drawn and Chromatic couldn't capture it.
+
+- 6aee7af: The needs-you colour and the typefaces are tokens (PDR-015). New `needs-you` colour token, valued at the accent green; Aerie's `needs-light` and every needs-you mark in both kits read it, so the app bar's light is green now instead of amber. `font-sans` is now Instrument Sans, and a new `font-mono` token is IBM Plex Mono; Common serves both from Fontsource in place of Jost.
+- d68bc06: The radial menu's stories follow Carbon's Storybook layout. `RadialMenu` and `RingProvider` each have an Overview page built from their own comment and props. The controls are the part's own props, and each story stages the part in a minimal page. The sample actions live in `radial-menu.fixture.ts`, which isn't built. Storybook now has the Docs addon, and it reads prop comments through imported types, so any part tagged `autodocs` gets the same kind of page. Every prop of `RadialMenu` and `RingProvider` now has a comment.
+- 1968b92: Small parts in the picked looks (6 Nov 2026). Menus and tips are drawn as Sheet, like the shell's start menu: a solid square sheet with one edge, a hard ink line on the row you're on, and no blur. Menu gains an optional `heading` and `defaultOpen`, and Tip gains `defaultOpen`. Tabs are drawn as Key, raised keys in a tray. New Common parts `Badge` (a count or word as a small key) and `Divider` (a groove, with a label, strong or upright). Quill's Tag and Card are drawn as keys. The list under Select loses its blur.
+- 4cd0e2b: `Status` (with `statusWords`, `statusUrgency`, `StatusName` and `StatusProps`) moves from Quill into Common, so Aerie can draw the same marks (PDR-016). Quill still exports it, through Common, under the same names; nothing about how it looks changes. Its classes are now `augur-status*`, and it has its own Storybook page, Common/Status.
+- Updated dependencies [26ee249]
+- Updated dependencies [c61d798]
+- Updated dependencies [c1c66b8]
+- Updated dependencies [5e55ec3]
+- Updated dependencies [fdce175]
+- Updated dependencies [7cc358d]
+- Updated dependencies [958f774]
+- Updated dependencies [c3c5603]
+- Updated dependencies [0c1a803]
+- Updated dependencies [eb64aa2]
+- Updated dependencies [6aee7af]
+- Updated dependencies [703ff74]
+- Updated dependencies [24fccd7]
+- Updated dependencies [f1742c3]
+- Updated dependencies [0689319]
+- Updated dependencies [f3241f3]
+- Updated dependencies [4244f65]
+- Updated dependencies [1968b92]
+- Updated dependencies [ea33587]
+- Updated dependencies [b5abdb1]
+- Updated dependencies [4cd0e2b]
+- Updated dependencies [6161ade]
+  - @augur/kit-common@0.10.0
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,5 +1,70 @@
 # @augur/kit-bundle
 
+## 0.5.11
+
+### Patch Changes
+
+- Updated dependencies [5f85a4f]
+  - @augur/app-kit@0.15.0
+
+## 0.5.10
+
+### Patch Changes
+
+- Updated dependencies [d07a1eb]
+  - @augur/kit-common@0.13.0
+  - @augur/app-kit@0.14.1
+
+## 0.5.9
+
+### Patch Changes
+
+- Updated dependencies [02c69ee]
+  - @augur/app-kit@0.14.0
+  - @augur/kit-common@0.12.0
+
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [ab0fea1]
+  - @augur/app-kit@0.13.0
+  - @augur/kit-common@0.11.0
+
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [26ee249]
+- Updated dependencies [c61d798]
+- Updated dependencies [c1c66b8]
+- Updated dependencies [5e55ec3]
+- Updated dependencies [fdce175]
+- Updated dependencies [0f8bfbd]
+- Updated dependencies [7cc358d]
+- Updated dependencies [e0c4073]
+- Updated dependencies [958f774]
+- Updated dependencies [c3c5603]
+- Updated dependencies [0c1a803]
+- Updated dependencies [eb64aa2]
+- Updated dependencies [704c086]
+- Updated dependencies [6aee7af]
+- Updated dependencies [703ff74]
+- Updated dependencies [24fccd7]
+- Updated dependencies [d68bc06]
+- Updated dependencies [f1742c3]
+- Updated dependencies [0689319]
+- Updated dependencies [f3241f3]
+- Updated dependencies [4244f65]
+- Updated dependencies [1968b92]
+- Updated dependencies [ea33587]
+- Updated dependencies [b5abdb1]
+- Updated dependencies [4cd0e2b]
+- Updated dependencies [6161ade]
+- Updated dependencies [6cb8608]
+  - @augur/kit-common@0.10.0
+  - @augur/app-kit@0.12.0
+
 ## 0.5.6
 
 ### Patch Changes

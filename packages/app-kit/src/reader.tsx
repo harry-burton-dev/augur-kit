@@ -1,6 +1,7 @@
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from 'react';
 import type MarkdownIt from 'markdown-it';
 import { cx } from '@augur/kit-common';
+import { State } from './states.js';
 
 /** A heading in what the reader shows, for a contents list. */
 export interface OutlineItem {
@@ -12,6 +13,19 @@ export interface OutlineItem {
 
 export type ReaderSize = 'small' | 'medium' | 'large';
 export type ReaderWidth = 'narrow' | 'wide';
+/**
+ * How a document runs: `scroll` down one column; `leaves` set out as pages that fit and turn, never
+ * scrolling; `horizon` down one column with the section you're in at full ink and the rest dimmed.
+ */
+export type ReaderFlow = 'scroll' | 'leaves' | 'horizon';
+
+/** Where a reader set out as leaves is: the spread showing, and how many there are, both from 1. */
+export interface ReaderLeaf {
+  at: number;
+  of: number;
+  /** The pages (leaves) the document fills, from 1; a spread of two shows two of them. */
+  pages: number;
+}
 
 /** Words selected in a reader: what they say, the block they start in, and that block's words. */
 export interface MarkedPassage {
@@ -32,6 +46,12 @@ export interface ReaderHandle {
   goTo(anchor: string, options?: { smooth?: boolean; focus?: boolean }): boolean;
   /** The words selected in the document, if any. */
   marked(): MarkedPassage | undefined;
+  /** Set out as leaves: turns by this many spreads (−1 back, 1 on). Does nothing in the other flows. */
+  turn(by: number): void;
+  /** Set out as leaves: the spread showing, how many there are, and the pages; all 1 otherwise. */
+  leaf(): ReaderLeaf;
+  /** Set out as leaves: the leaf (page, from 1) a block starts on, for a contents ledger; 0 otherwise. */
+  leafOf(anchor: string): number;
 }
 
 /** A heading's words as an anchor: "2. Claims & receipts" → "claims-receipts". */
@@ -92,7 +112,15 @@ const markdown = (Md: typeof import('markdown-it').default) => {
 let shared: MarkdownIt | undefined;
 let loading: Promise<MarkdownIt> | undefined;
 /** Markdown-it, loaded the first time a reader shows something, since only a few screens read. */
-export const loadReader = () => (loading ??= import('markdown-it').then(({ default: Md }) => (shared = markdown(Md))));
+export const loadReader = () =>
+  (loading ??= import('markdown-it').then(
+    ({ default: Md }) => (shared = markdown(Md)),
+    (err: unknown) => {
+      // Firefox and Safari can fetch it for the next reader. Chromium keeps the failure until the page reloads.
+      loading = undefined;
+      throw err;
+    },
+  ));
 
 const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -108,6 +136,12 @@ export interface ReaderProps {
   onOutline?: (headings: OutlineItem[]) => void;
   /** The block at the top of the view changed while reading. */
   onPosition?: (anchor: string) => void;
+  /** How it runs: down a column (`scroll`), as leaves that turn (`leaves`), or with all but your section dimmed (`horizon`). */
+  flow?: ReaderFlow;
+  /** Set out as leaves: one leaf at a time, or two side by side. */
+  spread?: 1 | 2;
+  /** Set out as leaves: it turned, or was set out again (a new size, a new document). */
+  onLeaf?: (leaf: ReaderLeaf) => void;
   ref?: Ref<ReaderHandle>;
   className?: string;
 }
@@ -118,18 +152,27 @@ export interface ReaderProps {
  * elements. It renders nothing it wasn't given: raw HTML is shown as text,
  * links open elsewhere, and pictures load only through `imageSource`.
  */
-export function Reader({ markdown: source, size = 'medium', width = 'narrow', imageSource, heading = '', onOutline, onPosition, ref, className }: ReaderProps) {
+export function Reader({ markdown: source, size = 'medium', width = 'narrow', imageSource, heading = '', onOutline, onPosition, flow = 'scroll', spread = 1, onLeaf, ref, className }: ReaderProps) {
   const article = useRef<HTMLElement>(null);
   const atTop = useRef('');
   const [html, setHtml] = useState(() => (shared ? shared.render(source) : undefined));
-  const latest = useRef({ onOutline, onPosition });
-  latest.current = { onOutline, onPosition };
+  const [failed, setFailed] = useState(false);
+  const plain = failed && html === undefined;
+  const latest = useRef({ onOutline, onPosition, onLeaf });
+  latest.current = { onOutline, onPosition, onLeaf };
+  const leaves = flow === 'leaves';
+  // Set out as leaves: the spread showing (from 0) and the layout it was measured in.
+  const leafAt = useRef(0);
+  const layout = useRef({ step: 1, page: 1, spreads: 1, pages: 1 });
 
   useEffect(() => {
     if (shared) setHtml(shared.render(source));
     else {
       let gone = false;
-      void loadReader().then((md) => !gone && setHtml(md.render(source)));
+      void loadReader().then(
+        (md) => !gone && setHtml(md.render(source)),
+        () => !gone && setFailed(true),
+      );
       return () => {
         gone = true;
       };
@@ -139,30 +182,70 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
   const blocks = () => [...(article.current?.querySelectorAll<HTMLElement>('[data-block]') ?? [])];
   const outline = (): OutlineItem[] =>
     [...(article.current?.querySelectorAll<HTMLElement>('h1[id]:not([hidden]), h2[id], h3[id]') ?? [])].map((h) => ({ id: h.id, text: h.textContent?.trim() ?? '', level: Number(h.tagName[1]) }));
+  const headingFor = (anchor: string) => {
+    let found = '';
+    for (const block of blocks()) {
+      if (/^H[1-3]$/.test(block.tagName) && !block.hidden) found = block.id;
+      if (block.id === anchor) break;
+    }
+    return found;
+  };
+  /** Horizon: the section holding this block is at full ink, every other block dims. */
+  const markHere = (anchor: string) => {
+    if (flow !== 'horizon') return;
+    const all = blocks();
+    const head = headingFor(anchor) || all[0]?.id || '';
+    let inside = !headingFor(anchor);
+    for (const block of all) {
+      if (/^H[1-3]$/.test(block.tagName) && !block.hidden) inside = block.id === head;
+      block.toggleAttribute('data-here', inside);
+    }
+  };
+  const moved = (anchor: string) => {
+    if (!anchor || anchor === atTop.current) return;
+    atTop.current = anchor;
+    markHere(anchor);
+    latest.current.onPosition?.(anchor);
+  };
+  /** Leaves: shows a spread, and says where the reader is. */
+  const show = (n: number) => {
+    const root = article.current;
+    if (!root) return;
+    const { step, spreads } = layout.current;
+    leafAt.current = Math.max(0, Math.min(spreads - 1, n));
+    root.scrollLeft = leafAt.current * step;
+    const start = leafAt.current * step;
+    const first = blocks().find((b) => b.offsetLeft + b.offsetWidth > start + 1);
+    if (first) moved(first.id);
+    latest.current.onLeaf?.({ at: leafAt.current + 1, of: spreads, pages: layout.current.pages });
+  };
   const goTo: ReaderHandle['goTo'] = (anchor, { smooth = true, focus = true } = {}) => {
     const target = article.current?.querySelector<HTMLElement>(`#${CSS.escape(anchor)}`);
     if (!target) return false;
-    target.scrollIntoView?.({ block: 'start', behavior: smooth && !still() ? 'smooth' : 'auto' });
+    if (leaves) show(Math.floor(target.offsetLeft / layout.current.step));
+    else target.scrollIntoView?.({ block: 'start', behavior: smooth && !still() ? 'smooth' : 'auto' });
     if (focus) {
       target.setAttribute('tabindex', '-1');
       target.focus({ preventScroll: true });
     }
-    atTop.current = anchor;
+    if (!leaves) {
+      atTop.current = anchor;
+      markHere(anchor);
+    }
     return true;
   };
 
   useImperativeHandle(ref, () => ({
     outline,
     position: () => atTop.current,
-    headingFor(anchor) {
-      let found = '';
-      for (const block of blocks()) {
-        if (/^H[1-3]$/.test(block.tagName) && !block.hidden) found = block.id;
-        if (block.id === anchor) break;
-      }
-      return found;
-    },
+    headingFor,
     goTo,
+    turn: (by) => leaves && show(leafAt.current + by),
+    leaf: () => (leaves ? { at: leafAt.current + 1, of: layout.current.spreads, pages: layout.current.pages } : { at: 1, of: 1, pages: 1 }),
+    leafOf(anchor) {
+      const target = leaves ? article.current?.querySelector<HTMLElement>(`#${CSS.escape(anchor)}`) : null;
+      return target ? Math.floor(target.offsetLeft / layout.current.page) + 1 : 0;
+    },
     marked() {
       const selection = document.getSelection();
       if (!selection || selection.isCollapsed || !selection.rangeCount) return undefined;
@@ -183,8 +266,43 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
     for (const h of root.querySelectorAll('h1[hidden]')) h.removeAttribute('hidden');
     if (heading && first?.tagName === 'H1' && first.textContent?.trim().toLocaleLowerCase() === heading.trim().toLocaleLowerCase()) first.hidden = true;
     atTop.current = '';
+    for (const b of root.querySelectorAll('[data-here]')) b.removeAttribute('data-here');
+    const opening = blocks()[0];
+    if (opening && flow === 'horizon') markHere(opening.id);
     latest.current.onOutline?.(outline());
-  }, [html, heading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- markHere reads the flow given here
+  }, [html, heading, flow]);
+
+  // Leaves: columns as wide as a leaf, measured again whenever the reader's size changes.
+  useLayoutEffect(() => {
+    const root = article.current;
+    if (!root || html === undefined || !leaves) return;
+    const lay = () => {
+      root.style.columnWidth = '';
+      root.querySelector(':scope > .quill-reader-end')?.remove();
+      const gap = parseFloat(getComputedStyle(root).columnGap) || 0;
+      const width = root.clientWidth;
+      if (!width) return;
+      const column = (width - gap * (spread - 1)) / spread;
+      root.style.columnWidth = `${column}px`;
+      const page = column + gap;
+      const pages = Math.max(1, Math.round((root.scrollWidth + gap) / page));
+      // A last spread with an empty leaf still turns to a whole spread: an empty column fills it.
+      if (pages % spread) root.append(Object.assign(document.createElement('div'), { className: 'quill-reader-end', ariaHidden: 'true' }));
+      const at = blocks().find((b) => b.id === atTop.current);
+      layout.current = { step: width + gap, page, spreads: Math.max(1, Math.ceil(pages / spread)), pages };
+      show(at ? Math.floor(at.offsetLeft / (width + gap)) : leafAt.current);
+    };
+    lay();
+    const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(lay) : undefined;
+    watch?.observe(root);
+    return () => {
+      watch?.disconnect();
+      root.style.columnWidth = '';
+      root.scrollLeft = 0;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- show and blocks read the refs they need
+  }, [html, leaves, spread, size, width]);
 
   useEffect(() => {
     const root = article.current;
@@ -209,28 +327,35 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
   // Whatever scrolls it: the page, or a pane round it, even inside another component's shadow root.
   useEffect(() => {
     const root = article.current;
-    if (!root) return;
+    if (!root || leaves) return;
     let frame = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        if (root.getBoundingClientRect().top > 0) return;
-        const at = blocks().find((b) => b.getBoundingClientRect().bottom > 72)?.id ?? '';
-        if (at && at !== atTop.current) {
-          atTop.current = at;
-          latest.current.onPosition?.(at);
-        }
-      });
-    };
     const up = (at: Node): Node | null => (at instanceof Element && at.assignedSlot) || (at instanceof ShadowRoot ? at.host : at.parentNode);
     const scrollers: EventTarget[] = [window];
     for (let at: Node | null = up(root); at; at = up(at)) if (at instanceof Element) scrollers.push(at);
+    // The pane that scrolls it, if one does: positions count from its top, not the window's.
+    const pane = scrollers.find((t): t is Element => t instanceof Element && /auto|scroll/.test(getComputedStyle(t).overflowY));
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const box = pane?.getBoundingClientRect();
+        const top = box?.top ?? 0;
+        const tall = box?.height ?? window.innerHeight;
+        if (root.getBoundingClientRect().top > top && flow !== 'horizon') return;
+        const all = blocks();
+        const end = pane ? pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2 : window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+        // Horizon reads at a line a third of the way down; a section at the very end counts once you reach it.
+        const line = top + (flow === 'horizon' ? tall / 3 : 72);
+        const at = (flow === 'horizon' && end ? all[all.length - 1] : all.find((b) => b.getBoundingClientRect().bottom > line))?.id ?? '';
+        moved(at);
+      });
+    };
     for (const t of scrollers) t.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
       for (const t of scrollers) t.removeEventListener('scroll', onScroll);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- moved reads the refs it needs
+  }, [leaves, flow]);
 
   return (
     <article
@@ -238,13 +363,38 @@ export function Reader({ markdown: source, size = 'medium', width = 'narrow', im
       className={cx('quill-reader', className)}
       data-size={size}
       data-width={width}
-      aria-busy={html === undefined || undefined}
+      data-flow={flow}
+      data-spread={leaves ? spread : undefined}
+      aria-busy={(html === undefined && !plain) || undefined}
+      tabIndex={leaves ? 0 : undefined}
+      aria-roledescription={leaves ? 'leaves' : undefined}
+      onKeyDown={(e) => {
+        if (!leaves) return;
+        const by = { ArrowRight: 1, PageDown: 1, ' ': 1, ArrowLeft: -1, PageUp: -1 }[e.key] ?? (e.key === 'Home' ? -Infinity : e.key === 'End' ? Infinity : 0);
+        if (!by || e.altKey || e.ctrlKey || e.metaKey) return;
+        e.preventDefault();
+        show(Number.isFinite(by) ? leafAt.current + by : by < 0 ? 0 : layout.current.spreads - 1);
+      }}
       onClick={(e) => {
         const href = (e.target as HTMLElement).closest?.('a')?.getAttribute('href');
         if (href?.startsWith('#') && goTo(decodeURIComponent(href.slice(1)))) e.preventDefault();
       }}
       // markdown-it runs with html: false, so the document's own HTML arrives escaped.
-      dangerouslySetInnerHTML={{ __html: html ?? '' }}
+      {...(plain
+        ? {
+            children: (
+              <>
+                <State kind="error" size="line" heading="Showing plain text: the formatting didn’t load." body="Anything not saved on this page is lost when it reloads." action="Reload the page" onAction={() => location.reload()} />
+                {source
+                  .split(/\n{2,}/)
+                  .filter((p) => p.trim())
+                  .map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+              </>
+            ),
+          }
+        : { dangerouslySetInnerHTML: { __html: html ?? '' } })}
     />
   );
 }
@@ -255,16 +405,21 @@ export interface ContentsProps {
   current?: string;
   heading?: string;
   onSelect?: (id: string) => void;
+  /** For a reader set out as leaves: the leaf each heading starts on, by its id, shown as a ledger. */
+  leaves?: Record<string, number>;
   className?: string;
 }
 
-/** A document's contents: its headings as links, indented by level, with the one being read marked. Beside a Reader, from its `onOutline`. */
-export function Contents({ items, current = '', heading = 'Contents', onSelect, className }: ContentsProps) {
+/**
+ * A document's contents: its headings as links, indented by level, with the one being read marked.
+ * Beside a Reader, from its `onOutline`. Given `leaves`, each line also says the leaf it starts on.
+ */
+export function Contents({ items, current = '', heading = 'Contents', onSelect, leaves, className }: ContentsProps) {
   if (!items.length) return null;
   // Indented from the highest level there is, so a document without a title heading starts at the left.
   const top = Math.min(...items.map((i) => i.level));
   return (
-    <nav className={cx('quill-contents', className)} aria-label={heading}>
+    <nav className={cx('quill-contents', className)} aria-label={heading} data-ledger={leaves ? '' : undefined}>
       <span className="quill-label">{heading}</span>
       <ol>
         {items.map((item) => (
@@ -277,7 +432,16 @@ export function Contents({ items, current = '', heading = 'Contents', onSelect, 
                 onSelect?.(item.id);
               }}
             >
-              {item.text}
+              <span className="quill-contents-text">{item.text}</span>
+              {leaves?.[item.id] ? (
+                <>
+                  <span className="quill-contents-rule" aria-hidden="true" />
+                  <span className="quill-contents-leaf">
+                    <span className="sr-only">, page </span>
+                    {leaves[item.id]}
+                  </span>
+                </>
+              ) : null}
             </a>
           </li>
         ))}

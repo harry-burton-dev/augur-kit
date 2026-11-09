@@ -3,6 +3,7 @@ import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components
 import { Button } from './button.js';
 import { FieldChecks, type FieldChecker } from './field.js';
 import { Heading } from './heading.js';
+import { KeyCap } from './key-cap.js';
 
 /** Return false (or a Promise of false) to keep the dialog open; throw to keep it open and say why. */
 export type DialogSubmit = (values: Record<string, string>) => void | false | Promise<void | false>;
@@ -149,7 +150,7 @@ export function Dialog({
                 </div>
               ) : null}
               <button ref={cancel} type="button" className="augur-dialog-cancel" disabled={busy} onClick={() => close(null)}>
-                <kbd>Esc</kbd>
+                <KeyCap>Esc</KeyCap>
                 {cancelLabel}
               </button>
             </div>

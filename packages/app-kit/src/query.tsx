@@ -64,8 +64,12 @@ export function newDataClient(words: ErrorWords = {}): DataClient {
         // A service that said no will say no again: only a failure to answer is tried again.
         retry: (count, err) => count < 2 && AppError.from(err, words).retryable,
         refetchOnWindowFocus: false,
+        // Offline, a load fails in words instead of waiting unseen. `always` turns this off unless it's asked for.
+        networkMode: 'always',
+        refetchOnReconnect: true,
       },
-      mutations: { retry: false },
+      // Likewise a change: left paused it neither settles nor lets a Dialog go.
+      mutations: { retry: false, networkMode: 'always' },
     },
   });
   const client: DataClient = {
@@ -176,7 +180,7 @@ export interface DataViewProps<T> {
   loading: string;
   /** Whether what came is nothing, to say `empty` instead. */
   isEmpty?: (data: T) => boolean;
-  /** What to say when there's nothing: one sentence, a line more, at most one thing to do. */
+  /** What to say when there's nothing, or while `enabled` holds it back: one sentence, a line more, at most one thing to do. */
   empty?: { heading: string; body?: string; action?: string; onAction?: () => void };
   /** What to say above the error's own words, such as "Libraries didn't load". */
   failed?: string;
@@ -203,7 +207,11 @@ export function DataView<T>({ state, loading, isEmpty, empty, failed, size = 're
       />
     );
   }
-  if (state.data === undefined) return <State kind="loading" heading={loading} size={size} />;
+  if (state.data === undefined) {
+    if (state.loading) return <State kind="loading" heading={loading} size={size} />;
+    // Waiting on `enabled`: nothing is loading, so it mustn't say so.
+    return empty ? <State kind="empty" {...empty} size={size} /> : null;
+  }
   if (empty && isEmpty?.(state.data)) return <State kind="empty" {...empty} size={size} />;
   return <>{children(state.data)}</>;
 }

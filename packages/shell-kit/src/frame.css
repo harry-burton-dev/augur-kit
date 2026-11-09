@@ -1,0 +1,46 @@
+/* The frame round an app on the app contract (spec 6.3, 6.8): what sits under a place on the rail, the
+   About panel, and the pane the radial menu opens in. The palette and the ring are Quill's, styled there.
+   Every value is a token. */
+
+/* the pane holds the app's screen; it lays nothing out itself */
+.aerie-frame-pane { display: contents; }
+
+/* ── what sits under a place on the rail ── */
+.aerie-rail-place { display: flex; flex-direction: column; }
+.aerie-rail-items { display: flex; flex-direction: column; padding-bottom: var(--space-1); border-bottom: 1px solid var(--grey-hairline); }
+.aerie-bar .aerie-rail-under, .aerie-bar .aerie-rail-more {
+  width: 100%; min-height: var(--rail-under); grid-template-columns: var(--bar-icon-rail) minmax(0, 1fr); justify-items: start; align-items: center;
+  gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
+  font-size: var(--type-small); font-weight: 400; text-align: left; animation: none;
+}
+.aerie-bar .aerie-rail-under svg { width: var(--bar-icon-rail); height: var(--bar-icon-rail); }
+/* a row without an icon keeps its words in line with the others */
+.aerie-bar .aerie-rail-under > span:only-child, .aerie-bar .aerie-rail-more > span { grid-column: 2; }
+.aerie-bar .aerie-rail-under > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aerie-bar .aerie-rail-more { color: var(--grey-6); }
+.aerie-bar[data-mode='app'] .aerie-rail-under[aria-current]::after { left: auto; right: 0; top: var(--space-1); bottom: var(--space-1); width: var(--bar-mark); height: auto; }
+/* narrow, the rail shows icons with their names under them: rows under a place keep only their words */
+.aerie-bar[data-narrow] .aerie-rail-under, .aerie-bar[data-narrow] .aerie-rail-more { grid-template-columns: minmax(0, 1fr); padding: var(--space-1); text-align: center; justify-items: center; }
+.aerie-bar[data-narrow] .aerie-rail-under svg { display: none; }
+.aerie-bar[data-narrow] .aerie-rail-under > span, .aerie-bar[data-narrow] .aerie-rail-more > span { grid-column: 1; }
+
+/* ── the About panel: the right-hand region, beside the main column ── */
+.aerie-about {
+  flex: none; display: flex; flex-direction: column; min-height: 0; color: var(--ink); font-family: var(--font-sans);
+  background: var(--surface-pane); border-left: 1px solid var(--hairline);
+}
+.aerie-about[data-open] { width: var(--about-panel); }
+.aerie-about-head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); border-bottom: 1px solid var(--hairline); }
+.aerie-about-head h2 { margin: 0; font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-weight: 500; color: var(--ink-muted); }
+.aerie-about-body { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; padding: var(--space-3) var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-5); }
+.aerie-about-section h3 { margin: 0 0 var(--space-2); display: flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); font-weight: 500; }
+.aerie-about-section h3 svg { color: var(--ink-muted); }
+.aerie-about-empty { margin: 0; color: var(--ink-muted); font-size: var(--type-small); line-height: var(--leading-small); }
+/* folded: a button standing at the edge, its word running down it */
+.aerie-about-open {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2);
+  font: inherit; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); background: none; border: 0; cursor: pointer;
+}
+.aerie-about-open span { writing-mode: vertical-rl; }
+.aerie-about-open:hover { color: var(--ink); }
+.aerie-about-open:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
