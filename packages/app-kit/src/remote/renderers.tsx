@@ -4,7 +4,7 @@
  * its children by slot. Long lists and tables draw only the rows in view (the app contract, 6.9).
  */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { AskTwice, Button, Checkbox, CheckboxGroup, Choice, Dialog, Icon, Notice, Progress, Select, Status, Steps, TextField, type IconName } from '@augur/kit-common';
+import { AskTwice, Button, CheckList, CheckRow, Checkbox, CheckboxGroup, Choice, Dialog, Icon, Notice, PagedList, Progress, Select, Status, StepList, Steps, TextField, type CheckTone, type IconName } from '@augur/kit-common';
 import { About } from '../about.js';
 import { DateField } from '../date.js';
 import { Editor } from '../editor.js';
@@ -58,6 +58,44 @@ function useHeld<T>(value: T): [T, (next: T) => void] {
     setSent((was) => [...was.slice(-99), next]);
   }, []);
   return [held, change];
+}
+
+/** One of the element's events, or nothing when the sandbox doesn't listen to it. */
+const event = (parts: RemoteParts, name: string): ((detail?: unknown) => void) | undefined => parts.events[name];
+
+type PagedItem = { id: string; title: string; detail?: string; meta?: string; status?: string };
+
+/** A page at a time; with more to load and a `more` listener, the last page offers it. */
+function RemotePagedList({ parts }: { parts: RemoteParts }) {
+  const { label = '', items = [], pageSize = 5, total, noun = '', empty, busy } = p(parts);
+  const list = items as PagedItem[];
+  const open = event(parts, 'open');
+  const more = event(parts, 'more');
+  return (
+    <div className="quill-paged">
+      <PagedList
+        label={label}
+        items={list}
+        pageSize={pageSize}
+        keyOf={(i) => i.id}
+        empty={empty}
+        render={(i) => (
+          <span className="quill-paged-row">
+            {open ? (
+              <button type="button" className="quill-paged-open" onClick={() => open(i.id)}>
+                {i.title}
+              </button>
+            ) : (
+              <b>{i.title}</b>
+            )}
+            {i.detail || i.meta ? <small>{[i.detail, i.meta].filter(Boolean).join(' · ')}</small> : null}
+            {i.status ? <Status status={i.status as never} markOnly /> : null}
+          </span>
+        )}
+      />
+      {more && typeof total === 'number' && total > list.length ? <More shown={list.length} total={total} noun={noun} busy={busy} onMore={() => more()} /> : null}
+    </div>
+  );
 }
 
 function RemoteTextField({ parts }: { parts: RemoteParts }) {
@@ -407,4 +445,29 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
     const { status = 'queued', ...rest } = p(parts);
     return <Status {...rest} status={status} />;
   },
+  'quill-check-list': (parts) => {
+    const { label = '', rows = [] } = p(parts);
+    const act = event(parts, 'act');
+    return (
+      <CheckList label={label}>
+        {(rows as { id: string; title: string; detail?: string; tone?: CheckTone; action?: { label: string; disabled?: boolean; reason?: string } }[]).map((r) => (
+          <CheckRow key={r.id} title={r.title} detail={r.detail} tone={r.tone} action={r.action && act ? { ...r.action, onPress: () => act(r.id) } : undefined} />
+        ))}
+      </CheckList>
+    );
+  },
+  'quill-step-list': (parts) => {
+    const { label = '', steps = [] } = p(parts);
+    const act = event(parts, 'act');
+    return (
+      <StepList
+        label={label}
+        steps={(steps as { id: string; title: string; detail?: string; action?: string; done?: boolean; unavailable?: string }[]).map(({ action, ...s }) => ({
+          ...s,
+          ...(action && act ? { action: { label: action, onPress: () => act(s.id) } } : {}),
+        }))}
+      />
+    );
+  },
+  'quill-paged-list': (parts) => <RemotePagedList parts={parts} />,
 };

@@ -1438,4 +1438,14 @@
     .quill-doors-drift, .quill-doors-bloom { display: none; }
     .quill-doors-rise, .quill-doors-focus-line, .quill-doors-body, .quill-doors-door { animation: none; transition: none; }
   }
+
+  /* quill-paged-list (remote): one row of a page, its title opening it when the app listens. */
+  .quill-paged { display: flex; flex-direction: column; gap: var(--space-2); }
+  .quill-paged-row { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-3); }
+  .quill-paged-row > small { grid-column: 1; color: var(--ink-muted); font-size: var(--type-small); line-height: var(--leading-small); }
+  .quill-paged-row > b, .quill-paged-open { grid-column: 1; font-weight: 500; }
+  .quill-paged-row > .augur-status { grid-column: 2; grid-row: 1 / span 2; }
+  .quill-paged-open { justify-self: start; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 500; text-align: start; cursor: pointer; text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+  .quill-paged-open:hover { text-decoration-color: var(--ink); }
+  .quill-paged-open:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
 }
