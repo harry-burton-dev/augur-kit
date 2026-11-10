@@ -45,3 +45,5 @@ export { QuillRemote, createQuillReceiver, type QuillRemoteProps, type QuillRece
 export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, checkRemoteValue, readerPicturePath, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType, type RemoteCheck } from './remote/vocabulary.js';
 export { VIRTUAL_FROM } from './remote/renderers.js';
 export { thingProps, type ThingMark } from './thing.js';
+export { ThingPage, TrustLine, type ThingPageProps, type TrustLineProps } from './thing-page.js';
+export { primaryAction, thingActions, trustLine, shortDate, atRest, validateThing, THING_CAPS, THING_ACTIONS, THING_QUIET_ORDER, THING_WORDS, THING_ANSWER_KEYS, THING_PROBLEM_KINDS, type ThingView, type ThingAnswer, type ThingAnswerKey, type ThingProblem, type ThingProblemKind, type ThingFact, type ThingNeighbour, type ThingSource, type ThingCaps, type ThingAction, type ThingActionId, type ThingWords } from './thing-view.js';

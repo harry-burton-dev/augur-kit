@@ -1469,4 +1469,76 @@
   /* quill-floor-path (remote) and quill-file-button: a group round the kit's Path; the file input stays hidden. */
   .quill-floor-path { display: flex; flex-direction: column; }
   .quill-file-button { display: inline-flex; }
+
+  /* A thing's page: one shape for every thing. What it is, the answer, what's wrong, key facts, around it,
+     then a way to everything else. Hierarchy comes from size and order, never from colour. */
+  .quill-thing { container: quill-thing / inline-size; display: flex; flex-direction: column; gap: var(--stack-loose); max-width: var(--measure-wide); color: var(--ink); }
+  .quill-thing-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+  .quill-thing-who { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+  .quill-thing-kind, .quill-thing-caps, .quill-thing-trust, .quill-thing-answer-row > dt {
+    margin: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); color: var(--ink-muted);
+  }
+  .quill-thing-kind, .quill-thing-caps { display: flex; align-items: center; gap: var(--space-2); text-transform: uppercase; font-weight: 400; }
+  .quill-thing-name { margin: 0; font-size: var(--type-heading); line-height: var(--leading-heading); font-weight: var(--weight-heading); }
+  .quill-thing-also { margin: 0; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+  .quill-thing-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+  .quill-thing-action {
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--target-md); padding: 0 var(--space-3);
+    border: 1px solid transparent; border-radius: var(--radius-control); background: transparent; color: var(--ink-muted);
+    font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer;
+  }
+  .quill-thing-action[data-primary] { border: 2px solid var(--ink); color: var(--ink); font-weight: 600; padding: 0 var(--space-4); }
+  .quill-thing-action:hover { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
+  .quill-thing-action:focus-visible, .quill-thing-link:focus-visible, .quill-thing-trust:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+  .quill-thing-answer { display: flex; flex-direction: column; gap: var(--space-2); }
+  .quill-thing-answer-rows { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .quill-thing-answer-row { display: grid; grid-template-columns: var(--space-8) minmax(0, 1fr); gap: var(--space-4); align-items: baseline; }
+  .quill-thing-answer-row > dt { font-family: inherit; letter-spacing: normal; font-size: var(--type-meta); line-height: var(--leading-meta); }
+  .quill-thing-answer-row > dd { margin: 0; display: flex; flex-direction: column; min-width: 0; }
+  .quill-thing-answer-value { margin: 0; font-size: var(--type-title-s); line-height: var(--leading-title-s); font-weight: 400; overflow-wrap: anywhere; }
+  .quill-thing-answer[data-empty] .quill-thing-answer-value { font-size: var(--type-heading); line-height: var(--leading-heading); color: var(--ink-muted); }
+
+  .quill-thing-problem {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-1) var(--space-3); align-items: start;
+    padding: var(--space-3) 0; border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline);
+  }
+  .quill-thing-problem > svg { margin-top: var(--space-1); }
+  .quill-thing-problem-body { display: flex; flex-direction: column; min-width: 0; }
+  .quill-thing-problem-kind { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .quill-thing-problem-text { margin: 0; font-size: var(--type-lead); line-height: var(--leading-lead); font-weight: 500; overflow-wrap: anywhere; }
+  .quill-thing-problem[data-kind='none'] .quill-thing-problem-text { font-weight: 400; font-size: var(--type-body); line-height: var(--leading-body); }
+
+  .quill-thing-facts { --thing-facts: 4; margin: 0; display: grid; grid-template-columns: repeat(var(--thing-facts), minmax(0, 1fr)); gap: var(--space-3) var(--space-5); }
+  .quill-thing-fact > dt { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
+  .quill-thing-fact[data-adopted='no'] > dt { font-style: italic; }
+  .quill-thing-fact > dd { margin: 0; display: flex; flex-direction: column; min-width: 0; }
+  .quill-thing-fact-value { font-size: var(--type-body); line-height: var(--leading-body); overflow-wrap: anywhere; }
+
+  .quill-thing-around { display: flex; flex-direction: column; gap: var(--space-2); }
+  .quill-thing-around-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: var(--space-5); }
+  .quill-thing-around-list > li { break-inside: avoid; padding: var(--space-2) 0; border-top: 1px solid var(--hairline); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+  .quill-thing-neighbour { color: var(--ink); }
+  .quill-thing-empty { margin: 0; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+
+  .quill-thing-trust { letter-spacing: normal; display: inline-block; align-self: flex-start; padding: 0; border: 0; background: none; text-align: start; text-decoration: none; }
+  button.quill-thing-trust { cursor: pointer; }
+  button.quill-thing-trust:hover { color: var(--ink); text-decoration: underline; text-underline-offset: var(--space-1); }
+  .quill-thing-link {
+    display: inline-flex; align-items: center; gap: var(--space-2); align-self: flex-start; padding: 0; border: 0; background: none; color: var(--ink-muted);
+    font: inherit; font-size: var(--type-meta); line-height: var(--leading-meta); text-align: start; cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: var(--space-1);
+  }
+  .quill-thing-link[data-strong] { color: var(--ink); }
+  .quill-thing-link:hover { color: var(--ink); text-decoration-color: var(--ink); }
+  .quill-thing-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-5); padding-top: var(--space-3); border-top: 1px solid var(--hairline); }
+  .quill-thing-foot .quill-thing-link { text-decoration: none; }
+
+  /* Narrower than --measure-read (a container query cannot read a token). */
+  @container quill-thing (width < 40rem) {
+    .quill-thing-actions { justify-content: flex-start; }
+    .quill-thing-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .quill-thing-around-list { columns: 1; }
+    .quill-thing-answer-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  }
 }
