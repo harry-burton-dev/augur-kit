@@ -22,10 +22,9 @@
 /* looking up: the water and the app tip away below you and go dark */
 .aerie-shell[data-open] .aerie-ground { transform: translateY(14%) scale(1.04); filter: brightness(0.5) saturate(0.7); }
 /* The floor gauge keeps a lane of its own at the right edge, so it never covers an app: the stage ends where the
-   lane starts (the notch, the open app's icon pinned beside it, the gauge's padding and its gap from the edge,
-   the same numbers as .aerie-notch and .aerie-pinned below). Opened out to show floor names, it
-   reaches over the app only while you point at it or tab through it. */
-.aerie-shell { --gauge-lane: calc(28px + 22px + var(--space-1) + var(--space-2) * 3 + 2px); }
+   lane starts (the token gauge-lane: the notch, the open app's icon pinned beside it, the gauge's padding and its
+   gap from the edge, from the same tokens as .aerie-notch and .aerie-pinned below). Opened out to show floor names,
+   it reaches over the app only while you point at it or tab through it. */
 .aerie-shell[data-gauge] .aerie-stage { right: var(--gauge-lane); }
 /* With an app open the app bar docks as the rail on the left, and the stage starts beside it. */
 .aerie-shell[data-bar='app'] .aerie-stage { left: var(--bar-tile); }
@@ -210,13 +209,13 @@
 .aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: 13.5px; width: 1px; background: var(--hairline); }
 .aerie-shell[data-open] .aerie-gauge { opacity: 0; pointer-events: none; }
 .aerie-gauge button { position: relative; display: flex; align-items: center; justify-content: flex-end; color: var(--ink-muted); text-align: right; }
-.aerie-gauge .aerie-notch { position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--slate-deep); border: 1px solid var(--hairline); transition: color var(--motion-quick), border-color var(--motion-quick); }
+.aerie-gauge .aerie-notch { position: relative; flex: none; display: grid; place-items: center; width: var(--gauge-notch); height: var(--gauge-notch); border-radius: 50%; background: var(--slate-deep); border: 1px solid var(--hairline); transition: color var(--motion-quick), border-color var(--motion-quick); }
 .aerie-gauge button:hover .aerie-notch, .aerie-gauge button:focus-visible .aerie-notch { color: var(--ink); border-color: var(--hairline-strong); }
 .aerie-gauge button:focus-visible { outline: 0; }
 .aerie-gauge button:focus-visible .aerie-notch { box-shadow: 0 0 0 2px var(--focus); }
 .aerie-gauge .aerie-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--floor-mark, var(--green)); border: 2px solid var(--slate-deep); }
 .aerie-gauge button[aria-current] .aerie-notch { color: var(--floor-mark); border-color: var(--floor-mark); box-shadow: 0 0 12px color-mix(in srgb, var(--floor-mark) 45%, transparent); }
-.aerie-gauge .aerie-pinned { flex: none; display: grid; place-items: center; width: 22px; height: 22px; margin-right: var(--space-1); overflow: hidden; border-radius: var(--radius-key); color: var(--ink); background: color-mix(in srgb, var(--floor-mark) 22%, var(--slate-deep)); border: 1px solid var(--floor-mark); transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard); }
+.aerie-gauge .aerie-pinned { flex: none; display: grid; place-items: center; width: var(--gauge-pinned); height: var(--gauge-pinned); margin-right: var(--space-1); overflow: hidden; border-radius: var(--radius-key); color: var(--ink); background: color-mix(in srgb, var(--floor-mark) 22%, var(--slate-deep)); border: 1px solid var(--floor-mark); transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard); }
 /* Opening out is one smooth move: each label's box grows from nothing to its size, in both directions, as it fades in, so nothing jumps */
 .aerie-gauge .aerie-label { display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); overflow: hidden; opacity: 0; font-size: var(--type-small); line-height: var(--leading-small); letter-spacing: normal; text-transform: none;
   transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
@@ -234,7 +233,7 @@
 /* resting: the open app is the same on every floor, so the gauge stays in view, dimmed, and says why when you point at it */
 .aerie-gauge .aerie-why { display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); justify-content: end; overflow: hidden; opacity: 0; margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); text-align: right;
   transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), margin var(--motion-base) var(--ease-standard); }
-.aerie-gauge .aerie-why > span { box-sizing: border-box; width: calc(240px + var(--space-3) + 28px); min-height: 0; }
+.aerie-gauge .aerie-why > span { box-sizing: border-box; width: calc(240px + var(--space-3) + var(--gauge-notch)); min-height: 0; }
 .aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; margin-bottom: var(--space-4); transition-delay: calc(var(--motion-instant) * 0), calc(var(--motion-instant) * 0), var(--motion-instant), calc(var(--motion-instant) * 0); }
 .aerie-gauge.aerie-rest button[aria-disabled='true'] { cursor: not-allowed; }
 .aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-notch, .aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-label { opacity: 0.5; }
