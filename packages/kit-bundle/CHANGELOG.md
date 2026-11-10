@@ -1,5 +1,14 @@
 # @augur/kit-bundle
 
+## 0.5.17
+
+### Patch Changes
+
+- fdcdb1c: Common has a `size` group: marks and glyphs (`mark-xs` to `glyph-lg`), small controls (`control-xs` to `control-lg`), list and table rows (`row`, `row-compact`, `cell`, `cell-compact`, `bar-row`) and the narrowest a column, card, tile, aside or menu goes. Sizes, not spaces: density never changes them. The kits' CSS uses them, so raw distances go from 193 to 65 (what is left is container and media query widths, effects and the shell's own drawings). Every value is the same as before. Aerie's PaneLayout frame now takes its parent's width by itself.
+- Updated dependencies [fdcdb1c]
+  - @augur/kit-common@0.17.0
+  - @augur/app-kit@0.20.1
+
 ## 0.5.16
 
 ### Patch Changes

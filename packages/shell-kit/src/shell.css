@@ -48,7 +48,7 @@
 .aerie-right { display: flex; align-items: center; gap: var(--space-5); }
 .aerie-status { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) 0; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
 .aerie-status:hover { color: var(--ink); }
-.aerie-point { position: relative; width: 6px; height: 6px; border-radius: 50%; border: 1px solid var(--ink-muted); }
+.aerie-point { position: relative; width: var(--mark-xs); height: var(--mark-xs); border-radius: 50%; border: 1px solid var(--ink-muted); }
 .aerie-status.aerie-some .aerie-point { background: var(--ink); border-color: var(--ink); }
 .aerie-status.aerie-needs { color: var(--needs-you); }
 .aerie-status.aerie-needs .aerie-point { background: var(--needs-you); border-color: var(--needs-you); }
@@ -57,8 +57,8 @@
 .aerie-status.aerie-offline .aerie-point { border-color: var(--warning); }
 .aerie-shell[data-arriving] .aerie-point { animation: aerie-arrive var(--motion-calm) var(--s-ease); }
 @keyframes aerie-arrive { 30% { transform: scale(2.2); } }
-.aerie-handle { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 96px; height: 28px; display: flex; justify-content: center; padding-top: var(--space-2); }
-.aerie-handle i { display: block; width: 40px; height: 4px; border-radius: 0; background: var(--hairline-strong); transition: width var(--motion-slow) var(--s-ease); }
+.aerie-handle { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 96px; height: var(--control-sm); display: flex; justify-content: center; padding-top: var(--space-2); }
+.aerie-handle i { display: block; width: var(--control-lg); height: var(--space-1); border-radius: 0; background: var(--hairline-strong); transition: width var(--motion-slow) var(--s-ease); }
 .aerie-handle:hover i, .aerie-handle:focus-visible i { width: 56px; background: color-mix(in srgb, var(--ink) 50%, transparent); }
 /* On a floor the handle takes the floor's colour on every screen, so the level is always in view. */
 .aerie-shell[data-floor-kind] .aerie-handle i { background: color-mix(in srgb, var(--floor-mark) 70%, transparent); box-shadow: 0 0 var(--space-3) color-mix(in srgb, var(--floor-mark) 40%, transparent); }
@@ -92,7 +92,7 @@
 .aerie-dome > button { position: absolute; left: calc(50% + var(--x)); top: calc(var(--dome) + var(--y)); transform: translate(-50%, calc(-50% - 12px)); opacity: 0; transition: opacity var(--motion-calm) var(--ease-standard), transform var(--motion-calm) var(--s-ease); }
 .aerie-shell[data-open] .aerie-dome > button { opacity: 1; transform: translate(-50%, -50%); transition-delay: calc(var(--motion-base) + var(--i) * var(--motion-instant)); }
 .aerie-shell[data-open][data-view]:not([data-view='']) .aerie-dome > button:not(.aerie-lit) { opacity: 0.3; }
-.aerie-fn { width: 48px; height: 48px; border-radius: 50% !important; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+.aerie-fn { width: var(--target-md); height: var(--target-md); border-radius: 50% !important; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
 .aerie-fn::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ink) 12%, transparent), transparent 70%); opacity: 0; transition: opacity var(--motion-slow); }
 .aerie-fn:hover, .aerie-fn:focus-visible, .aerie-fn.aerie-lit { color: var(--ink); }
 .aerie-fn:hover::before, .aerie-fn:focus-visible::before, .aerie-fn.aerie-lit::before { opacity: 1; }
@@ -108,12 +108,12 @@
 .aerie-sky.aerie-some .aerie-thread::after { opacity: 0.5; }
 .aerie-sky.aerie-needs .aerie-thread::after { opacity: 0.9; animation-duration: var(--motion-shimmer); background-image: repeating-linear-gradient(to bottom, transparent 0 46px, color-mix(in srgb, var(--needs-you) 95%, transparent) 46px 52px, transparent 52px 120px); }
 @keyframes aerie-fall { to { background-position: 0 120px; } }
-.aerie-orb { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--hairline-strong); display: flex; align-items: center; justify-content: center; }
-.aerie-orb i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-muted); transition: all var(--motion-slow); }
+.aerie-orb { position: relative; width: var(--control-lg); height: var(--control-lg); border-radius: 50%; border: 1px solid var(--hairline-strong); display: flex; align-items: center; justify-content: center; }
+.aerie-orb i { width: var(--mark); height: var(--mark); border-radius: 50%; border: 1px solid var(--ink-muted); transition: all var(--motion-slow); }
 .aerie-orb.aerie-some i { background: var(--ink); border-color: var(--ink); }
 .aerie-orb.aerie-needs { border-color: color-mix(in srgb, var(--needs-you) 50%, transparent); }
 .aerie-orb.aerie-needs::after { inset: -1px; border-color: color-mix(in srgb, var(--needs-you) 50%, transparent); }
-.aerie-orb.aerie-needs i { width: 10px; height: 10px; background: var(--needs-you); border-color: var(--needs-you); box-shadow: 0 0 16px color-mix(in srgb, var(--needs-you) 70%, transparent); }
+.aerie-orb.aerie-needs i { width: var(--mark-lg); height: var(--mark-lg); background: var(--needs-you); border-color: var(--needs-you); box-shadow: 0 0 16px color-mix(in srgb, var(--needs-you) 70%, transparent); }
 .aerie-orb.aerie-offline { border-color: color-mix(in srgb, var(--warning) 50%, transparent); }
 .aerie-orb.aerie-offline i { border-color: var(--warning); }
 
@@ -135,7 +135,7 @@
 .aerie-group b { font-weight: 500; font-variant-numeric: tabular-nums; }
 .aerie-group .aerie-name { flex: 1; display: flex; align-items: baseline; gap: var(--space-2); }
 .aerie-group .aerie-quiet { color: var(--ink-muted); }
-.aerie-group .aerie-more { flex: none; align-self: center; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; opacity: 0.6; }
+.aerie-group .aerie-more { flex: none; align-self: center; display: flex; width: var(--control-sm); height: var(--control-sm); align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; opacity: 0.6; }
 .aerie-group .aerie-more:hover, .aerie-group .aerie-more:focus-visible { opacity: 1; color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .aerie-item.aerie-muted .aerie-row { opacity: 0.7; }
 .aerie-act { flex: none; padding: var(--space-1) var(--space-3); margin-left: var(--space-2); border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); white-space: nowrap; }
@@ -145,10 +145,10 @@
 :where(.aerie-shell > :not(.aerie-stage)) ul { list-style: none; margin: 0; padding: 0; }
 .aerie-item { display: flex; align-items: center; border-bottom: 1px solid var(--hairline); }
 .aerie-item .aerie-row { border-bottom: 0; }
-.aerie-row { position: relative; display: flex; align-items: center; gap: var(--space-4); width: 100%; min-height: 60px; padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--hairline); text-align: left; transition: background var(--motion-quick) var(--ease-standard); }
+.aerie-row { position: relative; display: flex; align-items: center; gap: var(--space-4); width: 100%; min-height: var(--row); padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--hairline); text-align: left; transition: background var(--motion-quick) var(--ease-standard); }
 .aerie-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .aerie-row:focus-visible { outline: 0; box-shadow: inset 0 0 0 1.5px var(--focus); border-radius: var(--radius-key); }
-.aerie-lead { flex: none; position: relative; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-muted); }
+.aerie-lead { flex: none; position: relative; width: var(--mark); height: var(--mark); border-radius: 50%; border: 1px solid var(--ink-muted); }
 .aerie-row.aerie-needs .aerie-lead { background: var(--needs-you); border-color: var(--needs-you); }
 .aerie-row.aerie-needs.aerie-first .aerie-lead::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
 .aerie-row.aerie-failed .aerie-lead { border-color: var(--danger); }
@@ -156,7 +156,7 @@
 .aerie-text b { font-weight: 400; font-size: var(--type-body); line-height: var(--leading-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aerie-text span, .aerie-meta { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aerie-meta { flex: none; font-variant-numeric: tabular-nums; }
-.aerie-x { position: relative; flex: none; display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; }
+.aerie-x { position: relative; flex: none; display: flex; width: var(--control-sm); height: var(--control-sm); align-items: center; justify-content: center; color: var(--ink-muted); border-radius: 50% !important; }
 .aerie-x:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .aerie-note { margin: 0; padding: var(--space-6) var(--space-4); text-align: center; color: var(--ink-muted); }
 .aerie-note.aerie-error { color: var(--danger); }
@@ -166,7 +166,7 @@
 .aerie-link { color: var(--ink-muted); text-decoration: underline; text-underline-offset: var(--space-1); text-decoration-color: var(--hairline-strong); }
 .aerie-link:hover { color: var(--ink); }
 .aerie-retry { display: block; margin: var(--space-3) auto 0; color: var(--ink); text-decoration: underline; text-decoration-color: var(--green); text-underline-offset: 6px; }
-.aerie-apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); padding: var(--space-4) 0; }
+.aerie-apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--tile-min), 1fr)); gap: var(--space-3); padding: var(--space-4) 0; }
 .aerie-app { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-3); border-radius: var(--radius-inset) !important; text-align: center; }
 .aerie-app:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .aerie-app b { font-weight: 400; }
@@ -183,8 +183,8 @@
 .aerie-who { padding: var(--space-4); }
 .aerie-who b { display: block; font-weight: 300; font-size: var(--type-heading); line-height: var(--leading-heading); }
 .aerie-who span { color: var(--ink-muted); }
-.aerie-switch { position: relative; width: 40px; height: 22px; border-radius: var(--radius-pill) !important; border: 1px solid var(--hairline-strong); transition: background var(--motion-quick); }
-.aerie-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--motion-quick) var(--ease-standard); }
+.aerie-switch { position: relative; width: var(--control-lg); height: calc(var(--glyph) + 2 * var(--space-1)); border-radius: var(--radius-pill) !important; border: 1px solid var(--hairline-strong); transition: background var(--motion-quick); }
+.aerie-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: var(--glyph); height: var(--glyph); border-radius: 50%; background: var(--ink-muted); transition: transform var(--motion-quick) var(--ease-standard); }
 .aerie-switch[aria-checked='true'] { background: color-mix(in srgb, var(--ink) 20%, transparent); }
 .aerie-switch[aria-checked='true']::after { transform: translateX(18px); background: var(--ink); }
 .aerie-seg { display: flex; gap: var(--space-1); }
@@ -193,7 +193,7 @@
 .aerie-keys { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3) var(--space-5); padding: var(--space-4); font-size: var(--type-meta); color: var(--ink-muted); }
 .aerie-keys kbd { justify-self: start; color: var(--ink); }
 .aerie-undo { position: absolute; left: 50%; bottom: calc(var(--anchor-back) + var(--space-6)); transform: translateX(-50%); display: flex; gap: var(--space-4); align-items: center; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); background: var(--surface-overlay); border: 1px solid var(--hairline); font-size: var(--type-meta); color: var(--ink-muted); z-index: 2; }
-.aerie-skel { display: block; height: 10px; width: 46%; margin: var(--space-5) var(--space-4); border-radius: var(--radius-pill); background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent), color-mix(in srgb, var(--ink) 14%, transparent), color-mix(in srgb, var(--ink) 6%, transparent)); background-size: 200% 100%; animation: aerie-skel var(--motion-shimmer) var(--ease-standard) infinite; }
+.aerie-skel { display: block; height: var(--skeleton-line); width: 46%; margin: var(--space-5) var(--space-4); border-radius: var(--radius-pill); background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent), color-mix(in srgb, var(--ink) 14%, transparent), color-mix(in srgb, var(--ink) 6%, transparent)); background-size: 200% 100%; animation: aerie-skel var(--motion-shimmer) var(--ease-standard) infinite; }
 @keyframes aerie-skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 
 /* floors: where you are, top left; the gauge at the edge; the floor's name as you arrive */
@@ -213,7 +213,7 @@
 .aerie-gauge button:hover .aerie-notch, .aerie-gauge button:focus-visible .aerie-notch { color: var(--ink); border-color: var(--hairline-strong); }
 .aerie-gauge button:focus-visible { outline: 0; }
 .aerie-gauge button:focus-visible .aerie-notch { box-shadow: 0 0 0 2px var(--focus); }
-.aerie-gauge .aerie-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--floor-mark, var(--green)); border: 2px solid var(--slate-deep); }
+.aerie-gauge .aerie-dot { position: absolute; top: -2px; right: -2px; width: var(--mark); height: var(--mark); border-radius: 50%; background: var(--floor-mark, var(--green)); border: 2px solid var(--slate-deep); }
 .aerie-gauge button[aria-current] .aerie-notch { color: var(--floor-mark); border-color: var(--floor-mark); box-shadow: 0 0 12px color-mix(in srgb, var(--floor-mark) 45%, transparent); }
 .aerie-gauge .aerie-pinned { flex: none; display: grid; place-items: center; width: var(--gauge-pinned); height: var(--gauge-pinned); margin-right: var(--space-1); overflow: hidden; border-radius: var(--radius-key); color: var(--ink); background: color-mix(in srgb, var(--floor-mark) 22%, var(--slate-deep)); border: 1px solid var(--floor-mark); transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard); }
 /* Opening out is one smooth move: each label's box grows from nothing to its size, in both directions, as it fades in, so nothing jumps */
@@ -279,16 +279,16 @@
 }
 
 /* an AI app's icon carries the bubble: a soft ring round it */
-.aerie-bubble { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); box-shadow: 0 0 var(--space-4) color-mix(in srgb, var(--green) 25%, transparent); }
+.aerie-bubble { display: grid; place-items: center; width: var(--target-md); height: var(--target-md); border-radius: 50%; border: 1px solid color-mix(in srgb, var(--green) 45%, transparent); box-shadow: 0 0 var(--space-4) color-mix(in srgb, var(--green) 25%, transparent); }
 
 /* how an agent is doing: a mark and a word; only needs is in the needs-you colour, every mark keeps its shape */
 .aerie-agent { flex: none; display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; color: var(--ink-muted); }
-.aerie-agent i { position: relative; flex: none; display: grid; place-items: center; width: 14px; height: 14px; }
+.aerie-agent i { position: relative; flex: none; display: grid; place-items: center; width: var(--glyph); height: var(--glyph); }
 .aerie-agent[data-status='needs'] { color: var(--needs-you); }
-.aerie-agent[data-status='needs'] i::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--needs-you); }
-.aerie-agent[data-status='needs'][data-next] i::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
+.aerie-agent[data-status='needs'] i::before { content: ''; width: var(--mark-sm); height: var(--mark-sm); border-radius: 50%; background: var(--needs-you); }
+.aerie-agent[data-status='needs'][data-next] i::after { content: ''; position: absolute; width: var(--mark-sm); height: var(--mark-sm); border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; }
 .aerie-agent[data-status='running'] { color: var(--ink); }
-.aerie-agent[data-status='running'] i::before { content: ''; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
-.aerie-agent[data-status='waiting'] i::before, .aerie-agent[data-status='idle'] i::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }
+.aerie-agent[data-status='running'] i::before { content: ''; width: var(--mark-lg); height: var(--mark-lg); border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
+.aerie-agent[data-status='waiting'] i::before, .aerie-agent[data-status='idle'] i::before { content: ''; width: var(--mark); height: var(--mark); border-radius: 50%; border: 1.5px solid var(--ink-muted); }
 .aerie-agent[data-status='done'] i { color: var(--success); }
 .aerie-agent[data-status='failed'] { color: var(--danger); }
