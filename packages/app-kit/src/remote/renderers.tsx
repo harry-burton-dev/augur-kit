@@ -24,6 +24,10 @@ import { Details, Facts, Rows, State, Tag } from '../states.js';
 import { TagPicker } from '../tag-picker.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
 import { Grid, Split, Stack } from '../layout.js';
+import { ThingPage } from '../thing-page.js';
+import type { ThingActionId, ThingView } from '../thing-view.js';
+import { AskLine, DoorGallery } from '../door-gallery.js';
+import type { DoorDescriptor, DoorScore } from '../doors.js';
 import { readerPicturePath, type QuillRemoteElementName } from './vocabulary.js';
 
 /** What an element brings to its renderer. */
@@ -669,4 +673,43 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
     );
   },
   'quill-filter-bar': (parts) => <RemoteFilterBar parts={parts} />,
+  'quill-thing-page': (parts) => {
+    const { view, map, thing, level } = p(parts);
+    const on = (name: string) => event(parts, name);
+    const open = on('open');
+    const source = on('source');
+    const everything = on('everything');
+    const toMap = on('map');
+    return (
+      <ThingPage
+        view={view as ThingView}
+        mark={thing}
+        level={level === '2' ? 2 : 1}
+        onAction={(id: ThingActionId) => on('action')?.(id)}
+        onOpen={open ? (id) => open(id) : undefined}
+        onSource={source ? (s) => source(s.id ?? s.title) : undefined}
+        onEverything={everything ? () => everything() : undefined}
+        onMap={map && toMap ? () => toMap() : undefined}
+      />
+    );
+  },
+  'quill-door-gallery': (parts) => {
+    const { label = '', doors = [], scores = {}, ask, ...rest } = p(parts);
+    const asked = event(parts, 'ask');
+    const recent = event(parts, 'recent');
+    return (
+      <DoorGallery
+        {...rest}
+        label={label}
+        doors={doors as DoorDescriptor[]}
+        scores={scores as Record<string, DoorScore>}
+        onOpen={(id) => event(parts, 'open')?.(id)}
+        ask={
+          ask && asked ? (
+            <AskLine label={ask.label} placeholder={ask.placeholder} ask={ask.go} recentsLabel={ask.recentsLabel} recents={ask.recents} autoFocus={false} onAsk={(text) => asked(text)} onRecent={recent ? (id) => recent(id) : undefined} />
+          ) : undefined
+        }
+      />
+    );
+  },
 };

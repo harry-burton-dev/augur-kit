@@ -19,6 +19,8 @@ import type { IconName } from '@augur/kit-common';
 
 /** Where a line came from, for its one quiet trust line. */
 export interface ThingSource {
+  /** The report's id, so the app can open it. */
+  id?: string;
   /** `forecast`: someone expects it; `as-written`: a report says it. */
   how: 'as-written' | 'forecast';
   /** How many reports say it. */

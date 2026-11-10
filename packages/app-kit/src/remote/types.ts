@@ -4,6 +4,8 @@
  * (a part's markup props are slots, its callbacks are events).
  */
 import type { QuillRemoteElementName } from './vocabulary.js';
+import type { ThingView } from '../thing-view.js';
+import type { DoorDescriptor, DoorScore } from '../doors.js';
 
 type Field = {
   label: string;
@@ -95,6 +97,19 @@ export interface QuillRemoteProperties {
   'quill-people-picker': { label: string; hint?: string; disabled?: boolean; reason?: string; kinds?: 'people' | 'teams' | 'both'; multiple?: boolean; value?: RemotePrincipal[]; found?: { query: string; items?: RemotePrincipal[]; error?: string }; placeholder?: string; name?: string };
   'quill-floor-path': { label?: string; floors: RemoteFloorStep[] };
   'quill-filter-bar': { label: string; filters: RemoteFilter[]; value?: Record<string, string[]>; sorts?: { value: string; label: string; detail?: string; disabled?: boolean }[]; sort?: string; count?: number; noun?: [string, string]; busy?: boolean };
+  'quill-thing-page': { view: ThingView; map?: boolean; thing?: { kind: string; id?: string; label?: string }; level?: '1' | '2' };
+  'quill-door-gallery': {
+    label: string;
+    doors: DoorDescriptor[];
+    scores?: Record<string, DoorScore>;
+    cap?: number;
+    light?: 'alive' | 'still';
+    firstDay?: boolean;
+    loading?: boolean;
+    moreLabel?: string;
+    start?: string;
+    ask?: { label: string; placeholder?: string; go?: string; recentsLabel?: string; recents?: { id: string; label: string }[] };
+  };
 }
 
 /** A person or a team in the people picker; one with a `reason` stays in the list, dimmed, and says it. */
@@ -205,6 +220,8 @@ export interface QuillRemoteEvents {
   'quill-people-picker': { query: string; change: RemotePrincipal[]; pick: RemotePrincipal };
   'quill-floor-path': { open: string };
   'quill-filter-bar': { change: { value: Record<string, string[]>; sort: string } };
+  'quill-thing-page': { action: 'wrong' | 'follow' | 'ask' | 'send'; open: string; source: string; everything: undefined; map: undefined };
+  'quill-door-gallery': { open: string; ask: string; recent: string };
 }
 
 // Every element has both, and nothing else does.
