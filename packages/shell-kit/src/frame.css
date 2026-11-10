@@ -51,7 +51,7 @@
    the top clears the stage's fade; the screen's sections are section-gap apart. Each column pads itself, and
    columns meet at a hairline. Only tokens: the one literal width is a container query, kept equal to
    pane-tight-below by pane-layout.test.tsx. */
-.aerie-app-frame { display: flex; min-height: 0; height: 100%; }
+.aerie-app-frame { display: flex; flex: 1; min-width: 0; min-height: 0; height: 100%; }
 .aerie-app-pane { container: aerie-pane / inline-size; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .aerie-app-frame { --pane-measure: var(--measure-read); }
 .aerie-app-frame[data-width='wide'] { --pane-measure: var(--measure-wide); }
