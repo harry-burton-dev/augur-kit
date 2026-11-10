@@ -99,6 +99,32 @@ describe('a screen described in the sandbox and drawn by the host', () => {
     expect(pressed).toBe(1);
   });
 
+  it('lays out the main column with Quill’s layout parts, spaced only by the layout tokens', () => {
+    const { host, drops } = describeScreen((el) => {
+      const stack = el('quill-stack');
+      stack.gap = 'section';
+      const split = el('quill-split');
+      const main = el('quill-notice');
+      main.heading = 'Main';
+      const side = el('quill-notice');
+      side.heading = 'Beside';
+      side.slot = 'aside';
+      split.append(main, side);
+      const grid = el('quill-grid');
+      grid.label = 'Floors';
+      const tile = el('quill-notice');
+      tile.heading = 'One';
+      grid.append(tile);
+      stack.append(split, grid);
+      return [stack];
+    });
+    expect(drops).toEqual([]);
+    expect(host.querySelector('.quill-stack')?.getAttribute('data-gap')).toBe('section');
+    expect(host.querySelector('.quill-split-main')?.textContent).toContain('Main');
+    expect(host.querySelector('.quill-split-aside')?.textContent).toContain('Beside');
+    expect(host.querySelector('.quill-grid[role="group"]')?.getAttribute('aria-label')).toBe('Floors');
+  });
+
   it('redraws when the sandbox changes a property', () => {
     let state!: HTMLElementTagNameMap['quill-state'];
     const { host } = describeScreen((el) => {

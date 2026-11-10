@@ -56,6 +56,9 @@ export function defineQuillElements(registry: CustomElementRegistry = customElem
 declare global {
   interface HTMLElementTagNameMap {
     'quill-page-head': QuillRemoteElement<'quill-page-head'>;
+    'quill-stack': QuillRemoteElement<'quill-stack'>;
+    'quill-split': QuillRemoteElement<'quill-split'>;
+    'quill-grid': QuillRemoteElement<'quill-grid'>;
     'quill-section': QuillRemoteElement<'quill-section'>;
     'quill-selection-bar': QuillRemoteElement<'quill-selection-bar'>;
     'quill-about': QuillRemoteElement<'quill-about'>;

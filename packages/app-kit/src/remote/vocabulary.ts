@@ -79,6 +79,25 @@ export const QUILL_REMOTE_ELEMENTS = {
     events: { trail: 'the step’s id', action: 'the action’s id' },
     children: 'elements',
   },
+  'quill-stack': {
+    part: 'Stack',
+    properties: { gap: oneOf('tight', 'normal', 'loose', 'section'), label: S },
+    events: {},
+    children: 'elements',
+  },
+  'quill-split': {
+    part: 'Split',
+    properties: {},
+    events: {},
+    slots: ['aside'],
+    children: 'elements',
+  },
+  'quill-grid': {
+    part: 'Grid',
+    properties: { label: S },
+    events: {},
+    children: 'elements',
+  },
   'quill-section': {
     part: 'Section',
     properties: { label: S, count: N, limit: N, action: S, why: S, level: N },

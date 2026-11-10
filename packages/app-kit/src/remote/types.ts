@@ -71,6 +71,9 @@ export interface QuillRemoteProperties {
   'quill-checkbox': { label: string; detail?: string; value?: string; checked?: boolean; disabled?: boolean; reason?: string; name?: string };
   'quill-editor': Field & { value?: string; name?: string; placeholder?: string; rows?: number; guide?: string };
   'quill-palette': { open: boolean; placeholder: string; query: string; items: { id: string; label: string; detail?: string; meta?: string; icon?: string; group?: string; locked?: string }[]; none?: string; lead?: string };
+  'quill-stack': { gap: 'tight' | 'normal' | 'loose' | 'section'; label: string };
+  'quill-split': Record<never, never>;
+  'quill-grid': { label: string };
   'quill-tiles': { label: string };
   'quill-kind-tile': { kind: 'collection' | 'folder' | 'series' | 'document' | 'library'; name: string; eyebrow: string; count?: string; state?: string; needs?: boolean; needsLabel?: string; owner?: string; locked?: string; note?: string; thing?: RemoteThing & { id: string } };
   'quill-add-tile': { label: string; reason?: string };
@@ -178,6 +181,9 @@ export interface QuillRemoteEvents {
   'quill-checkbox': { change: boolean };
   'quill-editor': { change: string; commit: string };
   'quill-palette': { close: undefined; query: string; pick: string };
+  'quill-stack': Record<never, never>;
+  'quill-split': Record<never, never>;
+  'quill-grid': Record<never, never>;
   'quill-tiles': Record<never, never>;
   'quill-kind-tile': { open: undefined };
   'quill-add-tile': { press: undefined };

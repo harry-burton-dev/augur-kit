@@ -456,6 +456,16 @@
   .quill-reel-landing { animation: quill-summon var(--motion-run) var(--ease-out) backwards; }
 
   /* Tiles: each kind has its own shape, lifts on hover and presses down. */
+  /* Layout inside the main column (layout.tsx): each spaces its children with the layout tokens, none pads its own outside. */
+  .quill-stack { display: flex; flex-direction: column; gap: var(--stack); min-width: 0; }
+  .quill-stack[data-gap='tight'] { gap: var(--stack-tight); }
+  .quill-stack[data-gap='loose'] { gap: var(--stack-loose); }
+  .quill-stack[data-gap='section'] { gap: var(--section-gap); }
+  /* The aside keeps at least part-min-width and the main part takes the rest; when both can't fit, the aside wraps under it. */
+  .quill-split { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--section-gap) var(--stack-loose); min-width: 0; }
+  .quill-split-main { flex: 999 1 0; min-width: min(var(--part-min-width), 100%); display: flex; flex-direction: column; gap: var(--stack-loose); }
+  .quill-split-aside { flex: 1 1 var(--part-min-width); min-width: 0; display: flex; flex-direction: column; gap: var(--stack-loose); }
+  .quill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(var(--part-min-width), 100%), 1fr)); gap: var(--stack-loose); min-width: 0; }
   .quill-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--measure-card) / 2.2), 1fr)); gap: var(--space-5) var(--space-4); padding-top: var(--space-2); }
   .quill-tile {
     position: relative; display: flex; flex-direction: column; gap: var(--space-2); min-height: calc(var(--measure-card) / 2.4); padding: var(--space-4);
