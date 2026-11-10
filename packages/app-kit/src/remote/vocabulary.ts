@@ -85,13 +85,23 @@ const thingView = {
   required: ['id', 'name', 'kind', 'answer', 'problems', 'facts', 'around', 'total', 'reports'],
 } as const;
 const doorStep = oneOf('quiet', 'present', 'strong', 'needs');
+const doorSignalKind = oneOf('change', 'moved', 'incident', 'contradiction', 'meeting', 'due', 'coming', 'new-thing', 'question', 'queue');
+/** One thing that may wait behind a door (`DoorSignal`): the host scores the doors from these. */
+const doorSignal = {
+  object: { kind: doorSignalKind, reason: S, about: S, yours: B, seen: B, canAct: B, important: B, when: oneOf('today', 'tomorrow'), atRisk: B, wroteOneSide: B, inQuestion: N },
+  required: ['kind', 'reason'],
+} as const;
+/** The scorer's weights and thresholds, any of them (`DoorRule`); the rest are the default rule's. */
+const doorRule = {
+  object: { points: { record: N }, seenContradiction: N, yourSide: N, meetingTomorrow: N, perItemInQuestion: N, dueAtRisk: N, presentAt: N, strongAt: N, strongMax: N, importantIsStrong: B },
+} as const;
 const door = {
   object: {
     id: S,
     name: S,
     line: S,
     icon: 'icon',
-    reads: { array: oneOf('change', 'moved', 'incident', 'contradiction', 'meeting', 'due', 'coming', 'new-thing', 'question', 'queue') },
+    reads: { array: doorSignalKind },
     order: N,
     place: oneOf('door', 'ring'),
     firstDay: S,
@@ -588,11 +598,15 @@ export const QUILL_REMOTE_ELEMENTS = {
   },
   'quill-door-gallery': {
     part: 'DoorGallery',
-    // Ways in, as configuration: an ask line on top and a row of doors, each lit by its step and reasons,
-    // which the app scores (`scoreDoors`). Doors past `cap` go to the radial menu.
+    // Ways in, as configuration: an ask line on top and a row of doors, each lit by its step and reasons.
+    // The app sends its `signals` (and, to tune them, a `rule`) and the host scores them (`scoreDoors`),
+    // since the sandbox can't import the kit; or it sends `scores` it made itself, which win. Doors past
+    // `cap` go to the radial menu.
     properties: {
       label: S,
       doors: { array: door },
+      signals: { array: doorSignal },
+      rule: doorRule,
       scores: { record: { object: { step: doorStep, score: N, reasons: { array: S } }, required: ['step', 'score', 'reasons'] } },
       cap: N,
       light: oneOf('alive', 'still'),
