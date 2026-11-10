@@ -1417,6 +1417,327 @@
       "events": {
         "change": "what’s chosen and the sort: { value, sort }"
       }
+    },
+    "quill-thing-page": {
+      "part": "ThingPage",
+      "properties": {
+        "view": {
+          "object": {
+            "id": "string",
+            "name": "string",
+            "kind": {
+              "object": {
+                "name": "string",
+                "icon": "icon"
+              },
+              "required": [
+                "name",
+                "icon"
+              ]
+            },
+            "aliases": {
+              "array": "string"
+            },
+            "answer": {
+              "array": {
+                "object": {
+                  "key": {
+                    "enum": [
+                      "now",
+                      "next",
+                      "what",
+                      "when",
+                      "last-heard",
+                      "known-for"
+                    ]
+                  },
+                  "value": "string",
+                  "source": {
+                    "object": {
+                      "id": "string",
+                      "how": {
+                        "enum": [
+                          "as-written",
+                          "forecast"
+                        ]
+                      },
+                      "reports": "number",
+                      "who": "string",
+                      "byYou": "boolean",
+                      "on": "string",
+                      "title": "string",
+                      "yours": "boolean"
+                    },
+                    "required": [
+                      "how",
+                      "reports",
+                      "who",
+                      "on",
+                      "title"
+                    ]
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ]
+              }
+            },
+            "problems": {
+              "array": {
+                "object": {
+                  "kind": {
+                    "enum": [
+                      "conflict",
+                      "duplicate",
+                      "problem",
+                      "slipped"
+                    ]
+                  },
+                  "text": "string",
+                  "source": {
+                    "object": {
+                      "id": "string",
+                      "how": {
+                        "enum": [
+                          "as-written",
+                          "forecast"
+                        ]
+                      },
+                      "reports": "number",
+                      "who": "string",
+                      "byYou": "boolean",
+                      "on": "string",
+                      "title": "string",
+                      "yours": "boolean"
+                    },
+                    "required": [
+                      "how",
+                      "reports",
+                      "who",
+                      "on",
+                      "title"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "text"
+                ]
+              }
+            },
+            "facts": {
+              "array": {
+                "object": {
+                  "label": "string",
+                  "value": "string",
+                  "adopted": "boolean",
+                  "source": {
+                    "object": {
+                      "id": "string",
+                      "how": {
+                        "enum": [
+                          "as-written",
+                          "forecast"
+                        ]
+                      },
+                      "reports": "number",
+                      "who": "string",
+                      "byYou": "boolean",
+                      "on": "string",
+                      "title": "string",
+                      "yours": "boolean"
+                    },
+                    "required": [
+                      "how",
+                      "reports",
+                      "who",
+                      "on",
+                      "title"
+                    ]
+                  }
+                },
+                "required": [
+                  "label",
+                  "value"
+                ]
+              }
+            },
+            "around": {
+              "array": {
+                "object": {
+                  "id": "string",
+                  "relation": "string",
+                  "name": "string",
+                  "group": "string"
+                },
+                "required": [
+                  "id",
+                  "relation",
+                  "name"
+                ]
+              }
+            },
+            "total": "number",
+            "reports": "number"
+          },
+          "required": [
+            "id",
+            "name",
+            "kind",
+            "answer",
+            "problems",
+            "facts",
+            "around",
+            "total",
+            "reports"
+          ]
+        },
+        "map": "boolean",
+        "thing": {
+          "object": {
+            "kind": "string",
+            "id": "string",
+            "label": "string"
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "level": {
+          "enum": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "events": {
+        "action": "the action’s id: wrong, follow, ask or send",
+        "open": "the id of the thing around it",
+        "source": "the report’s id, or its title when it has none",
+        "everything": "nothing",
+        "map": "nothing"
+      }
+    },
+    "quill-door-gallery": {
+      "part": "DoorGallery",
+      "properties": {
+        "label": "string",
+        "doors": {
+          "array": {
+            "object": {
+              "id": "string",
+              "name": "string",
+              "line": "string",
+              "icon": "icon",
+              "reads": {
+                "array": {
+                  "enum": [
+                    "change",
+                    "moved",
+                    "incident",
+                    "contradiction",
+                    "meeting",
+                    "due",
+                    "coming",
+                    "new-thing",
+                    "question",
+                    "queue"
+                  ]
+                }
+              },
+              "order": "number",
+              "place": {
+                "enum": [
+                  "door",
+                  "ring"
+                ]
+              },
+              "firstDay": "string",
+              "unavailable": {
+                "object": {
+                  "why": "string",
+                  "who": "string"
+                },
+                "required": [
+                  "why",
+                  "who"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "line",
+              "icon",
+              "reads",
+              "order"
+            ]
+          }
+        },
+        "scores": {
+          "record": {
+            "object": {
+              "step": {
+                "enum": [
+                  "quiet",
+                  "present",
+                  "strong",
+                  "needs"
+                ]
+              },
+              "score": "number",
+              "reasons": {
+                "array": "string"
+              }
+            },
+            "required": [
+              "step",
+              "score",
+              "reasons"
+            ]
+          }
+        },
+        "cap": "number",
+        "light": {
+          "enum": [
+            "alive",
+            "still"
+          ]
+        },
+        "firstDay": "boolean",
+        "loading": "boolean",
+        "moreLabel": "string",
+        "start": "string",
+        "ask": {
+          "object": {
+            "label": "string",
+            "placeholder": "string",
+            "go": "string",
+            "recentsLabel": "string",
+            "recents": {
+              "array": {
+                "object": {
+                  "id": "string",
+                  "label": "string"
+                },
+                "required": [
+                  "id",
+                  "label"
+                ]
+              }
+            }
+          },
+          "required": [
+            "label"
+          ]
+        }
+      },
+      "events": {
+        "open": "the door’s id",
+        "ask": "the words asked",
+        "recent": "the recent’s id"
+      }
     }
   }
 }

@@ -98,5 +98,7 @@ declare global {
     'quill-people-picker': QuillRemoteElement<'quill-people-picker'>;
     'quill-floor-path': QuillRemoteElement<'quill-floor-path'>;
     'quill-filter-bar': QuillRemoteElement<'quill-filter-bar'>;
+    'quill-thing-page': QuillRemoteElement<'quill-thing-page'>;
+    'quill-door-gallery': QuillRemoteElement<'quill-door-gallery'>;
   }
 }

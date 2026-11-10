@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { RemoteRootElement } from '@remote-dom/core/elements';
 import { QuillRemote, createQuillReceiver, type QuillReceiver } from './receiver.js';
 import { defineQuillElements } from './elements.js';
+import { THINGS } from '../things.fixture.js';
+import { ATLAS_DOORS } from '../doors.atlas.fixture.js';
+import { scoreDoors } from '../doors.js';
 
 /**
  * What an app's sandbox describes, drawn by the host with the real kit (the app contract, 6.7). The
@@ -172,3 +175,28 @@ function Documents() {
 
 /** What a documents app describes: the bar over a long list, a file button, a people picker that asks the app, a chain up the floors, and a reader whose pictures only the host fetches (here it lends none, so the picture is said in words). */
 export const DocumentsParts: Story = { args: { receiver: createQuillReceiver() }, render: () => <Documents /> };
+
+function Atlas() {
+  const receiver = useSandbox(() => {
+    const gallery = document.createElement('quill-door-gallery');
+    gallery.label = 'Ways in';
+    gallery.doors = ATLAS_DOORS;
+    gallery.scores = scoreDoors(ATLAS_DOORS, [{ kind: 'queue', reason: 'Settle it: Marta Kowal: two employers', canAct: true }, { kind: 'moved', reason: 'The Heron is now due Tue 24 Nov', important: true }]);
+    gallery.ask = { label: 'What do you need?', placeholder: 'A ship, a port, a person, or a question', recents: [{ id: 'mv-saltmarsh-heron', label: 'MV Saltmarsh Heron' }] };
+    gallery.addEventListener('open', () => undefined);
+    gallery.addEventListener('ask', () => undefined);
+    const page = document.createElement('quill-thing-page');
+    page.view = THINGS.find((t) => t.id === 'mv-saltmarsh-heron')!;
+    page.map = true;
+    for (const e of ['action', 'open', 'source', 'everything', 'map']) page.addEventListener(e, () => undefined);
+    return [gallery, page];
+  });
+  return (
+    <div style={{ display: 'grid', gap: 'var(--space-7)' }}>
+      <QuillRemote receiver={receiver} />
+    </div>
+  );
+}
+
+/** What a knowledge app describes: ways in as configured doors the app scores, and a thing's page in the one shape, filled by the app's rules. */
+export const WaysInAndAThingsPage: Story = { args: { receiver: createQuillReceiver() }, render: () => <Atlas /> };

@@ -63,6 +63,42 @@ const noun = { tuple: [S, S] } as const;
 /** A thing with actions, for the shell's radial menu (6.4): its kind, as `contributes.radial` names it. */
 const thing = { object: { kind: S, id: S, label: S }, required: ['kind'] } as const;
 /** A person or a team, as the people picker shows them; one that can't be chosen says why in `reason`. */
+/** Where a line of a thing's page came from: its one quiet trust line. */
+const source = {
+  object: { id: S, how: oneOf('as-written', 'forecast'), reports: N, who: S, byYou: B, on: S, title: S, yours: B },
+  required: ['how', 'reports', 'who', 'on', 'title'],
+} as const;
+/** One thing, filled by the app's own rules, for the one shape every thing's page takes. */
+const thingView = {
+  object: {
+    id: S,
+    name: S,
+    kind: { object: { name: S, icon: 'icon' }, required: ['name', 'icon'] },
+    aliases: { array: S },
+    answer: { array: { object: { key: oneOf('now', 'next', 'what', 'when', 'last-heard', 'known-for'), value: S, source }, required: ['key', 'value'] } },
+    problems: { array: { object: { kind: oneOf('conflict', 'duplicate', 'problem', 'slipped'), text: S, source }, required: ['kind', 'text'] } },
+    facts: { array: { object: { label: S, value: S, adopted: B, source }, required: ['label', 'value'] } },
+    around: { array: { object: { id: S, relation: S, name: S, group: S }, required: ['id', 'relation', 'name'] } },
+    total: N,
+    reports: N,
+  },
+  required: ['id', 'name', 'kind', 'answer', 'problems', 'facts', 'around', 'total', 'reports'],
+} as const;
+const doorStep = oneOf('quiet', 'present', 'strong', 'needs');
+const door = {
+  object: {
+    id: S,
+    name: S,
+    line: S,
+    icon: 'icon',
+    reads: { array: oneOf('change', 'moved', 'incident', 'contradiction', 'meeting', 'due', 'coming', 'new-thing', 'question', 'queue') },
+    order: N,
+    place: oneOf('door', 'ring'),
+    firstDay: S,
+    unavailable: { object: { why: S, who: S }, required: ['why', 'who'] },
+  },
+  required: ['id', 'name', 'line', 'icon', 'reads', 'order'],
+} as const;
 const principal = { object: { kind: oneOf('person', 'team'), id: S, name: S, detail: S, size: N, meta: S, reason: S }, required: ['kind', 'id', 'name'] } as const;
 
 export const QUILL_REMOTE_ELEMENTS = {
@@ -535,6 +571,38 @@ export const QUILL_REMOTE_ELEMENTS = {
       busy: B,
     },
     events: { change: 'what’s chosen and the sort: { value, sort }' },
+  },
+  'quill-thing-page': {
+    part: 'ThingPage',
+    // One shape for every thing (App patterns, "A thing's page"): the app fills `view` by its own rules;
+    // the host caps it, picks the primary action and says what each empty slot means. `map` offers the
+    // graph one step away, when the app listens to `map`. `everything` opens all that is known.
+    properties: { view: thingView, map: B, thing, level: oneOf('1', '2') },
+    events: {
+      action: 'the action’s id: wrong, follow, ask or send',
+      open: 'the id of the thing around it',
+      source: 'the report’s id, or its title when it has none',
+      everything: 'nothing',
+      map: 'nothing',
+    },
+  },
+  'quill-door-gallery': {
+    part: 'DoorGallery',
+    // Ways in, as configuration: an ask line on top and a row of doors, each lit by its step and reasons,
+    // which the app scores (`scoreDoors`). Doors past `cap` go to the radial menu.
+    properties: {
+      label: S,
+      doors: { array: door },
+      scores: { record: { object: { step: doorStep, score: N, reasons: { array: S } }, required: ['step', 'score', 'reasons'] } },
+      cap: N,
+      light: oneOf('alive', 'still'),
+      firstDay: B,
+      loading: B,
+      moreLabel: S,
+      start: S,
+      ask: { object: { label: S, placeholder: S, go: S, recentsLabel: S, recents: { array: { object: { id: S, label: S }, required: ['id', 'label'] } } }, required: ['label'] },
+    },
+    events: { open: 'the door’s id', ask: 'the words asked', recent: 'the recent’s id' },
   },
 } as const satisfies Record<string, RemoteElementSpec>;
 
