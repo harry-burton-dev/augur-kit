@@ -74,10 +74,10 @@ export const AnyThing: Story = {
   render: (args) => <ThingPage {...args} view={THINGS[(args as { at?: number }).at ?? 0] ?? THINGS[0]!} />,
 };
 
-/** Every thing in the store, one after another: the same shape 42 times, never drawn by hand. */
+/** Every thing in the store as a contact sheet: the same shape 42 times, never drawn by hand. */
 export const EveryThing: Story = {
   render: (args) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-7)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'var(--space-6) var(--space-5)' }}>
       {THINGS.map((t) => (
         <ThingPage key={t.id} {...args} view={t} level={2} />
       ))}
