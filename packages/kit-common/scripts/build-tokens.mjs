@@ -39,7 +39,7 @@ const themed = (token, all) => {
   const group = token.path[0];
   if (group === 'color') return [[`--color-${n}`, v]];
   if (group === 'space') return [[`--spacing-${n.replace(/^space-/, '')}`, v]];
-  if (group === 'layout') return [[`--spacing-${n}`, v]];
+  if (group === 'layout' || group === 'size') return [[`--spacing-${n}`, v]];
   if (group === 'radius') return [[`--radius-${n.replace(/^radius-/, '')}`, v]];
   if (group === 'shadow') return [[`--shadow-${n.replace(/^shadow-/, '')}`, v]];
   if (group === 'font') return [[`--font-${n.replace(/^font-/, '')}`, v]];

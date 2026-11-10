@@ -354,6 +354,149 @@
       }
     }
   },
+  "size": {
+    "$description": "The sizes parts are drawn at: marks and glyphs, small controls, rows and the narrowest a column may be. Sizes, not spaces: density never changes them, so a control keeps its target and a mark its weight.",
+    "mark-xs": {
+      "$value": "6px",
+      "$type": "dimension",
+      "$description": "The smallest mark: a point or a plain dot."
+    },
+    "mark-sm": {
+      "$value": "7px",
+      "$type": "dimension",
+      "$description": "A status or floor dot beside a word."
+    },
+    "mark": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "A list lead, a status ring or a knob's bar."
+    },
+    "mark-lg": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "A mark that needs to stand out: one that needs you, or one that spins."
+    },
+    "glyph": {
+      "$value": "14px",
+      "$type": "dimension",
+      "$description": "A status mark's box, an option's tick and the switch's thumb."
+    },
+    "glyph-lg": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "A check box, a radio dot or a step's mark."
+    },
+    "control-xs": {
+      "$value": "20px",
+      "$type": "dimension",
+      "$description": "The smallest button: a tag's remove, a tree's chevron, a key's knob."
+    },
+    "control-sm": {
+      "$value": "28px",
+      "$type": "dimension",
+      "$description": "A small round button: close, more, a date's calendar; a switch's height; a check's row."
+    },
+    "control-md": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$description": "A step's disc on a path."
+    },
+    "control-lg": {
+      "$value": "40px",
+      "$type": "dimension",
+      "$description": "An orb, a list's bar and a switch's width."
+    },
+    "row": {
+      "$value": "60px",
+      "$type": "dimension",
+      "$description": "A list row, at comfortable density."
+    },
+    "row-compact": {
+      "$value": "44px",
+      "$type": "dimension",
+      "$description": "A list row and a table's head, at compact density."
+    },
+    "cell": {
+      "$value": "56px",
+      "$type": "dimension",
+      "$description": "A table row, at comfortable density."
+    },
+    "cell-compact": {
+      "$value": "40px",
+      "$type": "dimension",
+      "$description": "A table row, at compact density."
+    },
+    "bar-row": {
+      "$value": "48px",
+      "$type": "dimension",
+      "$description": "A table's bar and pager."
+    },
+    "skeleton-line": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "A skeleton's line of text, while a part loads."
+    },
+    "underline-offset": {
+      "$value": "3px",
+      "$type": "dimension",
+      "$description": "How far a link's underline sits below its text."
+    },
+    "column-min": {
+      "$value": "140px",
+      "$type": "dimension",
+      "$description": "The narrowest a wrapping table column goes."
+    },
+    "column-primary": {
+      "$value": "160px",
+      "$type": "dimension",
+      "$description": "The narrowest a table's first, naming column goes."
+    },
+    "tile-min": {
+      "$value": "150px",
+      "$type": "dimension",
+      "$description": "The narrowest a tile in a grid of apps goes."
+    },
+    "aside-min": {
+      "$value": "240px",
+      "$type": "dimension",
+      "$description": "The narrowest a page's aside goes beside the main column."
+    },
+    "card-min": {
+      "$value": "260px",
+      "$type": "dimension",
+      "$description": "The narrowest a card in a grid of cards goes."
+    },
+    "filter-width": {
+      "$value": "280px",
+      "$type": "dimension",
+      "$description": "A table's filter field, before it shrinks."
+    },
+    "text-min": {
+      "$value": "320px",
+      "$type": "dimension",
+      "$description": "The narrowest a page head's text goes before its actions wrap under it."
+    },
+    "menu-min": {
+      "$value": "200px",
+      "$type": "dimension",
+      "$description": "The narrowest a menu goes."
+    },
+    "menu-max": {
+      "$value": "320px",
+      "$type": "dimension",
+      "$description": "The widest a menu goes."
+    },
+    "list-max": {
+      "$value": "280px",
+      "$type": "dimension",
+      "$description": "The tallest a list box goes before it scrolls."
+    },
+    "notice-text-min": {
+      "$value": "220px",
+      "$type": "dimension",
+      "$description": "The narrowest a notice's text goes before its action wraps under it."
+    }
+  },
   "structure": {
     "$description": "DRAFT. Where things go, how wide they get, and what sits over what. Measures: the five widths, always min(measure, 100% minus two gutters), centred on the axis. Anchors: fixed positions between the top and bottom bands. Layers: stacking order for whole components; inside one, use 0 to 3.",
     "measure-decision": {
