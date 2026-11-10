@@ -77,7 +77,7 @@
   .quill-aside { gap: var(--space-6); }
 
   .quill-drawer { position: relative; min-width: 0; overflow: hidden; border-left: 1px solid var(--hairline); }
-  .quill-drawer-head { display: flex; padding: var(--space-4) var(--space-3) 0; }
+  .quill-drawer-head { display: flex; padding: var(--region-inset-block) var(--region-inset-inline) 0; }
   .quill-frame[data-drawer='closed'] .quill-drawer-head { justify-content: center; padding-inline: 0; }
   .quill-drawer-inner {
     position: sticky; top: 0; max-height: 100vh; overflow-y: auto; padding: var(--space-4) var(--space-5) var(--space-8);

@@ -204,7 +204,7 @@
     }
   },
   "space": {
-    "$description": "Harry, from the Foundations Lab: golden-ratio steps on a 4px unit, snapped to 4px (4 × 1, 1.618, 2.618, 4.236, 6.854, 11.09, 17.94, 29.03). Values under 4px are geometry, not spacing.",
+    "$description": "Harry, from the Foundations Lab: golden-ratio steps on a 4px unit, snapped to 4px (4 × 1, 1.618, 2.618, 4.236, 6.854, 11.09, 17.94, 29.03). Values under 4px are geometry, not spacing. A token's $extensions.augur.compact is its value at compact density (data-density=\"compact\" on <html> or on an app's pane): the larger steps come down one notch.",
     "space-1": {
       "$value": "4px",
       "$type": "dimension",
@@ -228,22 +228,130 @@
     "space-5": {
       "$value": "28px",
       "$type": "dimension",
-      "$description": "Between groups: actions in a row, the facts on a card, padding beside a button’s label."
+      "$description": "Between groups: actions in a row, the facts on a card, padding beside a button’s label.",
+      "$extensions": {
+        "augur": {
+          "compact": "20px"
+        }
+      }
     },
     "space-6": {
       "$value": "44px",
       "$type": "dimension",
-      "$description": "Before the actions; padding inside panes, cards and overlays."
+      "$description": "Before the actions; padding inside panes, cards and overlays.",
+      "$extensions": {
+        "augur": {
+          "compact": "28px"
+        }
+      }
     },
     "space-7": {
       "$value": "72px",
       "$type": "dimension",
-      "$description": "Between sections; the gap between columns."
+      "$description": "Between sections; the gap between columns.",
+      "$extensions": {
+        "augur": {
+          "compact": "44px"
+        }
+      }
     },
     "space-8": {
       "$value": "116px",
       "$type": "dimension",
-      "$description": "The largest gap: section breaks on long pages, and space above a pane under the top band."
+      "$description": "The largest gap: section breaks on long pages, and space above a pane under the top band.",
+      "$extensions": {
+        "augur": {
+          "compact": "72px"
+        }
+      }
+    }
+  },
+  "layout": {
+    "$description": "What each space is for, so every part that does the same job is spaced the same. Each points at a step of the scale; parts use these, not the steps, wherever one fits. The rule: every region pads itself, nothing pads its neighbour, and the gap between siblings belongs to their parent. An app chooses a layout and a density, never a distance.",
+    "pane-inset-inline": {
+      "$value": "{structure.edge}",
+      "$type": "dimension",
+      "$description": "Left and right inside an app's main column: its page head and its screen share it, so the title and the content line up. edge-tight when the pane itself is narrower than 640px."
+    },
+    "pane-inset-top": {
+      "$value": "{space.space-5}",
+      "$type": "dimension",
+      "$description": "Above an app's page head, clear of the stage's fade under the top band (space-4).",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-4}"
+        }
+      }
+    },
+    "pane-inset-bottom": {
+      "$value": "{space.space-7}",
+      "$type": "dimension",
+      "$description": "Below the last thing in an app's main column, so it clears the bottom of the window.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-6}"
+        }
+      }
+    },
+    "region-inset-inline": {
+      "$value": "{space.space-4}",
+      "$type": "dimension",
+      "$description": "Left and right inside a side region: the rail's rows, the About panel, a drawer, a list column.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-3}"
+        }
+      }
+    },
+    "region-inset-block": {
+      "$value": "{space.space-3}",
+      "$type": "dimension",
+      "$description": "Top and bottom inside a side region, and its head.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-2}"
+        }
+      }
+    },
+    "stack-tight": {
+      "$value": "{space.space-2}",
+      "$type": "dimension",
+      "$description": "Between the parts of one cluster: a label and its value, a row's lines.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-1}"
+        }
+      }
+    },
+    "stack": {
+      "$value": "{space.space-3}",
+      "$type": "dimension",
+      "$description": "Between the items of a section: its rows, its fields.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-2}"
+        }
+      }
+    },
+    "stack-loose": {
+      "$value": "{space.space-5}",
+      "$type": "dimension",
+      "$description": "Between groups inside a region: the About panel's sections, a form's groups.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-4}"
+        }
+      }
+    },
+    "section-gap": {
+      "$value": "{space.space-6}",
+      "$type": "dimension",
+      "$description": "Between the sections of an app's screen, at its root.",
+      "$extensions": {
+        "augur": {
+          "compact": "{space.space-5}"
+        }
+      }
     }
   },
   "structure": {
