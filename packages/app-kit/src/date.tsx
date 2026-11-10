@@ -14,7 +14,7 @@ import {
 import { CalendarDate, endOfMonth, getDayOfWeek, parseDate, type DateDuration } from '@internationalized/date';
 import { writeDate, type AppFormats } from './formats.js';
 import { useFormats } from './react-app.js';
-import { FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, useReason, warnNoReason, type FieldProps, type FieldState } from '@augur/kit-common';
+import { Button, FieldHead, FieldHint, Icon, NEEDS_YOU, StateMark, cx, shownState, useFieldCheck, useMessage, useReason, warnNoReason, type FieldProps, type FieldState } from '@augur/kit-common';
 
 /** The way a day is written back into the field for editing, which parseDay reads: English words, day first. */
 const TYPED = 'en-GB';
@@ -387,6 +387,60 @@ export function DropZone({ heading = 'Drop files here', hint, action = 'Choose f
       />
       {caption}
     </div>
+  );
+}
+
+export interface FileButtonProps {
+  /** The button's word, for what the files are for: "Add a document". */
+  label: string;
+  kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost';
+  size?: 'md' | 'sm';
+  icon?: ReactNode;
+  /** As on <input type="file">. Empty takes anything. */
+  accept?: string;
+  multiple?: boolean;
+  disabled?: boolean;
+  /** Why it can't take files, in one sentence. */
+  reason?: string;
+  busy?: boolean;
+  busyLabel?: string;
+  /** The files chosen that `accept` allows. */
+  onFiles?: (files: File[]) => void;
+  /** The ones it doesn't. */
+  onReject?: (files: File[]) => void;
+  className?: string;
+}
+
+/**
+ * A button that opens the person's own file chooser: the way to add files that everyone expects.
+ * A DropZone is the place to drop them as well; this is for where a button is enough.
+ */
+export function FileButton({ label, kind = 'secondary', size = 'md', icon, accept = '', multiple, disabled, reason, busy, busyLabel, onFiles, onReject, className }: FileButtonProps) {
+  const picker = useRef<HTMLInputElement>(null);
+  return (
+    <span className={cx('quill-file-button', className)}>
+      <Button kind={kind} size={size} icon={icon ?? <Icon name="upload" size={16} />} disabled={disabled} reason={reason} busy={busy} busyLabel={busyLabel} onPress={() => picker.current?.click()}>
+        {label}
+      </Button>
+      <input
+        ref={picker}
+        type="file"
+        hidden
+        tabIndex={-1}
+        aria-hidden="true"
+        accept={accept || undefined}
+        multiple={multiple}
+        onChange={(e) => {
+          const files = [...(e.target.files ?? [])];
+          e.target.value = '';
+          if (!files.length || disabled || busy) return;
+          const taken = files.filter((f) => accepts(accept, f));
+          const turned = files.filter((f) => !taken.includes(f));
+          if (taken.length) onFiles?.(taken);
+          if (turned.length) onReject?.(turned);
+        }}
+      />
+    </span>
   );
 }
 

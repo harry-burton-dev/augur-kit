@@ -1448,4 +1448,15 @@
   .quill-paged-open { justify-self: start; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 500; text-align: start; cursor: pointer; text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
   .quill-paged-open:hover { text-decoration-color: var(--ink); }
   .quill-paged-open:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
+
+  /* quill-reader (remote): the reading view, with the app's marks just above the words selected. */
+  .quill-remote-reader { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  .quill-reader-marks {
+    position: absolute; z-index: 2; display: flex; flex-wrap: wrap; gap: var(--space-2); max-width: var(--measure-read); padding: var(--space-2);
+    transform: translate(-50%, calc(-100% - var(--space-2)));
+    border-radius: var(--radius-key); background: var(--surface-overlay); backdrop-filter: blur(var(--surface-blur)); border: 1px solid var(--hairline-strong); box-shadow: var(--shadow-overlay);
+  }
+  /* quill-floor-path (remote) and quill-file-button: a group round the kit's Path; the file input stays hidden. */
+  .quill-floor-path { display: flex; flex-direction: column; }
+  .quill-file-button { display: inline-flex; }
 }

@@ -9,8 +9,8 @@ import { createRemoteElement } from '@remote-dom/core/elements';
 import type { QuillRemoteEvents, QuillRemoteProperties } from './types.js';
 import { QUILL_REMOTE_ELEMENTS, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 
-export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
-export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteOption, RemoteTableColumn, RemoteThing } from './types.js';
+export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, readerPicturePath, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
+export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteOption, RemoteTableColumn, RemoteThing, RemotePrincipal, RemoteFloorStep, RemoteFilter, RemoteMarked, RemoteChosenFile } from './types.js';
 
 /** A Quill remote element as the sandbox holds it: its properties, set like any other. */
 export type QuillRemoteElement<N extends QuillRemoteElementName = QuillRemoteElementName> = HTMLElement & Partial<QuillRemoteProperties[N]>;
@@ -90,5 +90,10 @@ declare global {
     'quill-check-list': QuillRemoteElement<'quill-check-list'>;
     'quill-step-list': QuillRemoteElement<'quill-step-list'>;
     'quill-paged-list': QuillRemoteElement<'quill-paged-list'>;
+    'quill-reader': QuillRemoteElement<'quill-reader'>;
+    'quill-file-button': QuillRemoteElement<'quill-file-button'>;
+    'quill-people-picker': QuillRemoteElement<'quill-people-picker'>;
+    'quill-floor-path': QuillRemoteElement<'quill-floor-path'>;
+    'quill-filter-bar': QuillRemoteElement<'quill-filter-bar'>;
   }
 }

@@ -23,7 +23,7 @@ export { PageHead, Section, type TrailStep, type PageAction, type PageHeadProps,
 export { List, Table, compareBy, relativeTime, type ListAction, type ListItem, type ListProps, type TableColumn, type TableRow, type TableSort, type TableProps } from './list.js';
 export { Card, Cards, Tally, Timeline, Path, Ref, Refs, floorMark, floorIcon, dayWords, refIcon, refName, type FloorKind, type CardProps, type TallyCount, type TallyProps, type TimelineItem, type TimelineProps, type PathStep, type PathProps, type RefKind, type RefShown, type RefProps, type RefsProps } from './things.js';
 export { TimeField, DateRangeField, parseTime, type TimeFieldProps, type DateRangeFieldProps, type DateRange } from './time.js';
-export { DateField, DropZone, Surface, parseDay, dayName, dayDistance, isoDay, accepts, DEFAULT_QUICK, type DateQuick, type DateFieldProps, type DropZoneProps, type SurfaceKind, type SurfaceProps } from './date.js';
+export { DateField, DropZone, FileButton, Surface, parseDay, dayName, dayDistance, isoDay, accepts, DEFAULT_QUICK, type DateQuick, type DateFieldProps, type DropZoneProps, type FileButtonProps, type SurfaceKind, type SurfaceProps } from './date.js';
 export { Editor, Prose, readMentions, writeMentions, plainText, type Mention, type MentionResult, type MentionSource, type EditorProps, type ProseProps } from './editor.js';
 export { Tree, treePath, type TreeNode, type TreeProps } from './tree.js';
 export { TagPicker, tagChoices, type TagOption, type TagPickerProps } from './tag-picker.js';
@@ -40,7 +40,7 @@ export { Guide, FirstSteps, type GuideStep, type GuideLabels, type GuideProps, t
 export { writeDate, dateTimeFormat, type AppFormats } from './formats.js';
 export { UploadList, Attachment, Picture, FilePreview, fileIcon, fileSize, splitName, type UploadItem, type UploadState, type UploadListProps, type AttachmentProps, type PictureProps, type FilePreviewProps } from './files.js';
 export { EditInPlace, type EditInPlaceProps } from './edit-in-place.js';
-export { QuillRemote, createQuillReceiver, type QuillRemoteProps, type QuillReceiver, type QuillRemoteConnection } from './remote/receiver.js';
-export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, checkRemoteValue, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType, type RemoteCheck } from './remote/vocabulary.js';
+export { QuillRemote, createQuillReceiver, type QuillRemoteProps, type QuillReceiver, type QuillRemoteConnection, type QuillRemoteHost } from './remote/receiver.js';
+export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, checkRemoteValue, readerPicturePath, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType, type RemoteCheck } from './remote/vocabulary.js';
 export { VIRTUAL_FROM } from './remote/renderers.js';
 export { thingProps, type ThingMark } from './thing.js';
