@@ -16,6 +16,7 @@ export { DoorGallery, Door, DoorLight, AskLine, StepLabel, doorName, useDoorLigh
 export { scoreDoors, signalPoints, placeDoors, orderDoors, validateDoor, DEFAULT_RULE, DOOR_CAP, DOOR_STEPS, DOOR_SIGNAL_KINDS, DOOR_STEP_WORDS, type DoorStep, type DoorSignal, type DoorSignalKind, type DoorDescriptor, type DoorUnavailable, type DoorRule, type DoorScore, type DoorStepWords } from './doors.js';
 export { PathTree, type PathNode, type PathLight, type PathTrail, type PathTreeProps } from './path-tree.js';
 export { Reel, type ReelItem, type ReelTone, type Reveal, type ReelProps } from './reel.js';
+export { Stack, Split, Grid, type StackGap, type StackProps, type SplitProps, type GridProps } from './layout.js';
 export { KindTile, AddTile, Tiles, type TileKind, type KindTileProps, type AddTileProps, type TilesProps } from './tiles.js';
 export { Palette, type PaletteItem, type PaletteProps } from './palette.js';
 export { State, StateBoundary, Facts, Rows, Notice, Note, Tag, Details, type StateKind, type StateProps, type StateBoundaryProps, type Fact, type FactsProps, type Row, type RowsProps, type NoticeTone, type NoticeProps, type NoteProps, type TagProps, type Detail, type DetailsProps } from './states.js';

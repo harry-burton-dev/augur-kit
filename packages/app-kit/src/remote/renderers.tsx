@@ -23,6 +23,7 @@ import { SelectionBar } from '../selection-bar.js';
 import { Details, Facts, Rows, State, Tag } from '../states.js';
 import { TagPicker } from '../tag-picker.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
+import { Grid, Split, Stack } from '../layout.js';
 import { readerPicturePath, type QuillRemoteElementName } from './vocabulary.js';
 
 /** What an element brings to its renderer. */
@@ -500,6 +501,9 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
       </PageHead>
     );
   },
+  'quill-stack': (parts) => <Stack {...p(parts)}>{parts.children}</Stack>,
+  'quill-split': (parts) => <Split aside={parts.slots.aside?.length ? parts.slots.aside : undefined}>{parts.children}</Split>,
+  'quill-grid': (parts) => <Grid {...p(parts)}>{parts.children}</Grid>,
   'quill-section': (parts) => {
     const { label = '', ...rest } = p(parts);
     return (

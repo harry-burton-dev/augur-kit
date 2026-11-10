@@ -51,6 +51,39 @@
       },
       "children": "elements"
     },
+    "quill-stack": {
+      "part": "Stack",
+      "properties": {
+        "gap": {
+          "enum": [
+            "tight",
+            "normal",
+            "loose",
+            "section"
+          ]
+        },
+        "label": "string"
+      },
+      "events": {},
+      "children": "elements"
+    },
+    "quill-split": {
+      "part": "Split",
+      "properties": {},
+      "events": {},
+      "slots": [
+        "aside"
+      ],
+      "children": "elements"
+    },
+    "quill-grid": {
+      "part": "Grid",
+      "properties": {
+        "label": "string"
+      },
+      "events": {},
+      "children": "elements"
+    },
     "quill-section": {
       "part": "Section",
       "properties": {
