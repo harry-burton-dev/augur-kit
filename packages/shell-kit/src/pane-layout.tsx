@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode, Ref } from 'react';
 import { cx } from '@augur/kit-common';
 
 /** The shell's named layouts for an app's pane (the SDK's FrameLayout). */
@@ -17,6 +17,10 @@ export interface PaneLayoutProps {
   status?: ReactNode;
   /** The About panel. Drawn only in a layout that has it (aside). */
   about?: ReactNode;
+  /** Props for the frame round the pane and the About panel, such as a ref and its data attributes. */
+  frame?: HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> } & Record<`data-${string}`, string | undefined>;
+  /** What the frame holds besides the pane and the About panel, such as the command palette. */
+  overlay?: ReactNode;
   /** Props for the pane itself, such as its drop handlers and data attributes. */
   pane?: HTMLAttributes<HTMLElement> & Record<`data-${string}`, string | undefined>;
   /** Hides the screen while the pane shows a state or a canvas in its place. */
@@ -37,9 +41,9 @@ export const layoutHasAbout = (layout: PaneLayoutName) => layout === 'aside';
  * with section-gap. Each column pads itself; columns meet at a hairline. An app chooses the layout, the
  * width, the density and the inset by name, never a distance.
  */
-export function PaneLayout({ layout, width = 'read', density = 'comfortable', inset = 'standard', head, status, about, pane, screenHidden, canvas, children, className }: PaneLayoutProps) {
+export function PaneLayout({ layout, width = 'read', density = 'comfortable', inset = 'standard', head, status, about, frame, overlay, pane, screenHidden, canvas, children, className }: PaneLayoutProps) {
   return (
-    <div className={cx('aerie-app-frame', className)} data-layout={layout} data-width={width} data-density={density} data-inset={inset}>
+    <div {...frame} className={cx('aerie-app-frame', frame?.className, className)} data-layout={layout} data-width={width} data-density={density} data-inset={inset}>
       <section {...pane} className={cx('aerie-app-pane', pane?.className)}>
         <div className="aerie-app-head">{head}</div>
         {status}
@@ -49,6 +53,7 @@ export function PaneLayout({ layout, width = 'read', density = 'comfortable', in
         </div>
       </section>
       {layoutHasAbout(layout) ? about : null}
+      {overlay}
     </div>
   );
 }

@@ -42,6 +42,13 @@ describe('PaneLayout', () => {
     expect(draw(<PaneLayout layout="aside" about={<aside className="about" />} />).querySelector('.aerie-app-frame > .about')).not.toBeNull();
   });
 
+  it('takes the frame’s own props and what it holds besides the pane', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const b = draw(<PaneLayout layout="focus" frame={{ ref, 'data-app': 'notes' }} overlay={<dialog className="palette" />} />);
+    expect(ref.current?.dataset.app).toBe('notes');
+    expect(b.querySelector('.aerie-app-frame > .palette')).not.toBeNull();
+  });
+
   it('hides the screen when the pane shows a state in its place', () => {
     const b = draw(<PaneLayout layout="focus" status={<p className="state">Opening</p>} screenHidden />);
     expect(b.querySelector('.state')).not.toBeNull();
