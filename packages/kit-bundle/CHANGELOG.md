@@ -1,5 +1,18 @@
 # @augur/kit-bundle
 
+## 0.5.18
+
+### Patch Changes
+
+- 4ee2635: Quill remote elements for a knowledge app: `quill-thing-page` (a thing's page in the one shape, from a ThingView the app fills, with action, open, source, everything and map events) and `quill-door-gallery` (configured doors the app scores, with an ask line). A ThingSource can carry the report's id.
+- ff8df5f: Quill's ThingPage: one shape for every thing, whatever its kind. What it is, the answer (Now and Next, or What and When), one line for what's wrong, up to four key facts, up to six sentences of what's around it, one primary action chosen by rule, and a way to everything we know, with the graph one step away. The app fills a ThingView; the page caps it and says what each empty slot means. Also TrustLine, and the model (primaryAction, thingActions, trustLine, atRest, validateThing, THING_WORDS).
+- Updated dependencies [4ee2635]
+- Updated dependencies [8a03b87]
+- Updated dependencies [8a03b87]
+- Updated dependencies [ff8df5f]
+  - @augur/app-kit@0.21.0
+  - @augur/kit-common@0.18.0
+
 ## 0.5.17
 
 ### Patch Changes

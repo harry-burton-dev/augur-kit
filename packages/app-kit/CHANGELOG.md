@@ -1,5 +1,20 @@
 # @augur/app-kit
 
+## 0.21.0
+
+### Minor Changes
+
+- 4ee2635: Quill remote elements for a knowledge app: `quill-thing-page` (a thing's page in the one shape, from a ThingView the app fills, with action, open, source, everything and map events) and `quill-door-gallery` (configured doors the app scores, with an ask line). A ThingSource can carry the report's id.
+- ff8df5f: Quill's ThingPage: one shape for every thing, whatever its kind. What it is, the answer (Now and Next, or What and When), one line for what's wrong, up to four key facts, up to six sentences of what's around it, one primary action chosen by rule, and a way to everything we know, with the graph one step away. The app fills a ThingView; the page caps it and says what each empty slot means. Also TrustLine, and the model (primaryAction, thingActions, trustLine, atRest, validateThing, THING_WORDS).
+
+### Patch Changes
+
+- 8a03b87: `State` and `StateBoundary` (with `StateKind`, `StateProps` and `StateBoundaryProps`) move from Quill into Common, so Aerie can say empty, loading, error and offline the same way (PDR-016). Quill still exports them, through Common, under the same names, and they look the same as #58 left them; their classes are now `augur-state*` (the mark is `augur-state-sign` and the running line `augur-state-run`). Their Storybook page moves to Common/State.
+- 8a03b87: `Tag` (with `TagProps`) moves from Quill into Common, so Aerie can draw the same tags (PDR-016). Quill still exports it, through Common, under the same name, and it looks the same; its classes are now `augur-tag*`. Common also gets `Tags`, a row of tags that folds the rest behind "+N more" past a `limit`. Both have their own Storybook pages, under Common/Tag.
+- Updated dependencies [8a03b87]
+- Updated dependencies [8a03b87]
+  - @augur/kit-common@0.18.0
+
 ## 0.20.1
 
 ### Patch Changes
