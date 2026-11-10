@@ -950,6 +950,65 @@
   .augur-letterbox-actions { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
 }
 
+/* State (moved from Quill, PDR-016). */
+@layer components {
+  /* State: on the horizon. No box; the sentence sits on a groove, with the line running out to either
+     side. Loading draws the line across; an error turns it red and marks it with a diamond; offline is
+     amber. `line` sits under a line of its own inside a tile; `page` stands in for a whole page. */
+  .augur-state {
+    --state-line: var(--groove); --state-lit: var(--groove-lit);
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-6) 0; text-align: center; color: var(--ink-muted);
+  }
+  .augur-state[data-kind='error'] { --state-line: var(--danger); --state-lit: transparent; }
+  .augur-state[data-kind='offline'] { --state-line: var(--warning); --state-lit: transparent; }
+  .augur-state[data-hidden] { visibility: hidden; }
+  .augur-state-title { display: flex; align-items: center; align-self: stretch; justify-content: center; gap: var(--space-3); margin: 0; font-size: var(--type-body); line-height: var(--leading-body); font-weight: 400; color: var(--ink); }
+  .augur-state-title > span { order: 2; }
+  .augur-state-title::before, .augur-state-title::after { content: ''; flex: 1; min-width: var(--space-5); border-top: 1px solid var(--state-line); box-shadow: 0 1px 0 var(--state-lit); }
+  .augur-state-title::after { order: 3; }
+  .augur-state-sign { flex: none; order: 1; margin-right: calc(var(--space-1) * -1); color: var(--state-line); }
+  .augur-state[data-kind='loading'] .augur-state-title { color: var(--ink-muted); }
+  .augur-state[data-kind='loading'] .augur-state-title::before, .augur-state[data-kind='loading'] .augur-state-title::after { content: none; }
+  .augur-state-body { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); max-width: var(--measure-read); }
+  .augur-state-action { display: flex; margin-top: var(--space-1); }
+  .augur-state-run { position: relative; display: block; align-self: stretch; height: var(--key-edge-sm); background: var(--groove); box-shadow: 0 1px 0 var(--groove-lit); overflow: hidden; }
+  .augur-state-run::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: var(--ink-muted); animation: augur-travel var(--motion-run) var(--ease-standard) infinite alternate; }
+
+  .augur-state[data-size='line'] {
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-2) 0 0; text-align: left;
+    border-top: 1px solid var(--state-line); box-shadow: inset 0 1px 0 var(--state-lit);
+  }
+  .augur-state[data-size='line'] .augur-state-title { align-self: auto; justify-content: flex-start; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
+  .augur-state[data-size='line'] .augur-state-title::before, .augur-state[data-size='line'] .augur-state-title::after { content: none; }
+  .augur-state[data-size='line'] .augur-state-sign { margin-right: 0; }
+  .augur-state[data-size='line'] .augur-state-body { flex-basis: 100%; }
+  .augur-state[data-size='line'] .augur-state-action { margin-top: 0; }
+  .augur-state[data-size='line'][data-kind='loading'] { border-top: 0; box-shadow: none; padding-top: 0; }
+  .augur-state[data-size='line'] .augur-state-run { order: -1; align-self: center; width: var(--space-5); }
+
+  .augur-state[data-size='page'] { justify-content: center; min-height: 60vh; padding: var(--space-8) 0; gap: var(--space-3); }
+  .augur-state[data-size='page'] .augur-state-title { font-size: var(--type-heading); line-height: var(--leading-heading); }
+  .augur-state[data-size='page'] .augur-state-body { font-size: var(--type-meta); line-height: var(--leading-meta); }
+}
+
+/* Tag and Tags: a word something is filed under (moved from Quill, PDR-016). */
+@layer components {
+  /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
+  .augur-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: calc(var(--glyph-lg) + var(--space-2)); padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
+  .augur-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
+  .augur-tag[data-removable] { padding-right: 2px; }
+  .augur-tag-word { overflow: hidden; text-overflow: ellipsis; }
+  .augur-tag > svg { color: var(--ink-muted); }
+  .augur-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: var(--control-xs); height: var(--control-xs); border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
+  .augur-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
+  .augur-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+  .augur-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+  .augur-tags > li { display: flex; max-width: 100%; }
+  .augur-tags-more { font: inherit; font-size: var(--type-small); color: var(--ink-muted); cursor: pointer; }
+  .augur-tags-more:hover { color: var(--ink); }
+  .augur-tags-more:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
+}
+
 /* Status: where a thing is, as a mark and a word (moved from Quill, PDR-016). */
 @layer components {
   .augur-status { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }
@@ -967,6 +1026,7 @@
   .augur-status[data-status='warning'] :is(.augur-status-mark, .augur-status-word) { color: var(--warning); }
 }
 
+@keyframes augur-travel { from { left: 0; } to { left: 70%; } }
 @keyframes augur-spin { to { transform: rotate(1turn); } }
 @keyframes augur-count { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @keyframes augur-ping { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(var(--ping-scale, 1.14)); opacity: 0; } }
@@ -1159,7 +1219,7 @@
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-switch::after, .augur-button[data-pending]::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
-    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
+    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before, .augur-state-run::after { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i, .augur-skeleton i { animation: none; }
     .augur-letterbox::before, .augur-letterbox::after { animation: none; }
   }
@@ -1168,7 +1228,7 @@
     .augur-field[data-busy] .augur-field-box::after, .augur-toggle-row[data-busy] .augur-switch::after, .augur-button[data-pending]::after,
     .augur-signal[data-kind='bloom'] .augur-signal-light::after, .augur-signal[data-kind='beacon'] .augur-signal-light::after,
     .augur-signal[data-kind='ember'] .augur-signal-light,
-    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before { animation: none; }
+    .augur-status[data-status='needs'][data-next] .augur-status-mark::after, .augur-status[data-status='running'] .augur-status-mark::before, .augur-state-run::after { animation: none; }
     .augur-progress[data-indeterminate] .augur-bar > i, .augur-skeleton i { animation: none; }
     .augur-letterbox::before, .augur-letterbox::after { animation: none; }
   }

@@ -45,6 +45,8 @@ export { UrgentEdge, type UrgentEdgeProps } from './urgent-edge.js';
 export { Notice, Toast, Toasts, type NoticeTone, type NoticeProps, type ToastItem, type ToastProps, type ToastsProps } from './notice.js';
 export { Signal, STREAK_MOST, type SignalKind, type SignalProps } from './signal.js';
 export { Status, statusWords, statusUrgency, type StatusName, type StatusProps } from './status.js';
+export { Tag, Tags, type TagProps, type TagItem, type TagsProps } from './tag.js';
+export { State, StateBoundary, type StateKind, type StateProps, type StateBoundaryProps } from './state.js';
 export { Snippet, type SnippetProps, type SnippetCopy } from './snippet.js';
 export { Folds, Fold, type FoldsProps, type FoldProps } from './fold.js';
 export { RunLog, stepToOpen, type RunLogProps, type RunStep, type RunLine, type RunLevel } from './run-log.js';

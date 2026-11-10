@@ -4,7 +4,7 @@
  * its children by slot. Long lists and tables draw only the rows in view (the app contract, 6.9).
  */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AskTwice, Button, CheckList, CheckRow, Checkbox, CheckboxGroup, Choice, Dialog, Icon, Notice, PagedList, Progress, Select, Status, StepList, Steps, TextField, type CheckTone, type IconName } from '@augur/kit-common';
+import { AskTwice, Button, CheckList, CheckRow, Checkbox, CheckboxGroup, Choice, Dialog, Icon, Notice, PagedList, Progress, Select, Status, StepList, Steps, Tag, TextField, type CheckTone, type IconName } from '@augur/kit-common';
 import { About } from '../about.js';
 import { DateField, FileButton } from '../date.js';
 import { FilterBar, type FilterDef, type FilterValue } from '../filter-bar.js';
@@ -20,7 +20,7 @@ import { PageHead, Section } from '../page.js';
 import { Palette } from '../palette.js';
 import { Reel } from '../reel.js';
 import { SelectionBar } from '../selection-bar.js';
-import { Details, Facts, Rows, State, Tag } from '../states.js';
+import { Details, Facts, Rows, State } from '../states.js';
 import { TagPicker } from '../tag-picker.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
 import { Grid, Split, Stack } from '../layout.js';
