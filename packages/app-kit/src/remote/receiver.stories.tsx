@@ -123,3 +123,52 @@ function Health() {
 
 /** Checks with the one that needs you lit, a way through one job, and history a page at a time: Common's parts, described by an app. */
 export const ChecksStepsAndPages: Story = { args: { receiver: createQuillReceiver() }, render: () => <Health /> };
+
+function Documents() {
+  const receiver = useSandbox(() => {
+    const bar = document.createElement('quill-filter-bar');
+    bar.label = 'Filter documents';
+    bar.filters = [
+      { id: 'state', label: 'State', options: [{ value: 'progress', label: 'In progress' }, { value: 'review', label: 'In review' }, { value: 'issued', label: 'Issued' }] },
+      { id: 'tag', label: 'Tags', search: true, options: [{ value: 'berths', label: 'Berths' }, { value: 'safety', label: 'Safety' }] },
+    ];
+    bar.value = { state: ['issued'] };
+    bar.sorts = [{ value: 'new', label: 'Newest' }, { value: 'name', label: 'Name' }];
+    bar.count = 4;
+    bar.noun = ['document', 'documents'];
+    bar.addEventListener('change', () => undefined);
+    const add = document.createElement('quill-file-button');
+    add.label = 'Add a document';
+    add.accept = ['.pdf', '.docx', '.md'];
+    add.addEventListener('choose', () => undefined);
+    const share = document.createElement('quill-people-picker');
+    share.label = 'Share with';
+    share.multiple = true;
+    share.addEventListener('query', (e) => {
+      const words = (e as CustomEvent<string>).detail;
+      share.found = { query: words, items: [{ kind: 'person', id: 'hamid', name: 'Hamid Sadeghi', detail: 'Finance' }, { kind: 'team', id: 'ops', name: 'Operations', size: 12, reason: 'It can already read this.' }] };
+    });
+    const path = document.createElement('quill-floor-path');
+    path.label = 'Up the floors';
+    path.floors = [
+      { id: 'port', kind: 'team', name: 'Port Services', owner: true, here: true, line: 'Issued, version 2' },
+      { id: 'ops', kind: 'team', name: 'Operations', line: 'Complete and Issued' },
+      { id: 'org', kind: 'org', name: 'Organisation', reason: 'Only the org’s publishers can put things here.' },
+    ];
+    path.addEventListener('open', () => undefined);
+    const reader = document.createElement('quill-reader');
+    reader.title = 'Berth procedure';
+    reader.marks = [{ id: 'about', label: 'Say it’s about this' }];
+    reader.addEventListener('mark', () => undefined);
+    reader.markdown = '# Berth procedure\n\n## Before arrival\n\nConfirm the berth with the harbour master and check the tide table for the hour of arrival.\n\n![Berth plan](pictures/berth-plan.png)\n\n## Mooring\n\nUse two head lines and two stern lines at Port of Calderhaven. Springs go on once the vessel is alongside.\n\n| Line | Who |\n| --- | --- |\n| Head | Deck crew |\n| Stern | Linesmen |';
+    return [bar, add, share, path, reader];
+  });
+  return (
+    <div style={{ display: 'grid', gap: 'var(--space-5)', height: 'var(--measure-read)' }}>
+      <QuillRemote receiver={receiver} host={{ files: () => undefined }} />
+    </div>
+  );
+}
+
+/** What a documents app describes: the bar over a long list, a file button, a people picker that asks the app, a chain up the floors, and a reader whose pictures only the host fetches (here it lends none, so the picture is said in words). */
+export const DocumentsParts: Story = { args: { receiver: createQuillReceiver() }, render: () => <Documents /> };

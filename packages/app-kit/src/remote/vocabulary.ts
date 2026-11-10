@@ -7,6 +7,9 @@
  *
  * Every property says the shape it takes, down to the fields of a list's items, so nothing the
  * sandbox sends reaches a kit part unchecked: no markup, no functions, no URL the host would fetch.
+ * The one widening (ADR 0092): `quill-reader` takes Markdown, read with raw HTML shown as text, and
+ * names its pictures by a path under the app's own API, which only the host fetches
+ * (`readerPicturePath` says which paths pass).
  *
  * Plain data, no React: the sandbox side (`@augur/app-kit/remote`) builds its element constructors
  * from it, the host side (`QuillRemote`) its checks and renderers, and `remote-allowlist.json` is
@@ -59,6 +62,8 @@ const action = { object: { id: S, label: S, disabled: B, reason: S }, required: 
 const noun = { tuple: [S, S] } as const;
 /** A thing with actions, for the shell's radial menu (6.4): its kind, as `contributes.radial` names it. */
 const thing = { object: { kind: S, id: S, label: S }, required: ['kind'] } as const;
+/** A person or a team, as the people picker shows them; one that can't be chosen says why in `reason`. */
+const principal = { object: { kind: oneOf('person', 'team'), id: S, name: S, detail: S, size: N, meta: S, reason: S }, required: ['kind', 'id', 'name'] } as const;
 
 export const QUILL_REMOTE_ELEMENTS = {
   'quill-page-head': {
@@ -413,9 +418,128 @@ export const QUILL_REMOTE_ELEMENTS = {
     },
     events: { open: 'the item’s id', more: 'nothing' },
   },
+  'quill-reader': {
+    part: 'ReadingView',
+    // A document to read, from Markdown (ADR 0092): raw HTML is shown as text and links open
+    // elsewhere. A picture is named by a path relative to the app's own API; only the host fetches
+    // it, under /api/<the app's id>/, and one it can't is said in words. Words the person selects get
+    // a bar beside them with the app's `marks`; a press sends the words back as `mark`.
+    properties: {
+      markdown: S,
+      title: S,
+      flow: oneOf('leaves', 'horizon'),
+      mode: oneOf('page', 'desk'),
+      size: oneOf('small', 'medium', 'large'),
+      contentsHeading: S,
+      remember: S,
+      marks: { array: { object: { id: S, label: S }, required: ['id', 'label'] } },
+      at: S,
+    },
+    events: { mark: 'the mark’s id and the words: { mark, text, anchor, context }', position: 'the anchor of the block at the top' },
+  },
+  'quill-file-button': {
+    part: 'FileButton',
+    // A button that opens the person's own file chooser. The files never cross as an event: the host
+    // reads them, cuts them at the app's upload limit and hands them to `ctx.files` as a drop. `choose`
+    // only says what was chosen.
+    properties: {
+      label: S,
+      kind: oneOf('primary', 'secondary', 'tertiary', 'ghost'),
+      size: oneOf('md', 'sm'),
+      icon: 'icon',
+      accept: { array: S },
+      multiple: B,
+      disabled: B,
+      reason: S,
+      busy: B,
+      busyLabel: S,
+    },
+    events: { choose: 'what was chosen: [{ name, size, type }]' },
+  },
+  'quill-people-picker': {
+    part: 'PeoplePicker',
+    // Finds people and teams by name. The host asks the app: each pause in typing sends `query`, and
+    // the app answers by setting `found` for that query. One that can't be chosen says why.
+    properties: {
+      label: S,
+      hint: S,
+      disabled: B,
+      reason: S,
+      kinds: oneOf('people', 'teams', 'both'),
+      multiple: B,
+      value: { array: principal },
+      found: { object: { query: S, items: { array: principal }, error: S }, required: ['query'] },
+      placeholder: S,
+      name: S,
+    },
+    events: { query: 'the words typed', change: 'the ones chosen', pick: 'the one chosen' },
+    mirror: { change: 'value' },
+  },
+  'quill-floor-path': {
+    part: 'Path',
+    // A thing's chain up the floors: each floor with what reaches it, the owner marked, and one it can't
+    // reach saying why (drawn red).
+    properties: {
+      label: S,
+      floors: {
+        array: {
+          object: { id: S, kind: oneOf('personal', 'team', 'org'), name: S, line: S, owner: B, here: B, mark: S, reason: S },
+          required: ['id', 'kind', 'name'],
+        },
+      },
+    },
+    events: { open: 'the floor’s id' },
+  },
+  'quill-filter-bar': {
+    part: 'FilterBar',
+    // The ruled line over a long list: each way to narrow it, how many match, and the sort. The bar
+    // holds no list; it says what changed and the app asks again.
+    properties: {
+      label: S,
+      filters: {
+        array: {
+          object: {
+            id: S,
+            label: S,
+            options: { array: { object: { value: S, label: S, detail: S, disabled: B, icon: 'icon' }, required: ['value', 'label'] } },
+            single: B,
+            search: B,
+          },
+          required: ['id', 'label', 'options'],
+        },
+      },
+      value: { record: { array: S } },
+      sorts: { array: { object: { value: S, label: S, detail: S, disabled: B }, required: ['value', 'label'] } },
+      sort: S,
+      count: N,
+      noun,
+      busy: B,
+    },
+    events: { change: 'what’s chosen and the sort: { value, sort }' },
+  },
 } as const satisfies Record<string, RemoteElementSpec>;
 
 export type QuillRemoteElementName = keyof typeof QUILL_REMOTE_ELEMENTS;
+
+/**
+ * The path a reader's picture names, as the host may fetch it under the app's own API, or undefined
+ * when it isn't one: no scheme, no host, no leading slash, no `.` or `..` step, no backslash and no
+ * escapes that hide one. `figures/plan.png?v=2` passes; `https://…`, `/api/other/x`, `../x` don't.
+ */
+export function readerPicturePath(src: string): string | undefined {
+  if (typeof src !== 'string' || !src || src.length > 1024) return undefined;
+  if (!/^[A-Za-z0-9._~!$&'()*+,;=:@%/?-]+$/.test(src) || src.includes('#')) return undefined;
+  const [path = ''] = src.split('?');
+  let plain: string;
+  try {
+    plain = decodeURIComponent(path);
+  } catch {
+    return undefined;
+  }
+  if (/[\\\0]/.test(plain) || plain.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(path)) return undefined;
+  if (plain.split('/').some((step) => step === '' || step === '.' || step === '..')) return undefined;
+  return src;
+}
 
 export const quillRemoteElementNames = Object.keys(QUILL_REMOTE_ELEMENTS) as QuillRemoteElementName[];
 

@@ -1124,6 +1124,266 @@
         "open": "the item’s id",
         "more": "nothing"
       }
+    },
+    "quill-reader": {
+      "part": "ReadingView",
+      "properties": {
+        "markdown": "string",
+        "title": "string",
+        "flow": {
+          "enum": [
+            "leaves",
+            "horizon"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "page",
+            "desk"
+          ]
+        },
+        "size": {
+          "enum": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        "contentsHeading": "string",
+        "remember": "string",
+        "marks": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string"
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          }
+        },
+        "at": "string"
+      },
+      "events": {
+        "mark": "the mark’s id and the words: { mark, text, anchor, context }",
+        "position": "the anchor of the block at the top"
+      }
+    },
+    "quill-file-button": {
+      "part": "FileButton",
+      "properties": {
+        "label": "string",
+        "kind": {
+          "enum": [
+            "primary",
+            "secondary",
+            "tertiary",
+            "ghost"
+          ]
+        },
+        "size": {
+          "enum": [
+            "md",
+            "sm"
+          ]
+        },
+        "icon": "icon",
+        "accept": {
+          "array": "string"
+        },
+        "multiple": "boolean",
+        "disabled": "boolean",
+        "reason": "string",
+        "busy": "boolean",
+        "busyLabel": "string"
+      },
+      "events": {
+        "choose": "what was chosen: [{ name, size, type }]"
+      }
+    },
+    "quill-people-picker": {
+      "part": "PeoplePicker",
+      "properties": {
+        "label": "string",
+        "hint": "string",
+        "disabled": "boolean",
+        "reason": "string",
+        "kinds": {
+          "enum": [
+            "people",
+            "teams",
+            "both"
+          ]
+        },
+        "multiple": "boolean",
+        "value": {
+          "array": {
+            "object": {
+              "kind": {
+                "enum": [
+                  "person",
+                  "team"
+                ]
+              },
+              "id": "string",
+              "name": "string",
+              "detail": "string",
+              "size": "number",
+              "meta": "string",
+              "reason": "string"
+            },
+            "required": [
+              "kind",
+              "id",
+              "name"
+            ]
+          }
+        },
+        "found": {
+          "object": {
+            "query": "string",
+            "items": {
+              "array": {
+                "object": {
+                  "kind": {
+                    "enum": [
+                      "person",
+                      "team"
+                    ]
+                  },
+                  "id": "string",
+                  "name": "string",
+                  "detail": "string",
+                  "size": "number",
+                  "meta": "string",
+                  "reason": "string"
+                },
+                "required": [
+                  "kind",
+                  "id",
+                  "name"
+                ]
+              }
+            },
+            "error": "string"
+          },
+          "required": [
+            "query"
+          ]
+        },
+        "placeholder": "string",
+        "name": "string"
+      },
+      "events": {
+        "query": "the words typed",
+        "change": "the ones chosen",
+        "pick": "the one chosen"
+      },
+      "mirror": {
+        "change": "value"
+      }
+    },
+    "quill-floor-path": {
+      "part": "Path",
+      "properties": {
+        "label": "string",
+        "floors": {
+          "array": {
+            "object": {
+              "id": "string",
+              "kind": {
+                "enum": [
+                  "personal",
+                  "team",
+                  "org"
+                ]
+              },
+              "name": "string",
+              "line": "string",
+              "owner": "boolean",
+              "here": "boolean",
+              "mark": "string",
+              "reason": "string"
+            },
+            "required": [
+              "id",
+              "kind",
+              "name"
+            ]
+          }
+        }
+      },
+      "events": {
+        "open": "the floor’s id"
+      }
+    },
+    "quill-filter-bar": {
+      "part": "FilterBar",
+      "properties": {
+        "label": "string",
+        "filters": {
+          "array": {
+            "object": {
+              "id": "string",
+              "label": "string",
+              "options": {
+                "array": {
+                  "object": {
+                    "value": "string",
+                    "label": "string",
+                    "detail": "string",
+                    "disabled": "boolean",
+                    "icon": "icon"
+                  },
+                  "required": [
+                    "value",
+                    "label"
+                  ]
+                }
+              },
+              "single": "boolean",
+              "search": "boolean"
+            },
+            "required": [
+              "id",
+              "label",
+              "options"
+            ]
+          }
+        },
+        "value": {
+          "record": {
+            "array": "string"
+          }
+        },
+        "sorts": {
+          "array": {
+            "object": {
+              "value": "string",
+              "label": "string",
+              "detail": "string",
+              "disabled": "boolean"
+            },
+            "required": [
+              "value",
+              "label"
+            ]
+          }
+        },
+        "sort": "string",
+        "count": "number",
+        "noun": {
+          "tuple": [
+            "string",
+            "string"
+          ]
+        },
+        "busy": "boolean"
+      },
+      "events": {
+        "change": "what’s chosen and the sort: { value, sort }"
+      }
     }
   }
 }

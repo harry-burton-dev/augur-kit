@@ -7,11 +7,14 @@
  * A dropped element stays in the receiver's tree, drawn as nothing, so the positions the sandbox's
  * later changes name still line up.
  */
-import { Component, memo, useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Component, memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { icons } from '@augur/kit-common';
 import { RemoteReceiver, type RemoteReceiverElement, type RemoteReceiverNode, type RemoteReceiverRoot } from '@remote-dom/core/receivers';
 import { QUILL_REMOTE_ELEMENTS, checkRemoteValue, isQuillRemoteElement, type QuillRemoteElementName, type RemoteCheck, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
 import { renderers, type RemoteParts } from './renderers.js';
+import { QuillRemoteHostContext, type QuillRemoteHost } from './host.js';
+
+export type { QuillRemoteHost } from './host.js';
 
 /** What carries the sandbox's changes in: the bridge hands each batch of records to `mutate`. */
 export interface QuillRemoteConnection {
@@ -37,6 +40,8 @@ export interface QuillRemoteProps {
   receiver: QuillReceiver;
   /** Told each thing that was dropped, once, with why; it is also said on the console. */
   onDrop?: (reason: string) => void;
+  /** What only the host does for the app: a reader's pictures, a file button's files. */
+  host?: QuillRemoteHost;
 }
 
 type Watchable = RemoteReceiverNode | RemoteReceiverRoot;
@@ -208,16 +213,17 @@ function Text({ receiver, node }: { receiver: RemoteReceiver; node: RemoteReceiv
 }
 
 /** Draws one remote root's tree with the kit. */
-export function QuillRemote({ receiver, onDrop }: QuillRemoteProps) {
+export function QuillRemote({ receiver, onDrop, host }: QuillRemoteProps) {
   const inner = (receiver as Receiver).inner;
   const root = useNode(inner, inner.root);
   const drop = useMemoDrop(onDrop);
+  const lent = useMemo(() => ({ picture: host?.picture, files: host?.files }), [host?.picture, host?.files]);
   return (
-    <>
+    <QuillRemoteHostContext.Provider value={lent}>
       {root.children.map((child) => (
         <Node key={child.id} receiver={inner} node={child} drop={drop} />
       ))}
-    </>
+    </QuillRemoteHostContext.Provider>
   );
 }
 

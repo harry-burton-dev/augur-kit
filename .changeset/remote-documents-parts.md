@@ -1,0 +1,5 @@
+---
+'@augur/app-kit': minor
+---
+
+Quill's remote vocabulary gains the parts a documents app needs. `quill-reader` draws Markdown in the reading view (raw HTML shown as text); a picture is named by a path under the app's own API, which only the host fetches (ADR 0092, `readerPicturePath` says which paths pass), and words the person selects get the app's marks beside them, sent back as `mark`. `quill-file-button` opens the person's file chooser and the host takes the files, as a drop on the app's pane; `choose` says only what was chosen. `quill-people-picker` asks the app for each search (`query`) and shows the `found` it sets for those words. `quill-floor-path` draws a thing's chain up the floors, the owner marked and a floor it can't reach saying why. `quill-filter-bar` is the kit's FilterBar. `QuillRemote` takes a `host` (`picture`, `files`) for what only the host does; without one, the element still draws and says what it can't do. Quill also gains `FileButton`, and ReadingView an `at` to open at a block. Nothing is renamed or removed.

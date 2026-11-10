@@ -87,6 +87,65 @@ export interface QuillRemoteProperties {
   'quill-check-list': { label: string; rows: { id: string; title: string; detail?: string; tone?: 'ok' | 'needs' | 'problem' | 'info'; action?: { label: string; disabled?: boolean; reason?: string } }[] };
   'quill-step-list': { label: string; steps: { id: string; title: string; detail?: string; action?: string; done?: boolean; unavailable?: string }[] };
   'quill-paged-list': { label: string; items: { id: string; title: string; detail?: string; meta?: string; status?: 'needs' | 'running' | 'queued' | 'paused' | 'done' | 'failed' | 'warning' }[]; pageSize?: number; total?: number; noun?: string; empty?: string; busy?: boolean };
+  'quill-reader': { markdown: string; title?: string; flow?: 'leaves' | 'horizon'; mode?: 'page' | 'desk'; size?: 'small' | 'medium' | 'large'; contentsHeading?: string; remember?: string; marks?: { id: string; label: string }[]; at?: string };
+  'quill-file-button': { label: string; kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost'; size?: 'md' | 'sm'; icon?: string; accept?: string[]; multiple?: boolean; disabled?: boolean; reason?: string; busy?: boolean; busyLabel?: string };
+  'quill-people-picker': { label: string; hint?: string; disabled?: boolean; reason?: string; kinds?: 'people' | 'teams' | 'both'; multiple?: boolean; value?: RemotePrincipal[]; found?: { query: string; items?: RemotePrincipal[]; error?: string }; placeholder?: string; name?: string };
+  'quill-floor-path': { label?: string; floors: RemoteFloorStep[] };
+  'quill-filter-bar': { label: string; filters: RemoteFilter[]; value?: Record<string, string[]>; sorts?: { value: string; label: string; detail?: string; disabled?: boolean }[]; sort?: string; count?: number; noun?: [string, string]; busy?: boolean };
+}
+
+/** A person or a team in the people picker; one with a `reason` stays in the list, dimmed, and says it. */
+export interface RemotePrincipal {
+  kind: 'person' | 'team';
+  id: string;
+  name: string;
+  detail?: string;
+  size?: number;
+  meta?: string;
+  reason?: string;
+}
+
+/** One floor of a thing's chain up the floors. */
+export interface RemoteFloorStep {
+  id: string;
+  kind: 'personal' | 'team' | 'org';
+  name: string;
+  /** What reaches it, in one line: "Complete and Issued". */
+  line?: string;
+  /** It owns the thing: marked as owner. */
+  owner?: boolean;
+  /** The floor the person is on: ringed. */
+  here?: boolean;
+  /** A word or two after the name, in place of the owner's mark. */
+  mark?: string;
+  /** Why it can't reach this floor: said under it, and the floor marked red. */
+  reason?: string;
+}
+
+/** One way to narrow a list in the filter bar. */
+export interface RemoteFilter {
+  id: string;
+  label: string;
+  options: { value: string; label: string; detail?: string; disabled?: boolean; icon?: string }[];
+  single?: boolean;
+  search?: boolean;
+}
+
+/** What a reader's `mark` event carries: the mark pressed and the words selected. */
+export interface RemoteMarked {
+  mark: string;
+  text: string;
+  /** The block the words start in, by its anchor. */
+  anchor: string;
+  /** All the words of that block. */
+  context: string;
+}
+
+/** What a file button's `choose` event carries: what was chosen, never the bytes. */
+export interface RemoteChosenFile {
+  name: string;
+  size: number;
+  type: string;
 }
 
 /** One option of a Choice or a CheckboxGroup: one that can't be picked now says why. */
@@ -135,6 +194,11 @@ export interface QuillRemoteEvents {
   'quill-check-list': { act: string };
   'quill-step-list': { act: string };
   'quill-paged-list': { open: string; more: undefined };
+  'quill-reader': { mark: RemoteMarked; position: string };
+  'quill-file-button': { choose: RemoteChosenFile[] };
+  'quill-people-picker': { query: string; change: RemotePrincipal[]; pick: RemotePrincipal };
+  'quill-floor-path': { open: string };
+  'quill-filter-bar': { change: { value: Record<string, string[]>; sort: string } };
 }
 
 // Every element has both, and nothing else does.
