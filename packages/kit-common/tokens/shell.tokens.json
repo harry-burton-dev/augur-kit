@@ -308,6 +308,16 @@
       "$type": "dimension",
       "$description": "The width of the About panel, the right-hand region the shell draws beside an app's main column."
     },
+    "split-list": {
+      "$value": "360px",
+      "$type": "dimension",
+      "$description": "The list column in the split layout: about a short title, its detail and its state. The detail takes the rest."
+    },
+    "pane-tight-below": {
+      "$value": "640px",
+      "$type": "dimension",
+      "$description": "An app's pane narrower than this (its own width, a container query) uses edge-tight for its inline inset."
+    },
     "gauge-notch": {
       "$value": "28px",
       "$type": "dimension",

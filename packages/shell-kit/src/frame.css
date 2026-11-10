@@ -44,3 +44,38 @@
 .aerie-about-open span { writing-mode: vertical-rl; }
 .aerie-about-open:hover { color: var(--ink); }
 .aerie-about-open:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+
+/* ── an app's pane, in the layout the app chose (pane-layout.tsx) ──
+   Every layout keeps the inset contract: the head and the screen share one inline inset, so the title and the
+   content line up; they are capped together at the chosen width, from the left, so things stay where they are;
+   the top clears the stage's fade; the screen's sections are section-gap apart. Each column pads itself, and
+   columns meet at a hairline. Only tokens: the one literal width is a container query, kept equal to
+   pane-tight-below by pane-layout.test.tsx. */
+.aerie-app-frame { display: flex; min-height: 0; height: 100%; }
+.aerie-app-pane { container: aerie-pane / inline-size; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.aerie-app-frame { --pane-measure: var(--measure-read); }
+.aerie-app-frame[data-width='wide'] { --pane-measure: var(--measure-wide); }
+.aerie-app-frame[data-width='full'], .aerie-app-frame[data-layout='split'], .aerie-app-frame[data-layout='canvas'] { --pane-measure: 100cqi; }
+.aerie-app-head, .aerie-app-screen {
+  box-sizing: border-box;
+  --pane-inline: var(--pane-inset-inline);
+  padding-inline: var(--pane-inline) max(var(--pane-inline), calc(100cqi - var(--pane-measure) - var(--pane-inline)));
+}
+.aerie-app-head { flex: none; padding-block-start: var(--pane-inset-top); padding-block-end: var(--stack-loose); }
+.aerie-app-screen {
+  flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent;
+  display: flex; flex-direction: column; gap: var(--section-gap); padding-block-end: var(--pane-inset-bottom);
+}
+.aerie-app-screen[hidden] { display: none; }
+@container aerie-pane (width < 640px) { .aerie-app-head, .aerie-app-screen { --pane-inline: var(--edge-tight); } }
+/* flush and canvas: the screen meets the pane's edges; the head keeps its inset. */
+.aerie-app-frame:is([data-inset='flush'], [data-layout='canvas']) .aerie-app-screen { padding: 0; gap: 0; }
+/* split: a list column and its detail, each padding itself, a hairline between. The detail wraps under the
+   list by itself when both can't keep part-min-width. The screen's first part is the list; the rest is the detail. */
+.aerie-app-frame[data-layout='split'] .aerie-app-screen { flex-direction: row; flex-wrap: wrap; align-items: stretch; align-content: flex-start; gap: 0; padding-inline: 0; }
+.aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > *, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :not(.aerie-frame-pane) {
+  flex: 999 1 0; min-width: min(var(--part-min-width), 100%); padding: 0 var(--pane-inline); display: flex; flex-direction: column; gap: var(--section-gap);
+}
+.aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > :first-child, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :first-child:not(.aerie-frame-pane) {
+  flex: 1 1 var(--split-list); padding-inline: var(--region-inset-inline); border-inline-end: 1px solid var(--hairline);
+}
