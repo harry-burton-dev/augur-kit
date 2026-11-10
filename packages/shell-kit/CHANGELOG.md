@@ -1,5 +1,15 @@
 # @augur/shell-kit
 
+## 0.11.2
+
+### Patch Changes
+
+- 8a03b87: `State` and `StateBoundary` (with `StateKind`, `StateProps` and `StateBoundaryProps`) move from Quill into Common, so Aerie can say empty, loading, error and offline the same way (PDR-016). Quill still exports them, through Common, under the same names, and they look the same as #58 left them; their classes are now `augur-state*` (the mark is `augur-state-sign` and the running line `augur-state-run`). Their Storybook page moves to Common/State.
+- 8a03b87: `Tag` (with `TagProps`) moves from Quill into Common, so Aerie can draw the same tags (PDR-016). Quill still exports it, through Common, under the same name, and it looks the same; its classes are now `augur-tag*`. Common also gets `Tags`, a row of tags that folds the rest behind "+N more" past a `limit`. Both have their own Storybook pages, under Common/Tag.
+- Updated dependencies [8a03b87]
+- Updated dependencies [8a03b87]
+  - @augur/kit-common@0.18.0
+
 ## 0.11.1
 
 ### Patch Changes
