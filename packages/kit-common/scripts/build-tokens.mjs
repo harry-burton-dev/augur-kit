@@ -39,6 +39,7 @@ const themed = (token, all) => {
   const group = token.path[0];
   if (group === 'color') return [[`--color-${n}`, v]];
   if (group === 'space') return [[`--spacing-${n.replace(/^space-/, '')}`, v]];
+  if (group === 'layout' || group === 'size') return [[`--spacing-${n}`, v]];
   if (group === 'radius') return [[`--radius-${n.replace(/^radius-/, '')}`, v]];
   if (group === 'shadow') return [[`--shadow-${n.replace(/^shadow-/, '')}`, v]];
   if (group === 'font') return [[`--font-${n.replace(/^font-/, '')}`, v]];
@@ -119,4 +120,13 @@ appendFileSync(
   join(root, 'dist/tokens.css'),
   `\n:root[data-motion='reduce'] {\n${lines('  ')}\n}\n\n@media (prefers-reduced-motion: reduce) {\n  :root {\n${lines('    ')}\n  }\n}\n`,
 );
-console.log(`kit-common: wrote ${allTokens.length} tokens, ${reduced.length} with a reduced-motion value`);
+// Compact density (data-density="compact" on <html>, which a host sets from a person's preference, or on an
+// app's pane, which the shell sets from the app's choice): each token with a compact value takes it. A layout
+// token is written again beside the steps, so it reads the compact steps wherever the switch is set.
+const ref = (v) => String(v).replace(/\{(?:[a-z0-9-]+\.)*([a-z0-9-]+)\}/g, 'var(--$1)');
+const compact = allTokens.filter((t) => t.$extensions?.augur?.compact !== undefined);
+appendFileSync(
+  join(root, 'dist/tokens.css'),
+  `\n:root[data-density='compact'], [data-density='compact'] {\n${compact.map((t) => `  --${t.name}: ${ref(t.original.$extensions.augur.compact)};`).join('\n')}\n}\n`,
+);
+console.log(`kit-common: wrote ${allTokens.length} tokens, ${reduced.length} with a reduced-motion value, ${compact.length} with a compact one`);

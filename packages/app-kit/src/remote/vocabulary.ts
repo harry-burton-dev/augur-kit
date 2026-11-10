@@ -7,6 +7,9 @@
  *
  * Every property says the shape it takes, down to the fields of a list's items, so nothing the
  * sandbox sends reaches a kit part unchecked: no markup, no functions, no URL the host would fetch.
+ * The one widening (ADR 0092): `quill-reader` takes Markdown, read with raw HTML shown as text, and
+ * names its pictures by a path under the app's own API, which only the host fetches
+ * (`readerPicturePath` says which paths pass).
  *
  * Plain data, no React: the sandbox side (`@augur/app-kit/remote`) builds its element constructors
  * from it, the host side (`QuillRemote`) its checks and renderers, and `remote-allowlist.json` is
@@ -59,6 +62,44 @@ const action = { object: { id: S, label: S, disabled: B, reason: S }, required: 
 const noun = { tuple: [S, S] } as const;
 /** A thing with actions, for the shell's radial menu (6.4): its kind, as `contributes.radial` names it. */
 const thing = { object: { kind: S, id: S, label: S }, required: ['kind'] } as const;
+/** A person or a team, as the people picker shows them; one that can't be chosen says why in `reason`. */
+/** Where a line of a thing's page came from: its one quiet trust line. */
+const source = {
+  object: { id: S, how: oneOf('as-written', 'forecast'), reports: N, who: S, byYou: B, on: S, title: S, yours: B },
+  required: ['how', 'reports', 'who', 'on', 'title'],
+} as const;
+/** One thing, filled by the app's own rules, for the one shape every thing's page takes. */
+const thingView = {
+  object: {
+    id: S,
+    name: S,
+    kind: { object: { name: S, icon: 'icon' }, required: ['name', 'icon'] },
+    aliases: { array: S },
+    answer: { array: { object: { key: oneOf('now', 'next', 'what', 'when', 'last-heard', 'known-for'), value: S, source }, required: ['key', 'value'] } },
+    problems: { array: { object: { kind: oneOf('conflict', 'duplicate', 'problem', 'slipped'), text: S, source }, required: ['kind', 'text'] } },
+    facts: { array: { object: { label: S, value: S, adopted: B, source }, required: ['label', 'value'] } },
+    around: { array: { object: { id: S, relation: S, name: S, group: S }, required: ['id', 'relation', 'name'] } },
+    total: N,
+    reports: N,
+  },
+  required: ['id', 'name', 'kind', 'answer', 'problems', 'facts', 'around', 'total', 'reports'],
+} as const;
+const doorStep = oneOf('quiet', 'present', 'strong', 'needs');
+const door = {
+  object: {
+    id: S,
+    name: S,
+    line: S,
+    icon: 'icon',
+    reads: { array: oneOf('change', 'moved', 'incident', 'contradiction', 'meeting', 'due', 'coming', 'new-thing', 'question', 'queue') },
+    order: N,
+    place: oneOf('door', 'ring'),
+    firstDay: S,
+    unavailable: { object: { why: S, who: S }, required: ['why', 'who'] },
+  },
+  required: ['id', 'name', 'line', 'icon', 'reads', 'order'],
+} as const;
+const principal = { object: { kind: oneOf('person', 'team'), id: S, name: S, detail: S, size: N, meta: S, reason: S }, required: ['kind', 'id', 'name'] } as const;
 
 export const QUILL_REMOTE_ELEMENTS = {
   'quill-page-head': {
@@ -72,6 +113,25 @@ export const QUILL_REMOTE_ELEMENTS = {
       level: N,
     },
     events: { trail: 'the step’s id', action: 'the action’s id' },
+    children: 'elements',
+  },
+  'quill-stack': {
+    part: 'Stack',
+    properties: { gap: oneOf('tight', 'normal', 'loose', 'section'), label: S },
+    events: {},
+    children: 'elements',
+  },
+  'quill-split': {
+    part: 'Split',
+    properties: {},
+    events: {},
+    slots: ['aside'],
+    children: 'elements',
+  },
+  'quill-grid': {
+    part: 'Grid',
+    properties: { label: S },
+    events: {},
     children: 'elements',
   },
   'quill-section': {
@@ -265,9 +325,308 @@ export const QUILL_REMOTE_ELEMENTS = {
     },
     events: { open: 'the item’s id' },
   },
+  'quill-dialog': {
+    part: 'Dialog',
+    // A submit leaves it open and busy until the app answers: by closing it (open false), saying why not
+    // (error), or setting busy while it works. To say the same reason twice, clear error on submit and set busy.
+    properties: {
+      open: B,
+      eyebrow: S,
+      heading: S,
+      summary: S,
+      size: oneOf('decision', 'glance', 'read'),
+      actionLabel: S,
+      busyLabel: S,
+      cancelLabel: S,
+      danger: B,
+      light: B,
+      busy: B,
+      error: S,
+    },
+    events: { submit: 'the fields’ values, by their names', close: 'false: the person closed it' },
+    mirror: { close: 'open' },
+    slots: ['fields'],
+    children: 'elements',
+  },
+  'quill-ask-twice': {
+    part: 'AskTwice',
+    properties: { label: S, confirm: S, size: oneOf('md', 'sm'), icon: 'icon', disabled: B, reason: S, busy: B, busyLabel: S },
+    events: { press: 'nothing: the second press' },
+  },
+  'quill-choice': {
+    part: 'Choice',
+    properties: {
+      label: S,
+      hint: S,
+      required: B,
+      optional: B,
+      disabled: B,
+      reason: S,
+      message: S,
+      options: { array: { object: { value: S, label: S, detail: S, disabled: B, reason: S }, required: ['value', 'label'] } },
+      value: S,
+      name: S,
+    },
+    events: { change: 'the value' },
+    mirror: { change: 'value' },
+  },
+  'quill-checkbox-group': {
+    part: 'CheckboxGroup',
+    properties: {
+      label: S,
+      hint: S,
+      required: B,
+      optional: B,
+      disabled: B,
+      reason: S,
+      message: S,
+      options: { array: { object: { value: S, label: S, detail: S, disabled: B, reason: S }, required: ['value', 'label'] } },
+      value: { array: S },
+      max: N,
+      name: S,
+    },
+    events: { change: 'the ticked values' },
+    mirror: { change: 'value' },
+  },
+  'quill-date-field': {
+    part: 'DateField',
+    properties: { ...field, value: S, name: S, empty: S, quick: { array: { object: { label: S, value: S }, required: ['label', 'value'] } } },
+    events: { change: 'the day, YYYY-MM-DD, or empty' },
+    mirror: { change: 'value' },
+  },
+  'quill-tag-picker': {
+    part: 'TagPicker',
+    properties: {
+      label: S,
+      hint: S,
+      required: B,
+      optional: B,
+      disabled: B,
+      reason: S,
+      options: { array: { object: { value: S, label: S, detail: S, disabled: B, icon: 'icon' }, required: ['value', 'label'] } },
+      value: { array: S },
+      max: N,
+      placeholder: S,
+      name: S,
+      creatable: B,
+    },
+    events: { change: 'the chosen values', create: 'the word to add as a tag' },
+    mirror: { change: 'value' },
+  },
+  'quill-steps': {
+    part: 'Steps',
+    properties: { label: S, steps: { array: { object: { label: S, state: oneOf('done', 'now', 'next') }, required: ['label', 'state'] } } },
+    events: {},
+  },
+  'quill-progress': {
+    part: 'Progress',
+    properties: { label: S, value: N, valueText: S },
+    events: {},
+  },
+  'quill-status': {
+    part: 'Status',
+    properties: { status: oneOf('needs', 'running', 'queued', 'paused', 'done', 'failed', 'warning'), label: S, markOnly: B },
+    events: {},
+  },
+  'quill-check-list': {
+    part: 'CheckList',
+    // Things checked, each with what was found and one way to act on it. A row that needs the person is lit
+    // with the needs-you light, and the tone is always said in words too.
+    properties: {
+      label: S,
+      rows: {
+        array: {
+          object: { id: S, title: S, detail: S, tone: oneOf('ok', 'needs', 'problem', 'info'), action: { object: { label: S, disabled: B, reason: S }, required: ['label'] } },
+          required: ['id', 'title'],
+        },
+      },
+    },
+    events: { act: 'the row’s id' },
+  },
+  'quill-step-list': {
+    part: 'StepList',
+    // An ordered way through one job, each step with what to do, why, and one action. For where a process
+    // has got to, use quill-steps.
+    properties: {
+      label: S,
+      steps: {
+        array: {
+          object: { id: S, title: S, detail: S, action: S, done: B, unavailable: S },
+          required: ['id', 'title'],
+        },
+      },
+    },
+    events: { act: 'the step’s id' },
+  },
+  'quill-paged-list': {
+    part: 'PagedList',
+    // A list shown a page at a time instead of scrolling, with Newer and Older drawn by the host. With
+    // `total` above the items sent and a `more` listener, the last page offers to load more.
+    properties: {
+      label: S,
+      items: { array: { object: { id: S, title: S, detail: S, meta: S, status: oneOf('needs', 'running', 'queued', 'paused', 'done', 'failed', 'warning') }, required: ['id', 'title'] } },
+      pageSize: N,
+      total: N,
+      noun: S,
+      empty: S,
+      busy: B,
+    },
+    events: { open: 'the item’s id', more: 'nothing' },
+  },
+  'quill-reader': {
+    part: 'ReadingView',
+    // A document to read, from Markdown (ADR 0092): raw HTML is shown as text and links open
+    // elsewhere. A picture is named by a path relative to the app's own API; only the host fetches
+    // it, under /api/<the app's id>/, and one it can't is said in words. Words the person selects get
+    // a bar beside them with the app's `marks`; a press sends the words back as `mark`.
+    properties: {
+      markdown: S,
+      title: S,
+      flow: oneOf('leaves', 'horizon'),
+      mode: oneOf('page', 'desk'),
+      size: oneOf('small', 'medium', 'large'),
+      contentsHeading: S,
+      remember: S,
+      marks: { array: { object: { id: S, label: S }, required: ['id', 'label'] } },
+      at: S,
+    },
+    events: { mark: 'the mark’s id and the words: { mark, text, anchor, context }', position: 'the anchor of the block at the top' },
+  },
+  'quill-file-button': {
+    part: 'FileButton',
+    // A button that opens the person's own file chooser. The files never cross as an event: the host
+    // reads them, cuts them at the app's upload limit and hands them to `ctx.files` as a drop. `choose`
+    // only says what was chosen.
+    properties: {
+      label: S,
+      kind: oneOf('primary', 'secondary', 'tertiary', 'ghost'),
+      size: oneOf('md', 'sm'),
+      icon: 'icon',
+      accept: { array: S },
+      multiple: B,
+      disabled: B,
+      reason: S,
+      busy: B,
+      busyLabel: S,
+    },
+    events: { choose: 'what was chosen: [{ name, size, type }]' },
+  },
+  'quill-people-picker': {
+    part: 'PeoplePicker',
+    // Finds people and teams by name. The host asks the app: each pause in typing sends `query`, and
+    // the app answers by setting `found` for that query. One that can't be chosen says why.
+    properties: {
+      label: S,
+      hint: S,
+      disabled: B,
+      reason: S,
+      kinds: oneOf('people', 'teams', 'both'),
+      multiple: B,
+      value: { array: principal },
+      found: { object: { query: S, items: { array: principal }, error: S }, required: ['query'] },
+      placeholder: S,
+      name: S,
+    },
+    events: { query: 'the words typed', change: 'the ones chosen', pick: 'the one chosen' },
+    mirror: { change: 'value' },
+  },
+  'quill-floor-path': {
+    part: 'Path',
+    // A thing's chain up the floors: each floor with what reaches it, the owner marked, and one it can't
+    // reach saying why (drawn red).
+    properties: {
+      label: S,
+      floors: {
+        array: {
+          object: { id: S, kind: oneOf('personal', 'team', 'org'), name: S, line: S, owner: B, here: B, mark: S, reason: S },
+          required: ['id', 'kind', 'name'],
+        },
+      },
+    },
+    events: { open: 'the floor’s id' },
+  },
+  'quill-filter-bar': {
+    part: 'FilterBar',
+    // The ruled line over a long list: each way to narrow it, how many match, and the sort. The bar
+    // holds no list; it says what changed and the app asks again.
+    properties: {
+      label: S,
+      filters: {
+        array: {
+          object: {
+            id: S,
+            label: S,
+            options: { array: { object: { value: S, label: S, detail: S, disabled: B, icon: 'icon' }, required: ['value', 'label'] } },
+            single: B,
+            search: B,
+          },
+          required: ['id', 'label', 'options'],
+        },
+      },
+      value: { record: { array: S } },
+      sorts: { array: { object: { value: S, label: S, detail: S, disabled: B }, required: ['value', 'label'] } },
+      sort: S,
+      count: N,
+      noun,
+      busy: B,
+    },
+    events: { change: 'what’s chosen and the sort: { value, sort }' },
+  },
+  'quill-thing-page': {
+    part: 'ThingPage',
+    // One shape for every thing (App patterns, "A thing's page"): the app fills `view` by its own rules;
+    // the host caps it, picks the primary action and says what each empty slot means. `map` offers the
+    // graph one step away, when the app listens to `map`. `everything` opens all that is known.
+    properties: { view: thingView, map: B, thing, level: oneOf('1', '2') },
+    events: {
+      action: 'the action’s id: wrong, follow, ask or send',
+      open: 'the id of the thing around it',
+      source: 'the report’s id, or its title when it has none',
+      everything: 'nothing',
+      map: 'nothing',
+    },
+  },
+  'quill-door-gallery': {
+    part: 'DoorGallery',
+    // Ways in, as configuration: an ask line on top and a row of doors, each lit by its step and reasons,
+    // which the app scores (`scoreDoors`). Doors past `cap` go to the radial menu.
+    properties: {
+      label: S,
+      doors: { array: door },
+      scores: { record: { object: { step: doorStep, score: N, reasons: { array: S } }, required: ['step', 'score', 'reasons'] } },
+      cap: N,
+      light: oneOf('alive', 'still'),
+      firstDay: B,
+      loading: B,
+      moreLabel: S,
+      start: S,
+      ask: { object: { label: S, placeholder: S, go: S, recentsLabel: S, recents: { array: { object: { id: S, label: S }, required: ['id', 'label'] } } }, required: ['label'] },
+    },
+    events: { open: 'the door’s id', ask: 'the words asked', recent: 'the recent’s id' },
+  },
 } as const satisfies Record<string, RemoteElementSpec>;
 
 export type QuillRemoteElementName = keyof typeof QUILL_REMOTE_ELEMENTS;
+
+/**
+ * The path a reader's picture names, as the host may fetch it under the app's own API, or undefined
+ * when it isn't one: no scheme, no host, no leading slash, no `.` or `..` step, no backslash and no
+ * escapes that hide one. `figures/plan.png?v=2` passes; `https://…`, `/api/other/x`, `../x` don't.
+ */
+export function readerPicturePath(src: string): string | undefined {
+  if (typeof src !== 'string' || !src || src.length > 1024) return undefined;
+  if (!/^[A-Za-z0-9._~!$&'()*+,;=:@%/?-]+$/.test(src) || src.includes('#')) return undefined;
+  const [path = ''] = src.split('?');
+  let plain: string;
+  try {
+    plain = decodeURIComponent(path);
+  } catch {
+    return undefined;
+  }
+  if (/[\\\0]/.test(plain) || plain.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(path)) return undefined;
+  if (plain.split('/').some((step) => step === '' || step === '.' || step === '..')) return undefined;
+  return src;
+}
 
 export const quillRemoteElementNames = Object.keys(QUILL_REMOTE_ELEMENTS) as QuillRemoteElementName[];
 

@@ -28,6 +28,8 @@ export interface ReadingViewProps {
   contentsHeading?: string;
   /** The block at the top of the view changed while reading. */
   onPosition?: (anchor: string) => void;
+  /** A block to open at, by its anchor; changing it goes there. */
+  at?: string;
   className?: string;
 }
 
@@ -83,6 +85,7 @@ export function ReadingView({
   imageSource,
   contentsHeading = 'Contents',
   onPosition,
+  at: openAt,
   className,
 }: ReadingViewProps) {
   const [first] = useState(() => kept(remember));
@@ -126,6 +129,10 @@ export function ReadingView({
   }, [outline, leaves, leaf, desk]);
 
   useEffect(() => setOpen(false), [mode]);
+  // Once it has headings (it has been set out), and whenever it's asked to: go to that block.
+  useEffect(() => {
+    if (openAt && reader.current?.goTo(openAt, { smooth: false, focus: false })) setCurrent(reader.current.headingFor(openAt));
+  }, [openAt, outline]);
 
   const heading = (anchor: string) => reader.current?.headingFor(anchor) ?? '';
   const at = current;

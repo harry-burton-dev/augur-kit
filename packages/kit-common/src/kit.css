@@ -265,7 +265,7 @@
     display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; font-family: var(--font-mono);
     font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink-muted);
   }
-  .augur-dot { position: relative; width: 6px; height: 6px; border-radius: 50%; border: 1px solid currentColor; }
+  .augur-dot { position: relative; width: var(--mark-xs); height: var(--mark-xs); border-radius: 50%; border: 1px solid currentColor; }
   .augur-hint { margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
   .augur-field-box {
     position: relative; display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; width: 100%; min-height: var(--target-md);
@@ -280,7 +280,7 @@
   }
   textarea.augur-input { overflow: hidden; }
   .augur-input::placeholder { color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
-  .augur-state-mark { flex: none; display: flex; width: 16px; height: 16px; }
+  .augur-state-mark { flex: none; display: flex; width: var(--glyph-lg); height: var(--glyph-lg); }
   .augur-state-mark:empty { display: none; }
   .augur-field-foot { display: flex; justify-content: space-between; gap: var(--space-3); min-height: var(--leading-small); }
   .augur-field-foot:has(> .augur-message:empty:only-child) { display: none; }
@@ -323,7 +323,7 @@
   /* Lists, menus and tips open over the shell's band, and over a dialog they open from. Depth is dimming only, never a blur (PDR-015). */
   .augur-popover, .augur-tip { z-index: calc(var(--layer-chrome) + 2); }
   .augur-popover {
-    min-width: var(--trigger-width); max-height: 280px; overflow: auto; padding: var(--space-2) 0;
+    min-width: var(--trigger-width); max-height: var(--list-max); overflow: auto; padding: var(--space-2) 0;
     background: color-mix(in srgb, var(--slate) 94%, transparent);
     border: 1px solid var(--hairline); border-radius: var(--radius-inset); box-shadow: var(--shadow-raised); color: var(--ink); font-family: var(--font-sans);
   }
@@ -335,7 +335,7 @@
   .augur-option[data-focused], .augur-option[data-hovered] { background: color-mix(in srgb, var(--ink) 8%, transparent); }
   .augur-option[data-focus-visible] { box-shadow: inset var(--focus-ring) 0 0 var(--focus); }
   .augur-option[data-disabled] { opacity: 0.4; cursor: default; }
-  .augur-option-mark { flex: none; display: flex; width: 14px; }
+  .augur-option-mark { flex: none; display: flex; width: var(--glyph); }
   .augur-option-label { flex: 1; min-width: 0; }
   .augur-option-detail { font-style: normal; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
 
@@ -352,18 +352,18 @@
     text-transform: uppercase; color: var(--ink-muted); font-weight: 500;
   }
   .augur-switch {
-    position: relative; flex: none; box-sizing: border-box; width: 50px; height: 28px; border-radius: var(--radius-control);
+    position: relative; flex: none; box-sizing: border-box; width: 50px; height: var(--control-sm); border-radius: var(--radius-control);
     background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge);
     transition: background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
   }
   .augur-toggle-row[data-hovered] .augur-switch { border-color: color-mix(in srgb, var(--ink) 40%, transparent); border-top-color: var(--well-edge); }
   .augur-knob {
-    position: absolute; top: 2px; left: 2px; box-sizing: border-box; width: 20px; height: 20px; border-radius: var(--radius-key);
+    position: absolute; top: 2px; left: 2px; box-sizing: border-box; width: var(--control-xs); height: var(--control-xs); border-radius: var(--radius-key);
     display: flex; align-items: center; justify-content: center; color: var(--ink);
     background: var(--ink-muted); border-bottom: var(--well-depth) solid color-mix(in srgb, var(--ink-muted) 55%, var(--shade));
     transition: transform var(--motion-slow) var(--ease-spring), background var(--motion-base) var(--ease-standard);
   }
-  .augur-knob-off { width: 8px; height: 2px; border-radius: 0; background: var(--slate-deep); }
+  .augur-knob-off { width: var(--mark); height: 2px; border-radius: 0; background: var(--slate-deep); }
   .augur-toggle-row[data-selected] .augur-switch {
     background: color-mix(in srgb, var(--ink) 24%, var(--slate-deep)); border-color: color-mix(in srgb, var(--ink) 40%, transparent);
     border-top-color: color-mix(in srgb, var(--shade) 40%, var(--slate-deep));
@@ -380,11 +380,11 @@
 
   /* Checkboxes: wait for the form's primary. The box is a small well; ticked, a light key comes up in it. */
   .augur-checks { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-1); }
-  .augur-check { display: flex; align-items: center; gap: var(--space-3); min-height: 28px; cursor: pointer; }
+  .augur-check { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-sm); cursor: pointer; }
   .augur-check[data-disabled], .augur-check[data-readonly] { cursor: default; }
   .augur-field[data-at-most] .augur-check:not([data-selected]) { opacity: 0.4; cursor: default; }
   .augur-check-box {
-    position: relative; flex: none; box-sizing: border-box; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    position: relative; flex: none; box-sizing: border-box; width: var(--control-xs); height: var(--control-xs); display: flex; align-items: center; justify-content: center;
     background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge);
     border-radius: var(--radius-key); color: var(--slate-deep);
     transition: background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
@@ -563,7 +563,7 @@
     font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
   }
   .augur-notice[data-tone='info'] .augur-notice-tone { background: none; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
-  .augur-notice-text { flex: 1 1 220px; min-width: 0; margin: 0; }
+  .augur-notice-text { flex: 1 1 var(--notice-text-min); min-width: 0; margin: 0; }
   .augur-notice-text b { font-weight: 500; }
   .augur-notice-more { color: var(--ink-muted); }
 
@@ -594,7 +594,7 @@
      page with a drop that darkens what's under it, never a blur. */
   .augur-menu {
     --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
-    min-width: 200px; max-width: 320px; padding: calc(var(--space-1) * 1.5) 0;
+    min-width: var(--menu-min); max-width: var(--menu-max); padding: calc(var(--space-1) * 1.5) 0;
     background: var(--sheet); backdrop-filter: none; border: 1px solid var(--sheet-edge); border-radius: 0;
     box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
   }
@@ -687,7 +687,7 @@
   .augur-choice[data-disabled] .augur-choice-dot, .augur-choice[data-disabled] .augur-choice-label { opacity: 0.4; }
   .augur-choice[data-readonly] { cursor: default; }
   .augur-choice-dot {
-    grid-row: span 2; box-sizing: border-box; width: 16px; height: 16px; margin-top: 4px; border-radius: 50%;
+    grid-row: span 2; box-sizing: border-box; width: var(--glyph-lg); height: var(--glyph-lg); margin-top: var(--space-1); border-radius: 50%;
     background: var(--well); border: 1px solid var(--hairline-strong); border-top: var(--well-depth) solid var(--well-edge);
   }
   .augur-choice[data-selected] .augur-choice-dot { border: 1px solid var(--ink); background: var(--ink); box-shadow: inset 0 0 0 3px var(--slate-deep); }
@@ -863,7 +863,7 @@
   .augur-progress[data-indeterminate] .augur-bar > i { width: 30%; background: var(--ink-muted); animation: augur-travel var(--motion-run) var(--ease-standard) infinite alternate; }
   .augur-steps { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); }
   .augur-step { display: inline-flex; align-items: center; gap: var(--space-2); }
-  .augur-step-mark { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; border: var(--focus-ring) solid currentColor; }
+  .augur-step-mark { display: grid; place-items: center; width: var(--glyph-lg); height: var(--glyph-lg); border-radius: 50%; border: var(--focus-ring) solid currentColor; }
   .augur-step[data-state='done'] { color: var(--ink); }
   .augur-step[data-state='done'] .augur-step-mark { border-color: transparent; }
   .augur-step[data-state='now'] { color: var(--ink); font-weight: 500; }
@@ -994,12 +994,12 @@
 /* Tag and Tags: a word something is filed under (moved from Quill, PDR-016). */
 @layer components {
   /* Tags: Key (picked 6 Nov 2026), a small key like the Keycap button. Quiet is a flat outline with no depth. */
-  .augur-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: 24px; padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
+  .augur-tag { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; box-sizing: border-box; min-height: calc(var(--glyph-lg) + var(--space-2)); padding: 0 var(--space-2); background: var(--key); border: 1px solid var(--key-side); border-bottom: var(--key-edge-sm) solid var(--key-bottom); border-radius: var(--radius-key); color: var(--ink); font-size: var(--type-small); line-height: var(--leading-small); white-space: nowrap; vertical-align: middle; }
   .augur-tag[data-quiet] { background: none; border-color: var(--hairline); border-bottom-width: 1px; color: var(--ink-muted); }
   .augur-tag[data-removable] { padding-right: 2px; }
   .augur-tag-word { overflow: hidden; text-overflow: ellipsis; }
   .augur-tag > svg { color: var(--ink-muted); }
-  .augur-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
+  .augur-tag button { all: unset; display: inline-flex; align-items: center; justify-content: center; width: var(--control-xs); height: var(--control-xs); border-radius: var(--radius-key); color: var(--ink-muted); cursor: pointer; }
   .augur-tag button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 10%, transparent); }
   .augur-tag button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: 1px; }
   .augur-tags { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
@@ -1012,14 +1012,14 @@
 /* Status: where a thing is, as a mark and a word (moved from Quill, PDR-016). */
 @layer components {
   .augur-status { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); white-space: nowrap; }
-  .augur-status-mark { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; }
+  .augur-status-mark { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: var(--glyph); height: var(--glyph); }
   .augur-status-word { color: var(--ink); }
-  .augur-status[data-status='needs'] .augur-status-mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--needs-you); }
+  .augur-status[data-status='needs'] .augur-status-mark::before { content: ''; width: var(--mark-sm); height: var(--mark-sm); border-radius: 50%; background: var(--needs-you); }
   .augur-status[data-status='needs'] .augur-status-word { color: var(--needs-you); }
-  .augur-status[data-status='needs'][data-next] .augur-status-mark::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; --ping-scale: 1.9; }
-  .augur-status[data-status='running'] .augur-status-mark::before { content: ''; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
-  .augur-status[data-status='queued'] .augur-status-mark::before { content: ''; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ink-muted); }
-  .augur-status[data-status='paused'] .augur-status-mark::before { content: ''; width: 8px; height: 8px; border-left: 2px solid var(--ink-muted); border-right: 2px solid var(--ink-muted); }
+  .augur-status[data-status='needs'][data-next] .augur-status-mark::after { content: ''; position: absolute; width: var(--mark-sm); height: var(--mark-sm); border-radius: 50%; border: 1px solid var(--needs-you); animation: augur-ping var(--motion-ping) var(--ease-ping) infinite; --ping-scale: 1.9; }
+  .augur-status[data-status='running'] .augur-status-mark::before { content: ''; width: var(--mark-lg); height: var(--mark-lg); border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent); border-top-color: var(--ink); animation: augur-spin var(--motion-spin) linear infinite; }
+  .augur-status[data-status='queued'] .augur-status-mark::before { content: ''; width: var(--mark); height: var(--mark); border-radius: 50%; border: 1.5px solid var(--ink-muted); }
+  .augur-status[data-status='paused'] .augur-status-mark::before { content: ''; width: var(--mark); height: var(--mark); border-left: 2px solid var(--ink-muted); border-right: 2px solid var(--ink-muted); }
   .augur-status:is([data-status='queued'], [data-status='paused'], [data-status='done']) .augur-status-word { color: var(--ink-muted); }
   .augur-status[data-status='done'] .augur-status-mark { color: var(--success); }
   .augur-status[data-status='failed'] :is(.augur-status-mark, .augur-status-word) { color: var(--danger); }
@@ -1040,7 +1040,7 @@
 /* The see-through letterbox's bars close in from the screen's edges, as the edge rules becoming the bars. */
 @keyframes augur-bar-in-top { from { transform: translateY(-100%); } to { transform: none; } }
 @keyframes augur-bar-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
-@keyframes augur-rise-far { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes augur-rise-far { from { opacity: 0; transform: translateY(var(--space-3)); } to { opacity: 1; transform: none; } }
 @keyframes augur-rise { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 /* Code to copy: Snippet (Press to take, picked 6 Nov 2026). The whole snippet is one key, raised like a
@@ -1342,4 +1342,77 @@
 :root:has(meta[name='augur-depth'][content='scrim']) *::before,
 :root:has(meta[name='augur-depth'][content='scrim']) *::after {
   backdrop-filter: none;
+}
+
+/* Parts for a place to work in that never scrolls (spec "Account as a dialog from the shell menu", 9 Nov 2026):
+   SectionDialog, FitParts, CheckList, StepList, PagedList. Every value is a token. */
+@layer components {
+  .augur-veil-section { align-items: center; }
+  .augur-section-dialog {
+    --sheet: color-mix(in srgb, var(--shade) 32%, var(--slate-deep));
+    --sheet-line: color-mix(in srgb, var(--ink) 22%, var(--slate-deep));
+    width: min(var(--dialog-section-width), calc(100% - 2 * var(--edge)));
+    height: min(var(--dialog-section-height), calc(100% - 2 * var(--edge)));
+    border: 1px solid var(--sheet-line); border-radius: var(--radius-control); background: var(--sheet);
+    box-shadow: 0 var(--space-4) var(--space-6) color-mix(in srgb, var(--shade) 45%, transparent);
+    color: var(--ink); font-family: var(--font-sans); overflow: hidden;
+  }
+  .augur-section-dialog[data-entering] { animation: augur-rise-far var(--motion-slow) var(--ease-out); }
+  .augur-section-dialog-frame { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); outline: none; }
+  .augur-section-dialog-head {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5); border-bottom: 1px solid var(--hairline);
+  }
+  .augur-section-dialog-head .augur-dialog-cancel { margin: 0; }
+  .augur-section-dialog-title { margin: 0; display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; font-size: var(--type-body); font-weight: 500; }
+  .augur-section-dialog-where { font-family: var(--font-mono); font-size: var(--type-small); font-weight: 400; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .augur-section-dialog-main { display: grid; grid-template-columns: var(--section-tabs-width) minmax(0, 1fr); min-height: 0; }
+  .augur-section-tabs { display: flex; flex-direction: column; min-height: 0; padding-block: var(--space-2); border-right: 1px solid var(--hairline); background: color-mix(in srgb, var(--shade) 18%, transparent); }
+  .augur-section-tab {
+    position: relative; isolation: isolate; flex: 1 1 0; max-height: var(--target-md); min-height: var(--target-sm);
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-3); padding: 0 var(--space-3) 0 var(--space-4);
+    color: var(--ink-muted); font-size: var(--type-meta); line-height: var(--leading-meta); cursor: pointer; outline: none;
+  }
+  .augur-section-tab[data-hovered] { color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .augur-section-tab[data-selected] { color: var(--ink); font-weight: 500; }
+  .augur-section-tab[data-selected]::after { content: ''; position: absolute; left: 0; top: var(--space-2); bottom: var(--space-2); width: 2px; background: var(--ink); }
+  .augur-section-tab[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+  .augur-section-tab[data-needs]::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to right, color-mix(in srgb, var(--needs-you) 26%, transparent), transparent 70%); }
+  .augur-section-tab[data-needs] svg { color: var(--needs-you); }
+  .augur-section-tab[data-unavailable] { opacity: 0.5; }
+  .augur-section-tab[data-rule] { margin-bottom: var(--space-2); }
+  .augur-section-tab[data-rule]::before { box-shadow: 0 1px 0 var(--hairline); }
+  .augur-section-panel { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) var(--space-5); outline: none; }
+  /* What a section holds fills what's left under anything above it (a note), and never scrolls past it. */
+  .augur-section-panel > :last-child { flex: 1 1 0; min-height: 0; }
+  .augur-section-panel[data-focus-visible] { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); }
+
+  .augur-fit-parts { min-height: 0; min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: var(--space-3); overflow: hidden; }
+  .augur-fit-switch { display: flex; flex-wrap: wrap; }
+  .augur-fit-switch-item { min-height: var(--target-sm); padding: 0 var(--space-3); border: 1px solid var(--hairline-strong); margin-left: -1px; background: none; color: var(--ink-muted); font: inherit; font-size: var(--type-meta); cursor: pointer; }
+  .augur-fit-switch-item:first-child { margin-left: 0; }
+  .augur-fit-switch-item[aria-pressed='true'] { position: relative; color: var(--ink); border-color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+  .augur-fit-switch-item:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); position: relative; }
+  .augur-fit-row { display: grid; gap: var(--space-5); align-content: start; min-height: 0; }
+  .augur-fit-part { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .augur-fit-part-head { margin: 0; padding-bottom: var(--space-1); border-bottom: 1px solid var(--hairline-strong); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); font-weight: 500; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--ink-muted); }
+
+  .augur-check-list, .augur-step-list, .augur-paged-list { list-style: none; margin: 0; padding: 0; }
+  .augur-check-row, .augur-step-item, .augur-paged-item { position: relative; isolation: isolate; border-bottom: 1px solid var(--hairline); }
+  .augur-check-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); min-height: var(--target-md); padding-block: var(--space-1); }
+  .augur-check-text, .augur-step-text { flex: 1 1 12em; min-width: 0; display: flex; flex-direction: column; }
+  .augur-check-text b, .augur-step-text b { font-weight: 500; }
+  .augur-check-text small, .augur-step-text small { color: var(--ink-muted); font-size: var(--type-small); line-height: var(--leading-small); }
+  .augur-check-row[data-tone='needs'] { padding-left: var(--space-3); margin-left: calc(var(--space-3) * -1); }
+  .augur-check-row[data-tone='needs']::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to right, color-mix(in srgb, var(--needs-you) 30%, transparent), transparent 64%); }
+  .augur-check-row[data-tone='problem'] b { color: var(--danger); }
+
+  .augur-step-item { display: grid; grid-template-columns: var(--space-5) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-height: var(--target-md); padding-block: var(--space-2); }
+  .augur-step-number { display: grid; place-items: center; font-family: var(--font-mono); font-size: var(--type-small); color: var(--ink-muted); }
+  .augur-step-item[data-done] .augur-step-number { color: var(--ink); }
+
+  .augur-paged { display: flex; flex-direction: column; gap: var(--space-1); }
+  .augur-paged-item { min-height: var(--target-md); display: flex; align-items: center; padding-block: var(--space-1); }
+  .augur-paged-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-family: var(--font-mono); font-size: var(--type-small); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .augur-paged-moves { display: flex; gap: var(--space-1); }
 }

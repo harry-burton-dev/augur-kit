@@ -24,4 +24,5 @@ export { CommandPalette, isCommandKey, COMMAND_KEY, type CommandPaletteProps } f
 export { FrameRadial, thingAt, type FrameRadialProps } from './frame-radial.js';
 export { RailPlaces, type RailPlacesProps } from './rail-places.js';
 export { AboutPanel, type AboutPanelProps } from './about-panel.js';
+export { PaneLayout, layoutHasAbout, type PaneLayoutName, type PaneLayoutProps } from './pane-layout.js';
 export { FRAME_WORDS, UNDER_CAP, COMMAND_ICON, capUnder, commandReason, iconOf, insideApp, paletteId, paletteItems, placePath, radialActions, type CommandSource, type FrameAboutSection, type FrameCommand, type FramePlace, type FrameRadialEntry, type FrameThing, type FrameUnderItem, type FrameWords } from './frame.js';

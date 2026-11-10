@@ -308,6 +308,30 @@
       "$type": "dimension",
       "$description": "The width of the About panel, the right-hand region the shell draws beside an app's main column."
     },
+    "split-list": {
+      "$value": "360px",
+      "$type": "dimension",
+      "$description": "The list column in the split layout: about a short title, its detail and its state. The detail takes the rest."
+    },
+    "pane-tight-below": {
+      "$value": "640px",
+      "$type": "dimension",
+      "$description": "An app's pane narrower than this (its own width, a container query) uses edge-tight for its inline inset."
+    },
+    "gauge-notch": {
+      "$value": "28px",
+      "$type": "dimension",
+      "$description": "The floor gauge's notch: the round mark for each floor."
+    },
+    "gauge-pinned": {
+      "$value": "22px",
+      "$type": "dimension",
+      "$description": "The open app's icon, pinned beside the gauge's notch."
+    },
+    "gauge-lane": {
+      "$value": "calc({structure.gauge-notch} + {structure.gauge-pinned} + {space.space-1} + {space.space-2} * 3 + 2px)",
+      "$description": "The lane the floor gauge keeps at the right edge, so it never covers an app: the stage ends where it starts. The notch, the pinned icon beside it, the gauge's padding and its gap from the edge."
+    },
     "rail-under": {
       "$value": "36px",
       "$type": "dimension",

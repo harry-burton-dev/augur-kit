@@ -198,5 +198,58 @@
       "$type": "dimension",
       "$description": "The lit path: the slight blur on rows three or more steps from where you are, so the furthest ones sit back. Under a pixel, so the words stay readable; hover and focus take it off."
     }
+  },
+  "door": {
+    "$description": "The door gallery (Quill's DoorGallery): the light that rises from each door by how much waits behind it. Strength is ink light; only needs you is green. Alphas are percentages, used as calc(var(--door-light-strong) * 1%) in color-mix, so no raw colour is written.",
+    "door-light-present": {
+      "$value": "10",
+      "$type": "number",
+      "$description": "How strong a door's ink light is when something new waits behind it (present). A tenth of light: seen, not loud."
+    },
+    "door-light-strong": {
+      "$value": "20",
+      "$type": "number",
+      "$description": "How strong a door's ink light is when it is worth a look first (strong)."
+    },
+    "door-light-needs": {
+      "$value": "46",
+      "$type": "number",
+      "$description": "How strong a door's needs-you light is: the same strength as the shell's lit tile on the desktop bar."
+    },
+    "door-light-reach-present": {
+      "$value": "34%",
+      "$type": "dimension",
+      "$description": "How far up a present door its light reaches before it fades out."
+    },
+    "door-light-reach": {
+      "$value": "62%",
+      "$type": "dimension",
+      "$description": "How far up a strong or needs-you door its light reaches: the shell's lit stop. The light fades before the door's words."
+    },
+    "door-light-swell": {
+      "$value": "1.12",
+      "$type": "number",
+      "$description": "A focused door's light swells up this much, so focus is felt in the light without a blur."
+    },
+    "door-light-spill": {
+      "$value": "6",
+      "$type": "number",
+      "$description": "The ink light that falls from the focus line into the focused door: soft light under a hard line."
+    },
+    "door-drift-strength": {
+      "$value": "0.2",
+      "$type": "number",
+      "$description": "The drifting band that rises through a strong or needs-you door, as a share of the door's own light."
+    },
+    "door-bloom": {
+      "$value": "0.6",
+      "$type": "number",
+      "$description": "The bloom that spills past a strong or needs-you door's sides from its bottom edge, as a share of its light."
+    },
+    "door-bloom-focus": {
+      "$value": "0.8",
+      "$type": "number",
+      "$description": "The bloom while the door has focus."
+    }
   }
 }

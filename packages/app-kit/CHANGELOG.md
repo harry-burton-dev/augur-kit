@@ -1,5 +1,72 @@
 # @augur/app-kit
 
+## 0.20.1
+
+### Patch Changes
+
+- fdcdb1c: Common has a `size` group: marks and glyphs (`mark-xs` to `glyph-lg`), small controls (`control-xs` to `control-lg`), list and table rows (`row`, `row-compact`, `cell`, `cell-compact`, `bar-row`) and the narrowest a column, card, tile, aside or menu goes. Sizes, not spaces: density never changes them. The kits' CSS uses them, so raw distances go from 193 to 65 (what is left is container and media query widths, effects and the shell's own drawings). Every value is the same as before. Aerie's PaneLayout frame now takes its parent's width by itself.
+- Updated dependencies [fdcdb1c]
+  - @augur/kit-common@0.17.0
+
+## 0.20.0
+
+### Minor Changes
+
+- 96718ff: Three layout parts for inside an app's main column, on the app contract too: `Stack` (`quill-stack`, children one above another, `gap` tight, normal, loose or section), `Split` (`quill-split`, a main part and an `aside` that keeps at least part-min-width and goes under the main part by itself when there isn't room) and `Grid` (`quill-grid`, as many columns as fit, each at least part-min-width). They space their children only with the layout tokens and pad nothing outside themselves. Add only. The remote allowlist is regenerated.
+
+### Patch Changes
+
+- 6f2731f: Layout tokens: what each space is for. `pane-inset-inline`, `pane-inset-top` and `pane-inset-bottom` for an app's main column, `region-inset-inline` and `region-inset-block` inside a side region, and `stack-tight`, `stack`, `stack-loose` and `section-gap` between siblings. Each points at a step of the spacing scale, and each is a Tailwind spacing utility too (`gap-stack`, `px-pane-inset-inline`).
+
+  Compact density is now in the tokens: a token's `$extensions.augur.compact` is its value under `data-density="compact"`, set on `<html>` for a person's preference or on any element, such as an app's pane, for an app's own choice. The larger steps come down one notch as before, and the layout tokens follow them.
+
+  The floor gauge's lane is a token (`gauge-lane`, from `gauge-notch` and `gauge-pinned`) in place of a sum written in shell.css. The About panel and Quill's drawer pad with the region tokens, so their heads line up. The kits' raw distances allowance comes down to what is left, 195.
+
+- Updated dependencies [6f2731f]
+- Updated dependencies [16eabf2]
+  - @augur/kit-common@0.16.0
+
+## 0.19.0
+
+### Minor Changes
+
+- d39338f: Quill's remote vocabulary gains the parts a documents app needs. `quill-reader` draws Markdown in the reading view (raw HTML shown as text); a picture is named by a path under the app's own API, which only the host fetches (ADR 0092, `readerPicturePath` says which paths pass), and words the person selects get the app's marks beside them, sent back as `mark`. `quill-file-button` opens the person's file chooser and the host takes the files, as a drop on the app's pane; `choose` says only what was chosen. `quill-people-picker` asks the app for each search (`query`) and shows the `found` it sets for those words. `quill-floor-path` draws a thing's chain up the floors, the owner marked and a floor it can't reach saying why. `quill-filter-bar` is the kit's FilterBar. `QuillRemote` takes a `host` (`picture`, `files`) for what only the host does; without one, the element still draws and says what it can't do. Quill also gains `FileButton`, and ReadingView an `at` to open at a block. Nothing is renamed or removed.
+
+## 0.18.0
+
+### Minor Changes
+
+- 7191c32: Quill's remote vocabulary gains `quill-check-list`, `quill-step-list` and `quill-paged-list`, so an app on the app contract can describe checks (each with its tone and one action, sent back as `act`), an ordered way through one job (`act`), and a list shown a page at a time (`open`, and `more` when `total` is above the items sent). The shell draws them with Common's CheckList, StepList and PagedList. Nothing is renamed or removed. In Common, a SectionDialog's section now gives its last child the room left, so a single child fills it without a grid of its own.
+
+### Patch Changes
+
+- Updated dependencies [7191c32]
+  - @augur/kit-common@0.15.1
+
+## 0.17.0
+
+### Minor Changes
+
+- 479b7ef: Adds the door gallery's model: `DoorDescriptor` (a door as plain configuration, with `door.schema.json` and `validateDoor`), and `scoreDoors`, a pure scorer that turns signals into each door's step (quiet, present, strong, needs you) and its reasons. Its weights and thresholds are a rule (`DEFAULT_RULE`) an app can tune; "needs you" comes only from something the person can act on, and at most two doors are strong. `placeDoors` sends doors past the cap to the radial menu.
+- 479b7ef: Adds `DoorGallery`, `Door`, `DoorLight`, `AskLine` and `StepLabel`: an ask line on top and a row of doors, each lit by how much waits behind it. Adding a door is one more descriptor, with no change to a part. The light is ink, and green only for needs you; it is still under reduced motion and on a deployment that draws no blur. Every door's name says its job, its step and its reasons. Also adds `useInRing`, so a part can tell whether a radial menu is round it.
+
+### Patch Changes
+
+- Updated dependencies [479b7ef]
+- Updated dependencies [eeb9ed3]
+  - @augur/kit-common@0.15.0
+
+## 0.16.0
+
+### Minor Changes
+
+- 99d782c: Quill's remote vocabulary gains what admin screens need: `quill-dialog` (its work done in the sandbox: a submit sends the fields' values and the dialog waits, busy, until the app closes it or says why not), `quill-ask-twice`, `quill-choice`, `quill-checkbox-group`, `quill-date-field`, `quill-tag-picker`, `quill-steps`, `quill-progress` and `quill-status`. Common's `Dialog` takes `busy` and `error` from outside, for a dialog whose work is done elsewhere.
+
+### Patch Changes
+
+- Updated dependencies [99d782c]
+  - @augur/kit-common@0.14.0
+
 ## 0.15.0
 
 ### Minor Changes

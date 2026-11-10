@@ -1,5 +1,42 @@
 # @augur/kit-common
 
+## 0.17.0
+
+### Minor Changes
+
+- fdcdb1c: Common has a `size` group: marks and glyphs (`mark-xs` to `glyph-lg`), small controls (`control-xs` to `control-lg`), list and table rows (`row`, `row-compact`, `cell`, `cell-compact`, `bar-row`) and the narrowest a column, card, tile, aside or menu goes. Sizes, not spaces: density never changes them. The kits' CSS uses them, so raw distances go from 193 to 65 (what is left is container and media query widths, effects and the shell's own drawings). Every value is the same as before. Aerie's PaneLayout frame now takes its parent's width by itself.
+
+## 0.16.0
+
+### Minor Changes
+
+- 6f2731f: Layout tokens: what each space is for. `pane-inset-inline`, `pane-inset-top` and `pane-inset-bottom` for an app's main column, `region-inset-inline` and `region-inset-block` inside a side region, and `stack-tight`, `stack`, `stack-loose` and `section-gap` between siblings. Each points at a step of the spacing scale, and each is a Tailwind spacing utility too (`gap-stack`, `px-pane-inset-inline`).
+
+  Compact density is now in the tokens: a token's `$extensions.augur.compact` is its value under `data-density="compact"`, set on `<html>` for a person's preference or on any element, such as an app's pane, for an app's own choice. The larger steps come down one notch as before, and the layout tokens follow them.
+
+  The floor gauge's lane is a token (`gauge-lane`, from `gauge-notch` and `gauge-pinned`) in place of a sum written in shell.css. The About panel and Quill's drawer pad with the region tokens, so their heads line up. The kits' raw distances allowance comes down to what is left, 195.
+
+- 16eabf2: Aerie's `PaneLayout` draws an app's pane in the layout it chose (focus, aside, split or canvas), with the inset contract on every one: the head and the screen share one inline inset and one width cap, the top clears the stage's fade, sections sit `section-gap` apart, and a pane narrower than `pane-tight-below` uses `edge-tight`. The About panel appears only in aside. New shell tokens `split-list` and `pane-tight-below`.
+
+## 0.15.1
+
+### Patch Changes
+
+- 7191c32: Quill's remote vocabulary gains `quill-check-list`, `quill-step-list` and `quill-paged-list`, so an app on the app contract can describe checks (each with its tone and one action, sent back as `act`), an ordered way through one job (`act`), and a list shown a page at a time (`open`, and `more` when `total` is above the items sent). The shell draws them with Common's CheckList, StepList and PagedList. Nothing is renamed or removed. In Common, a SectionDialog's section now gives its last child the room left, so a single child fills it without a grid of its own.
+
+## 0.15.0
+
+### Minor Changes
+
+- 479b7ef: Adds the `door` token group for Quill's door gallery: the light that rises from a door by how much waits behind it. `door-light-present`, `door-light-strong` and `door-light-needs` are its strengths (numbers, used as percentages in `color-mix`), `door-light-reach-present` and `door-light-reach` how far up it reaches, `door-light-swell` and `door-light-spill` what focus does to it, and `door-drift-strength`, `door-bloom` and `door-bloom-focus` how much it moves at rest. Nothing is renamed or removed.
+- eeb9ed3: Common gains five parts for a place to work in that never scrolls: SectionDialog (a small dialog with its sections as tabs down the side, no primary action), FitParts (parts side by side while each has `part-min-width`, the rest behind a switch), CheckList and CheckRow (things checked, the one that needs you lit from its edge), StepList (an ordered way through one job) and PagedList (a page at a time, Newer and Older). New structure tokens: `dialog-section-width`, `dialog-section-height`, `section-tabs-width` and `part-min-width`.
+
+## 0.14.0
+
+### Minor Changes
+
+- 99d782c: Quill's remote vocabulary gains what admin screens need: `quill-dialog` (its work done in the sandbox: a submit sends the fields' values and the dialog waits, busy, until the app closes it or says why not), `quill-ask-twice`, `quill-choice`, `quill-checkbox-group`, `quill-date-field`, `quill-tag-picker`, `quill-steps`, `quill-progress` and `quill-status`. Common's `Dialog` takes `busy` and `error` from outside, for a dialog whose work is done elsewhere.
+
 ## 0.13.0
 
 ### Minor Changes

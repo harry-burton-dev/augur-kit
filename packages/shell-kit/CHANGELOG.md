@@ -1,5 +1,57 @@
 # @augur/shell-kit
 
+## 0.11.1
+
+### Patch Changes
+
+- fdcdb1c: Common has a `size` group: marks and glyphs (`mark-xs` to `glyph-lg`), small controls (`control-xs` to `control-lg`), list and table rows (`row`, `row-compact`, `cell`, `cell-compact`, `bar-row`) and the narrowest a column, card, tile, aside or menu goes. Sizes, not spaces: density never changes them. The kits' CSS uses them, so raw distances go from 193 to 65 (what is left is container and media query widths, effects and the shell's own drawings). Every value is the same as before. Aerie's PaneLayout frame now takes its parent's width by itself.
+- Updated dependencies [fdcdb1c]
+  - @augur/kit-common@0.17.0
+
+## 0.11.0
+
+### Minor Changes
+
+- 16eabf2: Aerie's `PaneLayout` draws an app's pane in the layout it chose (focus, aside, split or canvas), with the inset contract on every one: the head and the screen share one inline inset and one width cap, the top clears the stage's fade, sections sit `section-gap` apart, and a pane narrower than `pane-tight-below` uses `edge-tight`. The About panel appears only in aside. New shell tokens `split-list` and `pane-tight-below`.
+
+### Patch Changes
+
+- 6f2731f: Layout tokens: what each space is for. `pane-inset-inline`, `pane-inset-top` and `pane-inset-bottom` for an app's main column, `region-inset-inline` and `region-inset-block` inside a side region, and `stack-tight`, `stack`, `stack-loose` and `section-gap` between siblings. Each points at a step of the spacing scale, and each is a Tailwind spacing utility too (`gap-stack`, `px-pane-inset-inline`).
+
+  Compact density is now in the tokens: a token's `$extensions.augur.compact` is its value under `data-density="compact"`, set on `<html>` for a person's preference or on any element, such as an app's pane, for an app's own choice. The larger steps come down one notch as before, and the layout tokens follow them.
+
+  The floor gauge's lane is a token (`gauge-lane`, from `gauge-notch` and `gauge-pinned`) in place of a sum written in shell.css. The About panel and Quill's drawer pad with the region tokens, so their heads line up. The kits' raw distances allowance comes down to what is left, 195.
+
+- Updated dependencies [6f2731f]
+- Updated dependencies [16eabf2]
+  - @augur/kit-common@0.16.0
+
+## 0.10.3
+
+### Patch Changes
+
+- Updated dependencies [7191c32]
+  - @augur/kit-common@0.15.1
+
+## 0.10.2
+
+### Patch Changes
+
+- 4b23bc4: The docked rail stands the full height of the left edge, with Home and Apps in the corner square level with the band. The band starts beside the rail and stays see-through, so the rail's one edge is the only line where the bar meets the shell. The connection strip starts at the rail's edge.
+
+  The band has no colour of its own any more: its scrim fade is gone, so the ground behind it sets it.
+
+- Updated dependencies [479b7ef]
+- Updated dependencies [eeb9ed3]
+  - @augur/kit-common@0.15.0
+
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [99d782c]
+  - @augur/kit-common@0.14.0
+
 ## 0.10.0
 
 ### Minor Changes

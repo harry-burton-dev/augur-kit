@@ -9,8 +9,8 @@ import { createRemoteElement } from '@remote-dom/core/elements';
 import type { QuillRemoteEvents, QuillRemoteProperties } from './types.js';
 import { QUILL_REMOTE_ELEMENTS, type QuillRemoteElementName, type RemoteElementSpec } from './vocabulary.js';
 
-export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
-export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteTableColumn, RemoteThing } from './types.js';
+export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, readerPicturePath, type QuillRemoteElementName, type RemoteElementSpec, type RemoteType } from './vocabulary.js';
+export type { QuillRemoteProperties, QuillRemoteEvents, RemoteListItem, RemoteOption, RemoteTableColumn, RemoteThing, RemotePrincipal, RemoteFloorStep, RemoteFilter, RemoteMarked, RemoteChosenFile } from './types.js';
 
 /** A Quill remote element as the sandbox holds it: its properties, set like any other. */
 export type QuillRemoteElement<N extends QuillRemoteElementName = QuillRemoteElementName> = HTMLElement & Partial<QuillRemoteProperties[N]>;
@@ -56,6 +56,9 @@ export function defineQuillElements(registry: CustomElementRegistry = customElem
 declare global {
   interface HTMLElementTagNameMap {
     'quill-page-head': QuillRemoteElement<'quill-page-head'>;
+    'quill-stack': QuillRemoteElement<'quill-stack'>;
+    'quill-split': QuillRemoteElement<'quill-split'>;
+    'quill-grid': QuillRemoteElement<'quill-grid'>;
     'quill-section': QuillRemoteElement<'quill-section'>;
     'quill-selection-bar': QuillRemoteElement<'quill-selection-bar'>;
     'quill-about': QuillRemoteElement<'quill-about'>;
@@ -78,5 +81,24 @@ declare global {
     'quill-kind-tile': QuillRemoteElement<'quill-kind-tile'>;
     'quill-add-tile': QuillRemoteElement<'quill-add-tile'>;
     'quill-reel': QuillRemoteElement<'quill-reel'>;
+    'quill-dialog': QuillRemoteElement<'quill-dialog'>;
+    'quill-ask-twice': QuillRemoteElement<'quill-ask-twice'>;
+    'quill-choice': QuillRemoteElement<'quill-choice'>;
+    'quill-checkbox-group': QuillRemoteElement<'quill-checkbox-group'>;
+    'quill-date-field': QuillRemoteElement<'quill-date-field'>;
+    'quill-tag-picker': QuillRemoteElement<'quill-tag-picker'>;
+    'quill-steps': QuillRemoteElement<'quill-steps'>;
+    'quill-progress': QuillRemoteElement<'quill-progress'>;
+    'quill-status': QuillRemoteElement<'quill-status'>;
+    'quill-check-list': QuillRemoteElement<'quill-check-list'>;
+    'quill-step-list': QuillRemoteElement<'quill-step-list'>;
+    'quill-paged-list': QuillRemoteElement<'quill-paged-list'>;
+    'quill-reader': QuillRemoteElement<'quill-reader'>;
+    'quill-file-button': QuillRemoteElement<'quill-file-button'>;
+    'quill-people-picker': QuillRemoteElement<'quill-people-picker'>;
+    'quill-floor-path': QuillRemoteElement<'quill-floor-path'>;
+    'quill-filter-bar': QuillRemoteElement<'quill-filter-bar'>;
+    'quill-thing-page': QuillRemoteElement<'quill-thing-page'>;
+    'quill-door-gallery': QuillRemoteElement<'quill-door-gallery'>;
   }
 }

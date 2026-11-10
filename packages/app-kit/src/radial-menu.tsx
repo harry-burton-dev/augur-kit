@@ -155,6 +155,11 @@ export function RingProvider({ shape = 'auto', overflow = 'list', children }: Ri
   );
 }
 
+/** Whether a radial menu is round this part (a RingProvider, or AppFrame's), so a part can offer another way in when it isn't. */
+export function useInRing(): boolean {
+  return useContext(RingContext) !== null;
+}
+
 /** How long a finger stays down before the menu opens, as a right-click does with a mouse. */
 const LONG_PRESS = 550;
 

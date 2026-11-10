@@ -11,7 +11,7 @@ const kits = [here, join(here, '../../app-kit/src'), join(here, '../../shell-kit
 // The parts' markup and CSS, and their plain TypeScript too (the water draws in a .ts file). The generated token map sits in a folder of its own, so it isn't read.
 const files = kits.flatMap((dir) => readdirSync(dir).filter((f) => /\.(tsx?|css)$/.test(f) && !/\.(test|stories)\./.test(f)).map((f) => relative(packages, join(dir, f))));
 /** Raw distances in the kits' CSS today. Lower it as they become tokens; never raise it. */
-const RAW_DISTANCES = 251;
+const RAW_DISTANCES = 65;
 const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 describe('tokens only', () => {

@@ -32,6 +32,13 @@ export interface DialogProps {
   children?: ReactNode;
   /** Fields (TextField, Select, ...): the primary checks each one and goes to the first gap. */
   fields?: ReactNode;
+  /**
+   * Working, from outside: as while `onSubmit` works, nothing can be pressed and Esc waits. For a dialog
+   * whose work is done elsewhere, such as an app's sandbox, which answers later.
+   */
+  busy?: boolean;
+  /** Why the last try didn't work, from outside; the dialog's own reason wins while it has one. */
+  error?: string;
 }
 
 const FALLBACK = 'Something went wrong. Nothing was changed; try again.';
@@ -60,10 +67,14 @@ export function Dialog({
   onSubmit,
   children,
   fields,
+  busy: busyFromOutside = false,
+  error: errorFromOutside,
 }: DialogProps) {
   const [checks] = useState(() => new Set<{ current: FieldChecker }>());
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [working, setBusy] = useState(false);
+  const [ownError, setError] = useState('');
+  const busy = working || busyFromOutside;
+  const error = ownError || errorFromOutside || '';
   const titleId = useId();
   const primary = useRef<HTMLDivElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
