@@ -1,5 +1,24 @@
 # @augur/shell-kit
 
+## 0.13.0
+
+### Minor Changes
+
+- 537a86a: The Shell draws the open app's pane at the window's right edge (`pane` prop, a render function given the
+  clock and notification indicator for its top and whether to open over the page). While it is drawn, the
+  indicator and the clock leave the band, and the stage, the band and the floor picker end where the pane
+  starts: the shell sets `--pane-inset` and `--gauge-right` from its width. The indicator's words are now in
+  `aerie-status-words`, so the pane's strip can show only its dot.
+- 3f1605b: Aerie's app pane: the region at the window's right edge while an app is open. From the top it holds what the
+  shell puts there (the clock and the notification button), the app's dock image, then a title for each section
+  the app declares. Closed, it is a strip and the titles run down it; each is an accordion header, and one
+  section shows at a time. Styled like the nav bar. New token `app-pane-strip`.
+
+### Patch Changes
+
+- Updated dependencies [3f1605b]
+  - @augur/kit-common@0.20.0
+
 ## 0.12.0
 
 ### Minor Changes

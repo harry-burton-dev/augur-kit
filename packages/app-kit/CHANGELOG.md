@@ -1,5 +1,12 @@
 # @augur/app-kit
 
+## 0.22.2
+
+### Patch Changes
+
+- Updated dependencies [3f1605b]
+  - @augur/kit-common@0.20.0
+
 ## 0.22.1
 
 ### Patch Changes
