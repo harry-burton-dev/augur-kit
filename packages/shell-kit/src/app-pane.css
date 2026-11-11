@@ -22,6 +22,10 @@
 }
 .aerie-pane[data-open] .aerie-pane-top { flex-direction: row; justify-content: space-between; padding-inline: var(--region-inset-inline); }
 
+/* The shell's notification indicator keeps only its dot in the strip; its words come back when the pane opens
+   and stay its name (aria-label) either way. */
+.aerie-pane:not([data-open]) .aerie-status-words { display: none; }
+
 /* the dock image: the app's own mark */
 .aerie-pane-dock { flex: none; display: flex; justify-content: center; padding: var(--space-4) var(--space-2); border-bottom: 1px solid var(--grey-hairline); }
 .aerie-pane[data-open] .aerie-pane-dock { justify-content: flex-start; padding-inline: var(--region-inset-inline); }

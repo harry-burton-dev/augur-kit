@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type ComponentProps } from 'react';
-import { Icon } from '@augur/kit-common';
 import { Screen } from './app-bar.fixture.js';
 import { AppPane } from './app-pane.js';
 
@@ -17,12 +16,13 @@ const content = {
   details: <p style={{ margin: 0 }}>Kept on this floor. Sam Lee wrote it on 3 November.</p>,
   people: <p style={{ margin: 0 }}>Sam Lee and two others can see this.</p>,
 };
-/** A stand-in for the shell's clock and notification button. */
+/** A stand-in for the shell's clock and its notification indicator (the band's `aerie-status`). */
 const top = (
   <>
     <span className="aerie-clock">09:41</span>
-    <button type="button" aria-label="2 need you. Open notifications.">
-      <Icon name="bell" size={16} />
+    <button type="button" className="aerie-status aerie-needs" aria-label="2 need you. Open notifications.">
+      <i className="aerie-point" />
+      <span className="aerie-status-words">2 need you</span>
     </button>
   </>
 );

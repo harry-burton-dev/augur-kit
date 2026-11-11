@@ -13,7 +13,7 @@ export interface AppPaneProps {
   open?: string;
   /** Asked to show a section, or to close (undefined). */
   onOpenChange: (section: string | undefined) => void;
-  /** What stands at the top of the pane: the shell puts the clock and the notification button here. */
+  /** What stands at the top of the pane: the shell puts the clock and its notification indicator here (an `aerie-status` button; wrap its words in `aerie-status-words` so the strip shows only the dot). */
   top?: ReactNode;
   /** Open over the page (a narrow frame), rather than beside it. */
   over?: boolean;
