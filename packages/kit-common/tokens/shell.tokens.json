@@ -321,7 +321,7 @@
     "gauge-notch": {
       "$value": "28px",
       "$type": "dimension",
-      "$description": "The floor gauge's notch: the round mark for each floor."
+      "$description": "The floor picker's box: the square mark for each floor."
     },
     "gauge-words": {
       "$value": "240px",

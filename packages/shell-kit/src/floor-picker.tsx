@@ -8,7 +8,7 @@ import type { ShellModel } from './shell-model.js';
  *
  * How this file is laid out, top to bottom:
  *   1. FloorPicker   the whole picker: reads the model, lists the floors, top floor first
- *   2. FloorButton   one floor: its words (name, who sees it) and its round mark
+ *   2. FloorButton   one floor: its words (name, who sees it, what waits there) and its box
  *
  * Its look is in floor-picker.css, beside this file. Every colour, size and duration there is a
  * token (packages/kit-common/tokens/). What a floor is called and who sees it comes from floors.ts.
@@ -23,9 +23,10 @@ export interface FloorPickerProps {
 }
 
 /**
- * The floor picker at the right edge: one mark per floor from yours up to the top, the one you're
- * on lit in its colour, a dot where something waits, and the open app pinned beside your floor.
- * Pointing at it or tabbing into it opens it out to show each floor's name and who sees what's on it.
+ * The floor picker at the right edge: one box per floor from yours up to the top, the one you're
+ * on brightest, a pulse where something waits, and the open app pinned beside your floor. Resting the
+ * pointer on it for a moment, or tabbing into it, opens it out to show each floor's name, who sees
+ * what's on it and what waits there. Pointing at a floor where something waits shows that at once.
  */
 export function FloorPicker({ model, tab }: FloorPickerProps) {
   if (!model.currentFloor) return null;
@@ -47,7 +48,7 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
       ) : null}
       <ol>
         {floors.map((floor, i) => (
-          // --floor-step: how many floors up this one is, 0 for your own. The "bars" look sizes its mark by it.
+          // --floor-step: how many floors up this one is, 0 for your own. The pulse runs a beat later per step.
           <li key={floor.id} style={{ '--floor-step': floors.length - 1 - i } as CSSProperties}>
             <FloorButton
               floor={floor}
@@ -62,7 +63,7 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
           </li>
         ))}
       </ol>
-      {/* Under the list once it's open: what waits on your other floors, in words. Only the trial looks show it. */}
+      {/* Under the list once it's open: what waits on your other floors, in words. */}
       {elsewhere ? (
         <p className="aerie-elsewhere">
           <span>{elsewhere} waiting on other floors</span>
@@ -88,7 +89,7 @@ interface FloorButtonProps {
   onGo: () => void;
 }
 
-/** One floor in the picker: its words, shown when the picker opens out, and its round mark. */
+/** One floor in the picker: its words, shown when the picker opens out, and its box. */
 /** How many waiting things a floor's glance names before it says "and N more". */
 const GLANCE = 2;
 
@@ -142,10 +143,9 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
         </span>
       ) : null}
 
-      {/* The round mark, with a dot when something waits here. */}
+      {/* The box, with the floor's icon. It pulses when something waits here (data-waiting, above). */}
       <span className="aerie-notch">
         <Icon name={floorIconOf(floor)} size={14} />
-        {waiting ? <span className="aerie-dot" /> : null}
       </span>
     </button>
   );

@@ -1,139 +1,141 @@
-/* The floor picker (floor-picker.tsx): the marks at the right edge, one per floor, and the words they open out to.
-   Every value is a token. The picker keeps a lane of its own (the token gauge-lane); shell.css ends the stage there. */
-/* Where the picker sits: --gauge-right is its gap from the shell's right edge. Anything that takes the edge (a drawer)
-   sets it on .aerie-shell to move the picker left; nothing else places it. */
-.aerie-gauge { position: absolute; z-index: 3; right: var(--gauge-right, var(--space-2)); top: 50%; transform: translateY(-50%); padding: var(--space-2); border-radius: var(--radius-inset); border: 1px solid transparent; transition: opacity var(--motion-slow) var(--ease-standard), background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
-.aerie-gauge ol { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
-.aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: 13.5px; width: 1px; background: var(--hairline); }
+/* The floor picker (floor-picker.tsx): the Ladder (picked 11 Nov 2026). One square box per floor on a rail at the
+   right edge, and the words they open out to. It speaks the app bar's language: greys, hairlines, square corners,
+   no blur. Where you are is the brightest box with a hard line at the screen's edge. Colour is only for what waits.
+   Every value is a token. The picker keeps a lane of its own (the token gauge-lane); shell.css ends the stage there.
+
+   In this file, top to bottom:
+     1. Where it sits        5. Opening out, and the wait before it
+     2. The rail and boxes   6. The glance at what waits on a floor
+     3. Where you are        7. The pulse where something waits
+     4. The words            8. Resting, and reduced motion */
+
+/* ── 1. Where it sits ──
+   --gauge-right is its gap from the shell's right edge. Anything that takes the edge (a drawer) sets it on
+   .aerie-shell to move the picker left; nothing else places it. */
+.aerie-gauge {
+  --gauge-open-wait: calc(var(--motion-instant) * 0);
+  position: absolute; z-index: 3; right: var(--gauge-right, var(--space-2)); top: 50%; transform: translateY(-50%);
+  padding: var(--space-2); border: 1px solid transparent;
+  transition: opacity var(--motion-slow) var(--ease-standard), background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
+}
 .aerie-shell[data-open] .aerie-gauge { opacity: 0; pointer-events: none; }
-.aerie-gauge button { position: relative; display: flex; align-items: center; justify-content: flex-end; color: var(--ink-muted); text-align: right; }
-.aerie-gauge .aerie-notch { position: relative; flex: none; display: grid; place-items: center; width: var(--gauge-notch); height: var(--gauge-notch); border-radius: 50%; background: var(--slate-deep); border: 1px solid var(--hairline); transition: color var(--motion-quick), border-color var(--motion-quick); }
-.aerie-gauge button:hover .aerie-notch, .aerie-gauge button:focus-visible .aerie-notch { color: var(--ink); border-color: var(--hairline-strong); }
+
+/* ── 2. The rail and the boxes ── */
+.aerie-gauge ol {
+  position: relative; list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);
+  transition: gap var(--motion-base) var(--ease-standard);
+}
+/* the rail: a hairline down the middle of the boxes */
+.aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: calc(var(--gauge-notch) / 2 - 0.5px); width: 1px; background: var(--grey-hairline); }
+.aerie-gauge button { position: relative; display: flex; align-items: center; justify-content: flex-end; color: var(--grey-6); text-align: right; }
 .aerie-gauge button:focus-visible { outline: 0; }
+/* a floor's box, with its icon */
+.aerie-gauge .aerie-notch {
+  position: relative; isolation: isolate; flex: none; display: grid; place-items: center;
+  width: var(--gauge-notch); height: var(--gauge-notch);
+  background: var(--grey-2); border: 1px solid var(--grey-hairline);
+  transition: color var(--motion-quick), border-color var(--motion-quick);
+}
+.aerie-gauge button:hover .aerie-notch, .aerie-gauge button:focus-visible .aerie-notch { color: var(--grey-9); border-color: var(--grey-6); }
 .aerie-gauge button:focus-visible .aerie-notch { box-shadow: 0 0 0 2px var(--focus); }
-.aerie-gauge .aerie-dot { position: absolute; top: -2px; right: -2px; width: var(--mark); height: var(--mark); border-radius: 50%; background: var(--floor-mark, var(--green)); border: 2px solid var(--slate-deep); }
-.aerie-gauge button[aria-current] .aerie-notch { color: var(--floor-mark); border-color: var(--floor-mark); box-shadow: 0 0 12px color-mix(in srgb, var(--floor-mark) 45%, transparent); }
-.aerie-gauge .aerie-pinned { flex: none; display: grid; place-items: center; width: var(--gauge-pinned); height: var(--gauge-pinned); margin-right: var(--space-1); overflow: hidden; border-radius: var(--radius-key); color: var(--ink); background: color-mix(in srgb, var(--floor-mark) 22%, var(--slate-deep)); border: 1px solid var(--floor-mark); transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard); }
-/* Opening out is one smooth move: each label's box grows from nothing to its size, in both directions, as it fades in, so nothing jumps */
-.aerie-gauge .aerie-label { display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); overflow: hidden; opacity: 0; font-size: var(--type-small); line-height: var(--leading-small); letter-spacing: normal; text-transform: none;
-  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
+
+/* ── 3. Where you are ──
+   The brightest box, a hard line on the screen's edge (as the app bar marks the page you're on), and the open app
+   pinned beside it. */
+.aerie-gauge button[aria-current] .aerie-notch { color: var(--grey-9); border-color: var(--grey-9); }
+.aerie-gauge button[aria-current]::after { content: ''; position: absolute; right: calc(var(--space-2) * -1); top: var(--space-1); bottom: var(--space-1); width: 2px; background: var(--grey-9); }
+.aerie-gauge .aerie-pinned {
+  flex: none; display: grid; place-items: center; overflow: hidden;
+  width: var(--gauge-pinned); height: var(--gauge-pinned); margin-right: var(--space-1);
+  color: var(--grey-9); background: var(--grey-3); border: 1px solid var(--grey-4);
+  transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard);
+}
+
+/* ── 4. The words ──
+   Each floor's name, who sees it, and what waits there. Shut at rest: the box they sit in has no size, and grows
+   to its own size in both directions as it fades in, so nothing jumps. */
+.aerie-gauge .aerie-label {
+  display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); overflow: hidden; opacity: 0;
+  color: var(--grey-6); font-size: var(--type-small); line-height: var(--leading-small); letter-spacing: normal; text-transform: none;
+  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard);
+}
 .aerie-gauge .aerie-label > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3)); min-height: 0; padding-right: var(--space-3); display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.aerie-gauge .aerie-label b { display: flex; align-items: baseline; gap: var(--space-2); font-weight: 500; color: var(--ink); }
-.aerie-gauge .aerie-label em { font-style: normal; font-size: var(--type-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--floor-mark); }
-.aerie-gauge .aerie-label em.aerie-waiting { color: var(--ink-muted); }
-.aerie-gauge .aerie-label .aerie-bound { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); color: var(--ink); }
-.aerie-gauge .aerie-label .aerie-bound svg { color: var(--floor-mark); }
-/* Opening out waits: the pointer has to rest on the picker for a moment (the token gauge-wait) before it opens, so
-   passing over it on the way to something else opens nothing. Tabbing into it opens it at once, and it closes at once. */
-.aerie-gauge { --gauge-open-wait: calc(var(--motion-instant) * 0); }
+/* the name */
+.aerie-gauge .aerie-label b { display: flex; align-items: baseline; gap: var(--space-2); font-weight: 500; color: var(--grey-9); }
+.aerie-gauge button:not([aria-current]) .aerie-label b { color: var(--grey-7); font-weight: 400; }
+.aerie-gauge button:hover .aerie-label b { color: var(--grey-9); }
+/* "You're here" and "2 waiting", beside the name */
+.aerie-gauge .aerie-label em { font-style: normal; font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--grey-6); }
+.aerie-gauge .aerie-label em.aerie-waiting { color: var(--needs-light); }
+/* "Documents is showing this floor" */
+.aerie-gauge .aerie-label .aerie-bound { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); color: var(--grey-8); }
+.aerie-gauge .aerie-label .aerie-bound svg { color: var(--grey-9); }
+/* Two lines that sit shut like the words and open with them: why the picker rests (above the list), and what waits
+   on your other floors (under it). */
+.aerie-gauge .aerie-why, .aerie-gauge .aerie-elsewhere {
+  display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); justify-content: end; overflow: hidden; opacity: 0; margin: 0; text-align: right;
+  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), margin var(--motion-base) var(--ease-standard), padding var(--motion-base) var(--ease-standard);
+}
+.aerie-gauge .aerie-why > span, .aerie-gauge .aerie-elsewhere > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3) + var(--gauge-notch)); min-height: 0; }
+.aerie-gauge .aerie-why { color: var(--grey-8); font-size: var(--type-small); line-height: var(--leading-small); }
+.aerie-gauge .aerie-elsewhere { color: var(--needs-light); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+.aerie-gauge .aerie-elsewhere > span { padding-right: var(--space-2); }
+
+/* ── 5. Opening out, and the wait before it ──
+   The pointer has to rest on the picker for a moment (the token gauge-wait) before it opens, so passing over it on
+   the way to something else opens nothing. Tabbing into it opens it at once, and it closes at once.
+   --gauge-open-wait is that wait: nothing when you tab in, gauge-wait when you point. */
 .aerie-gauge:hover:not(:has(:focus-visible)) { --gauge-open-wait: var(--gauge-wait); }
-.aerie-gauge:hover, .aerie-gauge:has(:focus-visible) { transition-delay: var(--gauge-open-wait); background: color-mix(in srgb, var(--slate-deep) 94%, transparent); backdrop-filter: blur(12px); border-color: var(--hairline); box-shadow: 0 12px 40px color-mix(in srgb, var(--shade) 35%, transparent); }
-.aerie-gauge ol { transition: gap var(--motion-base) var(--ease-standard); }
+/* The ground: clear at rest; half see-through the moment the pointer is on it, so it answers at once ... */
+.aerie-gauge:hover, .aerie-gauge:has(:focus-visible) { background: color-mix(in srgb, var(--grey-2) 55%, transparent); border-color: var(--grey-hairline); }
+/* ... and solid, with its edge and shadow (this layer behind everything), only once it opens. */
+.aerie-gauge::after { content: ''; position: absolute; inset: -1px; z-index: -1; background: var(--grey-2); border: 1px solid var(--grey-4); box-shadow: var(--shadow-overlay); opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); }
+.aerie-gauge:hover::after, .aerie-gauge:has(:focus-visible)::after { opacity: 1; transition-delay: var(--gauge-open-wait); }
+/* The wait, drawn: while the pointer rests on the picker a line climbs its left edge. What has filled is the time
+   waited, what is left is the time to go. When it reaches the top the picker opens. */
+.aerie-gauge::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 2px; background: var(--grey-9); transform: scaleY(0); transform-origin: 50% 100%; opacity: 0; pointer-events: none; transition: transform var(--motion-quick) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
+.aerie-gauge:hover::before { opacity: 1; transform: scaleY(1); transition: transform var(--gauge-open-wait) linear, opacity var(--motion-instant) linear; }
+/* What opens, after the wait: the boxes spread, the words and the two lines grow in, the pinned app folds away. */
 .aerie-gauge:hover ol, .aerie-gauge:has(:focus-visible) ol { transition-delay: var(--gauge-open-wait); gap: var(--space-4); }
 .aerie-gauge:hover .aerie-label, .aerie-gauge:has(:focus-visible) .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)); }
 .aerie-gauge:hover .aerie-pinned, .aerie-gauge:has(:focus-visible) .aerie-pinned { transition-delay: var(--gauge-open-wait); width: 0; margin-right: 0; opacity: 0; border-width: 0; }
-/* resting: the open app is the same on every floor, so the gauge stays in view, dimmed, and says why when you point at it */
-.aerie-gauge .aerie-why { display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); justify-content: end; overflow: hidden; opacity: 0; margin: 0; font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink); text-align: right;
-  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), margin var(--motion-base) var(--ease-standard); }
-.aerie-gauge .aerie-why > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3) + var(--gauge-notch)); min-height: 0; }
-.aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; margin-bottom: var(--space-4); transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)), var(--gauge-open-wait); }
-.aerie-gauge.aerie-rest button[aria-disabled='true'] { cursor: not-allowed; }
-.aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-notch, .aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-label { opacity: 0.5; }
-.aerie-gauge.aerie-rest button[aria-disabled='true']:hover .aerie-notch { color: var(--ink-muted); border-color: var(--hairline); }
-.aerie-gauge button:not([aria-current]) .aerie-label b { color: var(--ink-muted); font-weight: 400; }
-.aerie-gauge button:hover .aerie-label b { color: var(--ink); }
+.aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why,
+.aerie-gauge:hover .aerie-elsewhere, .aerie-gauge:has(:focus-visible) .aerie-elsewhere { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)), var(--gauge-open-wait), var(--gauge-open-wait); }
+.aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why { margin-bottom: var(--space-4); }
+.aerie-gauge:hover .aerie-elsewhere, .aerie-gauge:has(:focus-visible) .aerie-elsewhere { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--grey-hairline); }
 
-/* ── Trial looks, in the app bar's language (greys, hairlines, square corners, no blur, one colour of light) ──
-   A wrapper with data-floor-look picks one: "lights", "bars" or "ladder". Without it the picker looks as above.
-   Once one is chosen it becomes the picker's only look, and the rest of this block and the rules above it go.
-   In all three: where you are is the hard line at the edge and the brightest mark; light is only for what waits. */
-.aerie-gauge .aerie-elsewhere { display: none; }
-[data-floor-look] .aerie-gauge { border-radius: calc(var(--radius-key) * 0); }
-[data-floor-look] .aerie-gauge:hover, [data-floor-look] .aerie-gauge:has(:focus-visible) { background: var(--grey-2); backdrop-filter: none; border-color: var(--grey-4); box-shadow: var(--shadow-overlay); }
-[data-floor-look] .aerie-gauge ol::before { display: none; }
-[data-floor-look] .aerie-gauge button { color: var(--grey-6); }
-/* the mark: a square target with a small light in it, and no icon */
-[data-floor-look] .aerie-gauge .aerie-notch { border-radius: calc(var(--radius-key) * 0); background: none; border-color: transparent; justify-items: end; }
-[data-floor-look] .aerie-gauge .aerie-notch svg, [data-floor-look] .aerie-gauge .aerie-dot { display: none; }
-[data-floor-look] .aerie-gauge .aerie-notch::before { content: ''; width: var(--mark); height: var(--mark); margin-right: var(--space-2); background: var(--grey-5); transition: background var(--motion-quick) var(--ease-standard), box-shadow var(--motion-quick) var(--ease-standard); }
-[data-floor-look] .aerie-gauge button:hover .aerie-notch, [data-floor-look] .aerie-gauge button:focus-visible .aerie-notch { border-color: transparent; }
-[data-floor-look] .aerie-gauge button:hover .aerie-notch::before, [data-floor-look] .aerie-gauge button:focus-visible .aerie-notch::before { background: var(--grey-8); }
-/* where you are: the brightest mark, and a hard line on the screen's edge, as the app bar marks the page you're on */
-[data-floor-look] .aerie-gauge button[aria-current] .aerie-notch { border-color: transparent; box-shadow: none; }
-[data-floor-look] .aerie-gauge button[aria-current] .aerie-notch::before { background: var(--grey-9); }
-[data-floor-look] .aerie-gauge button[aria-current]::after { content: ''; position: absolute; right: calc(var(--space-2) * -1); top: var(--space-1); bottom: var(--space-1); width: 2px; background: var(--grey-9); }
-[data-floor-look] .aerie-gauge button:focus-visible .aerie-notch { box-shadow: 0 0 0 2px var(--focus); }
-/* something waits there: the mark takes the needs-you light, the only colour in the picker */
-[data-floor-look] .aerie-gauge button[data-waiting] .aerie-notch::before { background: var(--needs-light); box-shadow: 0 0 var(--space-3) color-mix(in srgb, var(--needs-light) 70%, transparent); }
-/* the open app, pinned beside your floor */
-[data-floor-look] .aerie-gauge .aerie-pinned { border-radius: calc(var(--radius-key) * 0); color: var(--grey-9); background: var(--grey-3); border-color: var(--grey-4); }
-/* the words */
-[data-floor-look] .aerie-gauge .aerie-label { color: var(--grey-6); }
-[data-floor-look] .aerie-gauge .aerie-label b { color: var(--grey-9); }
-[data-floor-look] .aerie-gauge button:not([aria-current]) .aerie-label b { color: var(--grey-7); }
-[data-floor-look] .aerie-gauge button:hover .aerie-label b { color: var(--grey-9); }
-[data-floor-look] .aerie-gauge .aerie-label em { font-family: var(--font-mono); letter-spacing: var(--tracking-caps); color: var(--grey-6); }
-[data-floor-look] .aerie-gauge .aerie-label em.aerie-waiting { color: var(--needs-light); }
-[data-floor-look] .aerie-gauge .aerie-label .aerie-bound { color: var(--grey-8); }
-[data-floor-look] .aerie-gauge .aerie-label .aerie-bound svg { color: var(--grey-9); }
-[data-floor-look] .aerie-gauge .aerie-why { color: var(--grey-8); }
-/* what waits on your other floors, in words, under the list once it's open */
-[data-floor-look] .aerie-gauge .aerie-elsewhere { display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); justify-content: end; overflow: hidden; opacity: 0; margin: 0; text-align: right; color: var(--needs-light); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
-  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), margin var(--motion-base) var(--ease-standard), padding var(--motion-base) var(--ease-standard); }
-[data-floor-look] .aerie-gauge .aerie-elsewhere > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3) + var(--gauge-notch)); min-height: 0; padding-right: var(--space-2); }
-[data-floor-look] .aerie-gauge:hover .aerie-elsewhere, [data-floor-look] .aerie-gauge:has(:focus-visible) .aerie-elsewhere { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--grey-hairline); transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)), var(--gauge-open-wait), var(--gauge-open-wait); }
+/* ── 6. The glance ──
+   A floor's words list what waits there. Pointing at a floor where something waits opens that one row at once,
+   without the wait, so you see what it wants before you go. */
+.aerie-gauge .aerie-glance { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-top: var(--space-1); padding-right: var(--space-2); border-right: 2px solid var(--needs-light); color: var(--grey-9); }
+.aerie-gauge button[data-waiting]:hover .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: calc(var(--motion-instant) * 0); }
 
-/* Bars: each mark is a bar, and the further a floor reaches the longer its bar: yours shortest, the top floor longest */
-[data-floor-look='bars'] .aerie-gauge .aerie-notch::before { height: var(--space-1); width: min(100% - var(--space-2), calc(var(--mark) + var(--floor-step, 0) * var(--space-1))); }
-
-/* Ladder: closest to today. Each floor keeps its icon, in a square hairline box on a rail; what waits rises as light inside the box */
-[data-floor-look='ladder'] .aerie-gauge ol::before { display: block; background: var(--grey-hairline); }
-[data-floor-look='ladder'] .aerie-gauge .aerie-notch { justify-items: center; background: var(--grey-2); border-color: var(--grey-hairline); }
-[data-floor-look='ladder'] .aerie-gauge .aerie-notch svg { display: block; }
-[data-floor-look='ladder'] .aerie-gauge .aerie-notch::before { display: none; }
-[data-floor-look='ladder'] .aerie-gauge button:hover .aerie-notch, [data-floor-look='ladder'] .aerie-gauge button:focus-visible .aerie-notch { color: var(--grey-9); border-color: var(--grey-6); }
-[data-floor-look='ladder'] .aerie-gauge button[aria-current] .aerie-notch { color: var(--grey-9); border-color: var(--grey-9); }
-[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch { color: var(--needs-light); background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent), var(--grey-2); }
-
-/* ── Ladder, deepened (picked 11 Nov 2026). Four things, each marked below: the wait drawn as a line, a
-   see-through ground while you wait, a glance at what waits on a floor, and the pulse where something waits. ── */
-.aerie-gauge .aerie-glance { display: none; }
-
-/* 1. The wait, drawn. While the pointer rests on the picker a line climbs its left edge: what has filled is the
-      time waited, what is left is the time to go. When it reaches the top the picker opens. */
-[data-floor-look='ladder'] .aerie-gauge::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 2px; background: var(--grey-9); transform: scaleY(0); transform-origin: 50% 100%; opacity: 0; pointer-events: none; transition: transform var(--motion-quick) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
-[data-floor-look='ladder'] .aerie-gauge:hover::before { opacity: 1; transform: scaleY(1); transition: transform var(--gauge-open-wait) linear, opacity var(--motion-instant) linear; }
-
-/* 2. The ground. Clear at rest; half see-through the moment the pointer is on it, so it answers at once; solid
-      (the ::after layer, with the edge and the shadow) only once it opens. */
-[data-floor-look='ladder'] .aerie-gauge:hover, [data-floor-look='ladder'] .aerie-gauge:has(:focus-visible) { background: color-mix(in srgb, var(--grey-2) 55%, transparent); border-color: var(--grey-hairline); box-shadow: none; transition-delay: calc(var(--motion-instant) * 0); }
-[data-floor-look='ladder'] .aerie-gauge::after { content: ''; position: absolute; inset: -1px; z-index: -1; background: var(--grey-2); border: 1px solid var(--grey-4); box-shadow: var(--shadow-overlay); opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); }
-[data-floor-look='ladder'] .aerie-gauge:hover::after, [data-floor-look='ladder'] .aerie-gauge:has(:focus-visible)::after { opacity: 1; transition-delay: var(--gauge-open-wait); }
-
-/* 3. The glance. Each floor's words can list what waits there. Pointing at a floor where something waits opens
-      that one row at once, without the wait, so you see what it wants before you go. */
-[data-floor-look] .aerie-gauge .aerie-glance { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-top: var(--space-1); padding-right: var(--space-2); border-right: 2px solid var(--needs-light); color: var(--grey-9); }
-[data-floor-look='ladder'] .aerie-gauge button[data-waiting]:hover .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: calc(var(--motion-instant) * 0); }
-
-/* 4. The pulse. Where something waits, the needs-you light breathes inside the box (::before), and the floor's own
-      colour swells from its middle past the box's edge and falls back (::after), as if it were trying to get out.
-      Floors pulse a beat apart, bottom floor first. */
-[data-floor-look] .aerie-gauge button[data-tone='you'] { --floor-own: var(--floor-you-high); }
-[data-floor-look] .aerie-gauge button[data-tone='team'] { --floor-own: var(--floor-team-high); }
-[data-floor-look] .aerie-gauge button[data-tone='department'] { --floor-own: var(--floor-department-high); }
-[data-floor-look] .aerie-gauge button[data-tone='org'] { --floor-own: var(--floor-org-high); }
-[data-floor-look='ladder'] .aerie-gauge .aerie-notch { isolation: isolate; }
-[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); background: var(--grey-2); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
-[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before { display: block; position: absolute; inset: 0; z-index: -1; width: auto; height: auto; margin: 0; box-shadow: none; background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 60%, transparent), transparent); animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
-[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(circle, var(--floor-own) 0%, transparent 70%); animation: aerie-floor-escape var(--motion-ping) var(--ease-out) infinite alternate; animation-delay: calc(var(--floor-step, 0) * var(--motion-quick)); }
+/* ── 7. The pulse ──
+   Where something waits, the needs-you light breathes inside the box (::before), and the floor's own colour swells
+   from its middle past the box's edge and falls back (::after), as if it were trying to get out. Floors pulse a
+   beat apart, bottom floor first (--floor-step, set on each floor in floor-picker.tsx). */
+.aerie-gauge button[data-tone='you'] { --floor-own: var(--floor-you-high); }
+.aerie-gauge button[data-tone='team'] { --floor-own: var(--floor-team-high); }
+.aerie-gauge button[data-tone='department'] { --floor-own: var(--floor-department-high); }
+.aerie-gauge button[data-tone='org'] { --floor-own: var(--floor-org-high); }
+.aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
+.aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.aerie-gauge button[data-waiting] .aerie-notch::before { background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 60%, transparent), transparent); animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
+.aerie-gauge button[data-waiting] .aerie-notch::after { background: radial-gradient(circle, var(--floor-own) 0%, transparent 70%); animation: aerie-floor-escape var(--motion-ping) var(--ease-out) infinite alternate; animation-delay: calc(var(--floor-step, 0) * var(--motion-quick)); }
 @keyframes aerie-floor-escape { from { opacity: 0.2; transform: scale(0.5); } to { opacity: 0.6; transform: scale(1.7); } }
 
+/* ── 8. Resting, and reduced motion ──
+   Resting: the open app is the same on every floor, so the picker stays in view, dimmed, and says why when it opens. */
+.aerie-gauge.aerie-rest button[aria-disabled='true'] { cursor: not-allowed; }
+.aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-notch, .aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-label { opacity: 0.5; }
+.aerie-gauge.aerie-rest button[aria-disabled='true']:hover .aerie-notch { color: var(--grey-6); border-color: var(--grey-hairline); }
 /* Reduced motion, from the system or AUGUR's own switch: the lights hold still and the wait line doesn't climb. */
 @media (prefers-reduced-motion: reduce) {
-  [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before, [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
-  [data-floor-look='ladder'] .aerie-gauge::before { display: none; }
+  .aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge::before { display: none; }
 }
 :root[data-motion='reduce'] {
-  [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before, [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
-  [data-floor-look='ladder'] .aerie-gauge::before { display: none; }
+  .aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge::before { display: none; }
 }
