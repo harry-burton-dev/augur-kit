@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
-import { floorIconOf, floorKindOf, floorMeaning, floorStack, type ShellFloor } from './floors.js';
+import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone, type ShellFloor } from './floors.js';
 import type { ShellModel } from './shell-model.js';
 
 /*
@@ -53,6 +53,7 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
               floor={floor}
               here={floor.id === model.floor}
               waiting={waiting.get(floor.id) ?? 0}
+              waitingFor={model.notifications.filter((n) => n.floor === floor.id).map((n) => n.title)}
               app={model.openNow}
               rest={rest}
               tab={tab}
@@ -77,6 +78,8 @@ interface FloorButtonProps {
   here: boolean;
   /** How many things wait for you on this floor. */
   waiting: number;
+  /** What those things are, by title: the glance shown when you point at a floor where something waits. */
+  waitingFor: string[];
   /** The app that's open, if one is. */
   app: { name: string; icon?: string } | undefined;
   /** Why floors can't be changed right now; empty when they can. */
@@ -86,7 +89,10 @@ interface FloorButtonProps {
 }
 
 /** One floor in the picker: its words, shown when the picker opens out, and its round mark. */
-function FloorButton({ floor, here, waiting, app, rest, tab, onGo }: FloorButtonProps) {
+/** How many waiting things a floor's glance names before it says "and N more". */
+const GLANCE = 2;
+
+function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }: FloorButtonProps) {
   const name = floor.kind === 'personal' ? 'Your own floor' : floor.name;
   const said = [name, here ? 'you’re here' : '', waiting ? `${waiting} waiting` : ''].filter(Boolean).join(', ');
 
@@ -98,6 +104,7 @@ function FloorButton({ floor, here, waiting, app, rest, tab, onGo }: FloorButton
       aria-current={here ? 'location' : undefined}
       aria-disabled={rest && !here ? 'true' : undefined}
       data-waiting={waiting > 0 ? '' : undefined}
+      data-tone={floorTone(floor)}
       onClick={() => !rest && onGo()}
     >
       {/* The words: hidden at rest, shown when the picker opens out. */}
@@ -110,6 +117,15 @@ function FloorButton({ floor, here, waiting, app, rest, tab, onGo }: FloorButton
             {floor.kind === 'team' ? `${floorKindOf(floor)}. ` : ''}
             {floorMeaning(floor)}
           </span>
+          {/* The glance: what waits here. Pointing at a floor where something waits shows this row at once. */}
+          {waitingFor.length ? (
+            <span className="aerie-glance">
+              {waitingFor.slice(0, GLANCE).map((title) => (
+                <span key={title}>{title}</span>
+              ))}
+              {waitingFor.length > GLANCE ? <span>and {waitingFor.length - GLANCE} more</span> : null}
+            </span>
+          ) : null}
           {here && app && !rest ? (
             <span className="aerie-bound">
               <Icon name={app.icon ?? 'apps'} size={14} />

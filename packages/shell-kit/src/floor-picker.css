@@ -94,3 +94,46 @@
 [data-floor-look='ladder'] .aerie-gauge button:hover .aerie-notch, [data-floor-look='ladder'] .aerie-gauge button:focus-visible .aerie-notch { color: var(--grey-9); border-color: var(--grey-6); }
 [data-floor-look='ladder'] .aerie-gauge button[aria-current] .aerie-notch { color: var(--grey-9); border-color: var(--grey-9); }
 [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch { color: var(--needs-light); background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 46%, transparent), transparent), var(--grey-2); }
+
+/* ── Ladder, deepened (picked 11 Nov 2026). Four things, each marked below: the wait drawn as a line, a
+   see-through ground while you wait, a glance at what waits on a floor, and the pulse where something waits. ── */
+.aerie-gauge .aerie-glance { display: none; }
+
+/* 1. The wait, drawn. While the pointer rests on the picker a line climbs its left edge: what has filled is the
+      time waited, what is left is the time to go. When it reaches the top the picker opens. */
+[data-floor-look='ladder'] .aerie-gauge::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 2px; background: var(--grey-9); transform: scaleY(0); transform-origin: 50% 100%; opacity: 0; pointer-events: none; transition: transform var(--motion-quick) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
+[data-floor-look='ladder'] .aerie-gauge:hover::before { opacity: 1; transform: scaleY(1); transition: transform var(--gauge-open-wait) linear, opacity var(--motion-instant) linear; }
+
+/* 2. The ground. Clear at rest; half see-through the moment the pointer is on it, so it answers at once; solid
+      (the ::after layer, with the edge and the shadow) only once it opens. */
+[data-floor-look='ladder'] .aerie-gauge:hover, [data-floor-look='ladder'] .aerie-gauge:has(:focus-visible) { background: color-mix(in srgb, var(--grey-2) 55%, transparent); border-color: var(--grey-hairline); box-shadow: none; transition-delay: calc(var(--motion-instant) * 0); }
+[data-floor-look='ladder'] .aerie-gauge::after { content: ''; position: absolute; inset: -1px; z-index: -1; background: var(--grey-2); border: 1px solid var(--grey-4); box-shadow: var(--shadow-overlay); opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); }
+[data-floor-look='ladder'] .aerie-gauge:hover::after, [data-floor-look='ladder'] .aerie-gauge:has(:focus-visible)::after { opacity: 1; transition-delay: var(--gauge-open-wait); }
+
+/* 3. The glance. Each floor's words can list what waits there. Pointing at a floor where something waits opens
+      that one row at once, without the wait, so you see what it wants before you go. */
+[data-floor-look] .aerie-gauge .aerie-glance { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-top: var(--space-1); padding-right: var(--space-2); border-right: 2px solid var(--needs-light); color: var(--grey-9); }
+[data-floor-look='ladder'] .aerie-gauge button[data-waiting]:hover .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: calc(var(--motion-instant) * 0); }
+
+/* 4. The pulse. Where something waits, the needs-you light breathes inside the box (::before), and the floor's own
+      colour swells from its middle past the box's edge and falls back (::after), as if it were trying to get out.
+      Floors pulse a beat apart, bottom floor first. */
+[data-floor-look] .aerie-gauge button[data-tone='you'] { --floor-own: var(--floor-you-high); }
+[data-floor-look] .aerie-gauge button[data-tone='team'] { --floor-own: var(--floor-team-high); }
+[data-floor-look] .aerie-gauge button[data-tone='department'] { --floor-own: var(--floor-department-high); }
+[data-floor-look] .aerie-gauge button[data-tone='org'] { --floor-own: var(--floor-org-high); }
+[data-floor-look='ladder'] .aerie-gauge .aerie-notch { isolation: isolate; }
+[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); background: var(--grey-2); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
+[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before { display: block; position: absolute; inset: 0; z-index: -1; width: auto; height: auto; margin: 0; box-shadow: none; background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 60%, transparent), transparent); animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
+[data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(circle, var(--floor-own) 0%, transparent 70%); animation: aerie-floor-escape var(--motion-ping) var(--ease-out) infinite alternate; animation-delay: calc(var(--floor-step, 0) * var(--motion-quick)); }
+@keyframes aerie-floor-escape { from { opacity: 0.2; transform: scale(0.5); } to { opacity: 0.6; transform: scale(1.7); } }
+
+/* Reduced motion, from the system or AUGUR's own switch: the lights hold still and the wait line doesn't climb. */
+@media (prefers-reduced-motion: reduce) {
+  [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before, [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  [data-floor-look='ladder'] .aerie-gauge::before { display: none; }
+}
+:root[data-motion='reduce'] {
+  [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::before, [data-floor-look='ladder'] .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  [data-floor-look='ladder'] .aerie-gauge::before { display: none; }
+}
