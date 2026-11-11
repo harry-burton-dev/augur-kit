@@ -8,6 +8,7 @@
 @import './app-bar.css' layer(components);
 @import './backgrounds.css' layer(components);
 @import './frame.css' layer(components);
+@import './app-pane.css' layer(components);
 @source './';
 @source not './**/*.test.tsx';
 @source not './**/*.stories.tsx';

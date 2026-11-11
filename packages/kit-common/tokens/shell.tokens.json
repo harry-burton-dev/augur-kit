@@ -308,6 +308,11 @@
       "$type": "dimension",
       "$description": "The width of the About panel, the right-hand region the shell draws beside an app's main column."
     },
+    "app-pane-strip": {
+      "$value": "64px",
+      "$type": "dimension",
+      "$description": "The app pane closed to its strip at the window's right edge: the clock, the notification button, the dock image and the section titles running down it. Open, it takes about-panel."
+    },
     "split-list": {
       "$value": "360px",
       "$type": "dimension",
