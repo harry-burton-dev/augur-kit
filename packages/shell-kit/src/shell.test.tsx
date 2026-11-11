@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Shell } from './shell.js';
 import { exampleShell } from './shell.fixture.js';
 import type { ShellModel } from './shell-model.js';
+import type { ReactNode } from 'react';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -212,5 +213,46 @@ describe('Shell app bar and background', () => {
     act(() => model.openApp('docs'));
     expect(body.querySelector('.aerie-horizon')!.hasAttribute('data-away')).toBe(true);
     expect(body.querySelector('.aerie-ground .aerie-flat')).not.toBeNull();
+  });
+});
+
+describe('Shell app pane at the right edge', () => {
+  const drawPaned = (model: ShellModel) => {
+    document.body.replaceChildren(document.createElement('div'));
+    root = createRoot(document.body.firstElementChild!);
+    const pane = vi.fn(({ top, over }: { top: ReactNode; over: boolean }) => (
+      <aside className="test-pane" data-over={over ? '' : undefined}>
+        {top}
+      </aside>
+    ));
+    act(() => root!.render(<Shell model={model} pane={pane}>app</Shell>));
+    return { body: document.body, pane };
+  };
+
+  it('draws the pane for an open app, with the notification indicator and the clock moved out of the band', () => {
+    const { body } = drawPaned(exampleShell());
+    expect(body.querySelector('.aerie-shell')!.hasAttribute('data-pane')).toBe(true);
+    const pane = body.querySelector('.aerie-pane-slot .test-pane')!;
+    expect(pane.querySelector('.aerie-status .aerie-point')).not.toBeNull();
+    expect(pane.querySelector('.aerie-status-words')).not.toBeNull();
+    expect(pane.querySelector('.aerie-clock')).not.toBeNull();
+    expect(body.querySelector('.aerie-band .aerie-status, .aerie-band .aerie-clock')).toBeNull();
+    expect(body.querySelectorAll('.aerie-status')).toHaveLength(1);
+  });
+
+  it('draws no pane on the desktop, and the band keeps the indicator and the clock', () => {
+    const model = exampleShell();
+    model.current = '';
+    const { body, pane } = drawPaned(model);
+    expect(pane).not.toHaveBeenCalled();
+    expect(body.querySelector('.aerie-shell')!.hasAttribute('data-pane')).toBe(false);
+    expect(body.querySelector('.aerie-band .aerie-status .aerie-status-words')).not.toBeNull();
+  });
+
+  it('ends the stage, the band and the floor picker where the pane starts', () => {
+    const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'app-pane.css'), 'utf8');
+    expect(css).toContain('.aerie-shell[data-pane][data-gauge] .aerie-stage { right: calc(var(--gauge-lane) + var(--pane-inset, var(--app-pane-strip))); }');
+    expect(css).toContain('.aerie-shell[data-pane] .aerie-band { right: var(--pane-inset, var(--app-pane-strip)); }');
+    expect(css).toContain('--gauge-right: calc(var(--pane-inset, var(--app-pane-strip)) + var(--space-2));');
   });
 });
