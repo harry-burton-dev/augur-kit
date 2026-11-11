@@ -13,7 +13,7 @@ export { ShellMenu, MenuArc, MenuCaption, MenuView, MenuEsc, MenuUndo, MenuNote,
 export { ShellBar } from './shell-bar.js';
 export * from './shell-model.js';
 export { Water, resolveWave, wavePresets, DEFAULT_WAVE, type WaveMove, type WavePreset } from './water.js';
-export { AppBar, BarTile, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop } from './app-bar.js';
+export { AppBar, BarTile, BarLogo, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type BarLogoProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop, restingStop } from './app-bar.js';
 export { Background, backgrounds, DEFAULT_BACKGROUND, type BackgroundProps, type BackgroundChoice, type GroundProps } from './background.js';
 export { Horizon, type HorizonProps } from './background-horizon.js';
 export { Flat, type FlatProps } from './background-flat.js';

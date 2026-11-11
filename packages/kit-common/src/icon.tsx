@@ -1,6 +1,6 @@
 import type { LucideIcon, LucideProps } from 'lucide-react';
 import {
-  Activity, Anchor, BookOpen, Briefcase, ChevronRight, FilePenLine, FolderTree, GripVertical, LayoutDashboard, ListChecks, MessagesSquare, Minus, Archive, ArrowLeft, ArrowRight, ArrowUpDown, Ban, Bell, BellOff, Bird, Bookmark, Building, Building2, CalendarDays, CalendarRange, Car, ChartColumn, Check, ChevronDown, Clock, Compass, Diamond, Download, EighthNotes, Ellipsis, FileText, Folder, FolderPlus, Gauge, GitPullRequest, History, House, Image, Inbox, Info, KeyRound, LayoutGrid, Library, Link, List, ListFilter, Lock, Mail, Map as MapIcon, MapPin, Monitor, Network, Palette, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pause, Pencil, Plane, Play, Plus, Power, Search, Send, Server, ShieldCheck, Ship, SlidersHorizontal, Sparkles, Star, Tag, Trash2, Triangle, Undo2, Upload, User, UserPlus, UserRound, UsersRound, Video, Warehouse, Wifi, X,
+  Activity, Anchor, BookOpen, Briefcase, ChevronRight, FilePenLine, FolderTree, GripVertical, LayoutDashboard, ListChecks, MessagesSquare, Minus, Archive, ArrowLeft, ArrowRight, ArrowUpDown, Ban, Bell, BellOff, Bird, Bookmark, Building, Building2, CalendarDays, CalendarRange, Car, ChartColumn, Check, ChevronDown, Clock, Compass, Diamond, Download, EighthNotes, Ellipsis, FileText, Folder, FolderPlus, Gauge, GitPullRequest, Hexagon, History, House, Image, Inbox, Info, KeyRound, LayoutGrid, Library, Link, List, ListFilter, Lock, Mail, Map as MapIcon, MapPin, Monitor, Network, Palette, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Pause, Pencil, Plane, Play, Plus, Power, Search, Send, Server, ShieldCheck, Ship, SlidersHorizontal, Sparkles, Star, Tag, Trash2, Triangle, Undo2, Upload, User, UserPlus, UserRound, UsersRound, Video, Warehouse, Wifi, X,
 } from 'lucide-react';
 
 /**
@@ -73,6 +73,8 @@ export const icons = {
   gauge: Gauge,
   // Finding your way round the platform (Auspex): the app, one person, what's closed to you and why, and what changed.
   explore: Bird,
+  /** The placeholder for a deployment's own mark, until it sets one. */
+  mark: Hexagon,
   person: User,
   lock: Lock,
   blocked: Ban,

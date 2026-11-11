@@ -244,6 +244,16 @@ export class ShellModel extends EventTarget {
   navs: ShellNav[] = [];
   /** No longer drawn: the app bar's Home replaces Back. */
   backTo = '';
+  /**
+   * The deployment's mark on the logo button, as an image URL. Empty draws the kit's placeholder mark.
+   * The button goes to the desktop (Home).
+   */
+  logo = '';
+  /**
+   * The app drawn on the desktop, by id: while it's open the bar stays across the screen, the
+   * background stays, and it isn't offered again as a tile or in a menu. Empty for a bare desktop.
+   */
+  desktop = '';
   /** The app bar's groups, one tile each on the desktop, in order. Apps name theirs with `group`. */
   groups: ShellAppGroup[] = [];
   /** Groups as tiles on the desktop bar, or one Apps tile holding them as folders. */
@@ -586,6 +596,12 @@ export class ShellModel extends EventTarget {
   /** The app that's open, when one is: `current` among `apps`. */
   get openNow(): ShellApp | undefined {
     return this.current ? this.apps.find((a) => a.id === this.current) : undefined;
+  }
+
+  /** On the desktop: no app open, or only the desktop's own. */
+  get onDesk(): boolean {
+    const app = this.openNow;
+    return !app || app.id === this.desktop;
   }
 
   /**

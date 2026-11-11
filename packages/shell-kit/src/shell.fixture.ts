@@ -48,3 +48,10 @@ export function exampleShell(open?: string, app: string | undefined = 'docs') {
   }
   return model;
 }
+
+/** The example shell with a Home app drawn on the desktop. */
+export function withHome(model: ShellModel) {
+  model.apps = [{ id: 'home', name: 'Home', icon: 'home', line: 'What needs you' }, ...model.apps];
+  model.desktop = 'home';
+  return model;
+}

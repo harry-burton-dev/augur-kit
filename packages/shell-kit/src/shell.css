@@ -31,6 +31,10 @@
 /* ...and the band starts beside the rail, so the rail takes the corner and the band's fade never crosses it */
 .aerie-shell[data-bar='app'] .aerie-band { left: var(--bar-tile); }
 @media (max-width: 719px) { .aerie-shell[data-bar='app'] :is(.aerie-stage, .aerie-band) { left: var(--bar-rail-narrow); } }
+/* The desktop holding its own app (Home): the bar rests at an edge like a taskbar, and the stage clears it, so the
+   water shows around what Home shows and nothing sits under the bar. data-desktop is the edge: 0 under the band, 3 the bottom. */
+.aerie-shell[data-desktop='0'] .aerie-stage { top: calc(var(--band-top) + var(--bar-height)); }
+.aerie-shell[data-desktop='3'] .aerie-stage { bottom: var(--bar-height); }
 /* The bar is chrome: it steps back with the band while you look up. */
 .aerie-shell-bar { transition: opacity var(--motion-slow) var(--ease-standard); }
 .aerie-shell[data-open] .aerie-shell-bar { opacity: 0; pointer-events: none; }
