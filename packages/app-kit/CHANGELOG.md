@@ -1,5 +1,12 @@
 # @augur/app-kit
 
+## 0.22.1
+
+### Patch Changes
+
+- Updated dependencies [1edb24c]
+  - @augur/kit-common@0.19.0
+
 ## 0.22.0
 
 ### Minor Changes
