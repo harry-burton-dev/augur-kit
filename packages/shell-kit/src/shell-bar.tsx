@@ -1,5 +1,5 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { AppBar, BarDivider, BarTile, RailBlock, RailPages, RailPair, StartMenuDivider, StartMenuFolder, StartMenuItem, useAppBar } from './app-bar.js';
+import { AppBar, BarDivider, BarLogo, BarTile, RailBlock, RailPages, StartMenuFolder, StartMenuItem, useAppBar } from './app-bar.js';
 import type { ShellApp, ShellAppGroup, ShellModel } from './shell-model.js';
 import { RailPlaces } from './rail-places.js';
 
@@ -9,21 +9,25 @@ const UNGROUPED: ShellAppGroup = { id: '', name: 'Apps', icon: 'apps' };
 /**
  * The shell's app bar, put together from the model (Navigation brief): on the desktop a tile per
  * group of apps (or one Apps tile holding them as folders), More for those that don't fit, and the
- * open apps after a divider; with an app open, the same bar docked as the side rail, with Home and
- * Apps, the open apps, and the app's pages. What needs you lights the way down to it.
+ * open apps after a divider; with an app open, the same bar docked as the side rail, with the open
+ * apps and the app's pages. The logo button goes to the desktop: first on the desktop bar, last on
+ * the rail. The desktop's own app (`model.desktop`) keeps the bar across the screen and isn't a tile.
+ * What needs you lights the way down to it.
  */
 export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean }) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
-  const apps = model.apps;
+  const desk = model.desktop;
+  const apps = model.apps.filter((a) => a.id !== desk);
   const byId = new Map(apps.map((a) => [a.id, a]));
   const groups = [...model.groups, UNGROUPED]
     .map((g) => ({ group: g, apps: apps.filter((a) => (g.id ? a.group === g.id : !a.group || !model.groups.some((x) => x.id === a.group))) }))
     .filter((g) => g.apps.length);
   const solo = apps.length === 1;
-  const current = model.openNow;
+  const current = model.onDesk ? undefined : model.openNow;
   const mode = current ? 'app' : 'desk';
   const running = model.running.filter((id) => byId.has(id));
   if (current && !running.includes(current.id)) running.push(current.id);
+  const holding = !!desk && model.openNow?.id === desk;
 
   const needs = model.needs;
   const lit = (app: string, page?: string) => needs.some((n) => n.app === app && (page === undefined || n.page === page));
@@ -49,21 +53,15 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
       {list.map(item)}
     </StartMenuFolder>
   );
-  const appsMenu = (
-    <>
-      {groups.length === 1 ? groups[0]!.apps.map(item) : groups.map(folder)}
-      {current ? (
-        <>
-          <StartMenuDivider />
-          <StartMenuItem icon="close" name={`Close ${current.name}`} onPress={() => model.closeApp(current.id)} />
-        </>
-      ) : null}
-    </>
-  );
+  const appsMenu = <>{groups.length === 1 ? groups[0]!.apps.map(item) : groups.map(folder)}</>;
   const openTile = (id: string, kind?: 'app') => {
     const a = byId.get(id)!;
     return <BarTile key={id} kind={kind} icon={a.icon ?? 'apps'} name={a.name} running={kind !== 'app'} current={current?.id === id} lit={lit(id)} lead={leads(id)} onPress={() => model.openApp(id)} />;
   };
+  // Home is the desktop, so the logo lights for what needs you there.
+  const logo = (
+    <BarLogo key="logo" src={model.logo || undefined} name="Home" current={!current} lit={!!desk && lit(desk)} lead={!!desk && leads(desk)} onPress={() => model.goHome()} />
+  );
   const pages = current?.pages ?? [];
   const page = model.page || pages[0]?.id;
 
@@ -72,6 +70,7 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
       <AppBar
         mode={mode}
         label={current ? `App bar: ${current.name}` : 'App bar'}
+        edges={holding}
         stop={model.settings.barStop ?? 1}
         onStop={(s) => model.setBarStop(s)}
         hint={model.barHint || undefined}
@@ -79,13 +78,7 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
       >
         {current ? (
           <>
-            <RailBlock>
-              <RailPair>
-                <BarTile kind="half" icon="home" name="Home" onPress={() => model.goHome()} />
-                {solo ? null : <BarTile kind="half" icon="apps" name="Apps" menu={appsMenu} />}
-              </RailPair>
-              {running.map((id) => openTile(id, 'app'))}
-            </RailBlock>
+            <RailBlock>{running.map((id) => openTile(id, 'app'))}</RailBlock>
             {pages.some((p) => p.fills) ? (
               // An app on the app contract: its places, with what it put under those that fill (6.3).
               <RailPages>
@@ -107,12 +100,19 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
                   <BarTile key={p.id} kind="page" icon={p.icon} name={p.name} current={page === p.id} lit={lit(current.id, p.id)} lead={leads(current.id, p.id)} onPress={() => model.openPage(p.id)} />
                 ))}
               </RailPages>
-            ) : null}
+            ) : (
+              <RailPages />
+            )}
+            {logo}
           </>
         ) : solo ? (
-          openTile(apps[0]!.id)
+          <>
+            {logo}
+            {openTile(apps[0]!.id)}
+          </>
         ) : (
           <DeskTiles
+            logo={logo}
             groups={groups}
             holds={model.barHolds}
             litGroup={litGroup}
@@ -131,7 +131,8 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
 type Group = { group: ShellAppGroup; apps: ShellApp[] };
 
 /** The desktop's tiles: the groups, More for those that don't fit, then the open apps. */
-function DeskTiles({ groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens }: {
+function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens }: {
+  logo: ReactNode;
   groups: Group[];
   holds: 'groups' | 'folder';
   litGroup(list: ShellApp[]): boolean;
@@ -142,12 +143,13 @@ function DeskTiles({ groups, holds, litGroup, leadGroup, item, folder, appsMenu,
   opens: ReactNode[];
 }) {
   const { room } = useAppBar();
-  const space = room - opens.length;
+  const space = room - opens.length - 1;
   const cut = groups.length <= space ? groups.length : Math.max(1, space - 1);
   const rest = groups.slice(cut);
   const all = groups.flatMap((g) => g.apps);
   return (
     <>
+      {logo}
       {holds === 'folder' ? (
         <BarTile icon="apps" name="Apps" start menu={appsMenu} lit={litGroup(all)} lead={leadGroup(all)} />
       ) : (

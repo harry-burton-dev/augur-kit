@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { ShellBar } from './shell-bar.js';
-import { exampleShell } from './shell.fixture.js';
+import { exampleShell, withHome } from './shell.fixture.js';
 import { Screen } from './app-bar.fixture.js';
 
 /**
@@ -10,10 +10,11 @@ import { Screen } from './app-bar.fixture.js';
  * from `running`, and the light from what needs you in the stream. Pressing a tile tells the model,
  * which tells the host (`ui-open-app`, `ui-home`, `ui-page`, `ui-close-app`).
  */
-function Demo({ app, holds }: { app?: string; holds?: 'groups' | 'folder' }) {
+function Demo({ app, holds, desktop }: { app?: string; holds?: 'groups' | 'folder'; desktop?: boolean }) {
   const [model] = useState(() => {
     const m = exampleShell(undefined, app ?? '');
     m.barHolds = holds ?? 'groups';
+    if (desktop) withHome(m);
     return m;
   });
   return (
@@ -22,14 +23,14 @@ function Demo({ app, holds }: { app?: string; holds?: 'groups' | 'folder' }) {
     </Screen>
   );
 }
-const Keyed = (args: { app?: string; holds?: 'groups' | 'folder' }) => <Demo key={`${args.app}-${args.holds}`} {...args} />;
+const Keyed = (args: { app?: string; holds?: 'groups' | 'folder'; desktop?: boolean }) => <Demo key={`${args.app}-${args.holds}-${args.desktop}`} {...args} />;
 
 const meta = {
   title: 'Aerie/App bar/Shell bar',
   component: Demo,
   render: (args) => <Keyed {...args} />,
   parameters: { layout: 'padded' },
-  argTypes: { app: { control: 'inline-radio', options: ['', 'docs', 'mandate'] }, holds: { control: 'inline-radio', options: ['groups', 'folder'] } },
+  argTypes: { app: { control: 'inline-radio', options: ['', 'docs', 'mandate'] }, holds: { control: 'inline-radio', options: ['groups', 'folder'] }, desktop: { control: 'boolean' } },
   args: { app: '', holds: 'groups' },
 } satisfies Meta<typeof Demo>;
 export default meta;
@@ -41,3 +42,7 @@ export const Desktop: Story = {};
 export const AppOpen: Story = { args: { app: 'docs' } };
 /** One Apps tile holding the groups as folders. */
 export const OneFolder: Story = { args: { holds: 'folder' } };
+/** Home is the desktop: open, the bar stays across the screen, with the logo first and no Home tile. */
+export const HomeOnTheDesktop: Story = { args: { app: 'home', desktop: true } };
+/** From an app with Home as the desktop: the rail ends with the logo, which goes back to it. */
+export const AppOpenWithHome: Story = { args: { app: 'docs', desktop: true } };
