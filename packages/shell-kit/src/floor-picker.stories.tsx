@@ -22,10 +22,12 @@ interface DemoProps {
   app?: string;
   /** The open app shows the same on every floor, so the picker rests. */
   same?: boolean;
+  /** A trial look from floor-picker.css, or none for the picker as it is today. */
+  look?: 'lights' | 'bars' | 'ladder';
 }
 
 /** The picker in the Shell, where it lives. Choosing a floor goes there, as the host would. */
-function Shown({ floor = 'team', app = 'docs', same = false }: DemoProps) {
+function Shown({ floor = 'team', app = 'docs', same = false, look }: DemoProps) {
   const [model] = useState(() => {
     const m = exampleShell(undefined, app);
     m.floors = floors;
@@ -47,7 +49,7 @@ function Shown({ floor = 'team', app = 'docs', same = false }: DemoProps) {
     return () => model.removeEventListener('ui-floor', go);
   }, [model]);
   return (
-    <div style={{ position: 'relative', height: '640px' }}>
+    <div data-floor-look={look} style={{ position: 'relative', height: '640px' }}>
       <Shell model={model} />
     </div>
   );
@@ -57,7 +59,17 @@ function Demo(props: DemoProps) {
   return <Shown key={JSON.stringify(props)} {...props} />;
 }
 
-const meta = { title: 'Aerie/Floor picker', component: Demo, parameters: { layout: 'fullscreen' } } satisfies Meta<typeof Demo>;
+const meta = {
+  title: 'Aerie/Floor picker',
+  component: Demo,
+  parameters: { layout: 'fullscreen' },
+  // In the Controls panel under any story: switch the look, the floor, the app.
+  argTypes: {
+    look: { control: 'inline-radio', options: [undefined, 'lights', 'bars', 'ladder'] },
+    floor: { control: 'inline-radio', options: ['me', 'team', 'dept', 'org'] },
+    app: { control: 'inline-radio', options: ['docs', ''] },
+  },
+} satisfies Meta<typeof Demo>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -67,3 +79,11 @@ export const InAnApp: Story = {};
 export const OnTheDesktop: Story = { args: { app: '', floor: 'me' } };
 /** The open app is the same on every floor, so the picker rests and says why. */
 export const Resting: Story = { args: { same: true } };
+/** Trial look. Each floor is a small light: brightest with a hard line at the edge where you are, the needs-you colour where something waits. */
+export const Lights: Story = { args: { look: 'lights' } };
+/** Trial look. Each floor is a bar, longer the further the floor reaches: yours shortest, the top floor longest. */
+export const Bars: Story = { args: { look: 'bars' } };
+/** Trial look, closest to today. Each floor keeps its icon in a square box on a rail; what waits rises as light inside the box. */
+export const Ladder: Story = { args: { look: 'ladder' } };
+/** Lights on the desktop, on your own floor. */
+export const LightsOnTheDesktop: Story = { args: { look: 'lights', app: '', floor: 'me' } };

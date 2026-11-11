@@ -323,6 +323,11 @@
       "$type": "dimension",
       "$description": "The floor gauge's notch: the round mark for each floor."
     },
+    "gauge-words": {
+      "$value": "240px",
+      "$type": "dimension",
+      "$description": "How wide the floor picker's words are once it opens out: each floor's name and who sees it."
+    },
     "gauge-pinned": {
       "$value": "22px",
       "$type": "dimension",
@@ -370,6 +375,11 @@
       "$value": "560ms",
       "$type": "duration",
       "$description": "The app bar gliding between its places, and docking to the side when an app opens."
+    },
+    "gauge-wait": {
+      "$value": "1000ms",
+      "$type": "duration",
+      "$description": "How long the pointer rests on the floor picker before it opens out, so passing over it doesn't open it. Tabbing into it opens it at once."
     }
   }
 }

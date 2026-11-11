@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorStack, type ShellFloor } from './floors.js';
 import type { ShellModel } from './shell-model.js';
@@ -34,6 +35,8 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
   const waiting = model.waitingByFloor();
   // Why the picker rests, when it does: the open app is the same on every floor.
   const rest = model.floorsRest;
+  // What waits on floors other than the one you're on, all together.
+  const elsewhere = floors.reduce((sum, floor) => sum + (floor.id === model.floor ? 0 : (waiting.get(floor.id) ?? 0)), 0);
 
   return (
     <nav className={`aerie-gauge${rest ? ' aerie-rest' : ''}`} aria-label="Floors" inert={model.isOpen}>
@@ -43,8 +46,9 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
         </p>
       ) : null}
       <ol>
-        {floors.map((floor) => (
-          <li key={floor.id}>
+        {floors.map((floor, i) => (
+          // --floor-step: how many floors up this one is, 0 for your own. The "bars" look sizes its mark by it.
+          <li key={floor.id} style={{ '--floor-step': floors.length - 1 - i } as CSSProperties}>
             <FloorButton
               floor={floor}
               here={floor.id === model.floor}
@@ -57,6 +61,12 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
           </li>
         ))}
       </ol>
+      {/* Under the list once it's open: what waits on your other floors, in words. Only the trial looks show it. */}
+      {elsewhere ? (
+        <p className="aerie-elsewhere">
+          <span>{elsewhere} waiting on other floors</span>
+        </p>
+      ) : null}
     </nav>
   );
 }
