@@ -11,7 +11,7 @@
 }
 .aerie-pane[data-open] { width: var(--about-panel); }
 /* Over the page (a narrow frame): from the edge, its full open width, raised over the app. */
-.aerie-pane[data-over] { position: absolute; top: 0; right: 0; bottom: 0; z-index: 3; box-shadow: var(--shadow-overlay); }
+.aerie-pane[data-over] { position: absolute; top: 0; right: 0; bottom: 0; z-index: 3; background: var(--grey-2); box-shadow: var(--shadow-overlay); }
 :where(.aerie-pane) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 :where(.aerie-pane) button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); border-radius: var(--radius-key); }
 
@@ -25,6 +25,9 @@
 /* The shell's notification indicator keeps only its dot in the strip; its words come back when the pane opens
    and stay its name (aria-label) either way. */
 .aerie-pane:not([data-open]) .aerie-status-words { display: none; }
+/* The time first, then the indicator; in the strip the time keeps to one line. */
+.aerie-pane-top .aerie-clock { order: -1; white-space: nowrap; }
+.aerie-pane:not([data-open]) .aerie-clock { font-size: var(--type-label); line-height: var(--leading-label); }
 
 /* the dock image: the app's own mark */
 .aerie-pane-dock { flex: none; display: flex; justify-content: center; padding: var(--space-4) var(--space-2); border-bottom: 1px solid var(--grey-hairline); }
@@ -58,3 +61,21 @@
 @media (prefers-reduced-motion: reduce) {
   .aerie-pane { animation: none; transition: none; }
 }
+
+/* ── in the shell: the pane takes the window's right edge while an app is open ──
+   The shell sets --pane-inset to the pane's width as it is now (shell.tsx), and everything else at the edge
+   ends there: the stage (and the floor picker's lane, when there is one), the band, and the floor picker,
+   which sits to the pane's left through --gauge-right. Over the page, the pane keeps only its strip in the
+   inset and opens over the app. */
+.aerie-pane-slot {
+  position: absolute; z-index: 4; top: 0; right: 0; bottom: 0; display: flex; min-width: var(--app-pane-strip);
+  transition: opacity var(--motion-slow) var(--ease-standard);
+}
+.aerie-pane-slot > .aerie-pane { height: 100%; }
+.aerie-shell[data-pane] { --gauge-right: calc(var(--pane-inset, var(--app-pane-strip)) + var(--space-2)); }
+.aerie-shell[data-pane] .aerie-stage { right: var(--pane-inset, var(--app-pane-strip)); }
+.aerie-shell[data-pane][data-gauge] .aerie-stage { right: calc(var(--gauge-lane) + var(--pane-inset, var(--app-pane-strip))); }
+.aerie-shell[data-pane] .aerie-band { right: var(--pane-inset, var(--app-pane-strip)); }
+.aerie-shell[data-pane] .aerie-gauge { right: var(--gauge-right); }
+/* Looking up, the pane steps back with the band. */
+.aerie-shell[data-open] .aerie-pane-slot { opacity: 0; pointer-events: none; }
