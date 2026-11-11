@@ -27,6 +27,9 @@ import { reducedMotion, tokenValue } from './motion.js';
 /** Where the bar rests on the desktop: under the band, upper, lower or at the bottom. */
 export type BarStop = 0 | 1 | 2 | 3;
 const STOPS = ['under the band', 'upper', 'lower', 'bottom'] as const;
+
+/** Where the bar rests: its stop, or with only the edges allowed, the nearer edge. */
+export const restingStop = (stop: BarStop, edges: boolean): BarStop => (edges ? (stop < 2 ? 0 : 3) : stop);
 const NARROW = 720;
 
 interface Menu {
@@ -63,6 +66,12 @@ export interface AppBarProps {
   mode?: 'desk' | 'app';
   /** What the bar is called to a screen reader; with an app open, say which. */
   label?: string;
+  /**
+   * The desktop holds an app (Home): the bar rests only at its edges, under the band or at the
+   * bottom, like a taskbar, so it never sits across what the desktop shows. A middle stop rests at
+   * the nearer edge.
+   */
+  edges?: boolean;
   /** Where the bar rests on the desktop. Uncontrolled from `defaultStop` when left out. */
   stop?: BarStop;
   defaultStop?: BarStop;
@@ -79,11 +88,12 @@ export interface AppBarProps {
  * the band, `--bar-rail` wide. Changing `mode` fades the tiles out, moves the bar, and fades the new
  * ones in. It holds the start menus its tiles open.
  */
-export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, onStop, hint, onHintDone, children }: AppBarProps) {
+export function AppBar({ mode = 'desk', label, edges = false, stop: stopProp, defaultStop = 1, onStop, hint, onHintDone, children }: AppBarProps) {
   const bar = useRef<HTMLElement>(null);
   const layer = useRef<HTMLDivElement>(null);
   const [ownStop, setOwnStop] = useState<BarStop>(defaultStop);
-  const stop = stopProp ?? ownStop;
+  const stop = restingStop(stopProp ?? ownStop, edges);
+  const allowed: BarStop[] = edges ? [0, 3] : [0, 1, 2, 3];
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [shown, setShown] = useState(mode);
   const frozen = useRef<ReactNode>(children);
@@ -223,7 +233,8 @@ export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, 
 
   // Moving the bar: drag on its rails, or the arrow keys on its grip.
   const gripKey = (e: KeyboardEvent) => {
-    const to = e.key === 'ArrowUp' ? stop - 1 : e.key === 'ArrowDown' ? stop + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? 3 : null;
+    const at = allowed.indexOf(stop);
+    const to = e.key === 'ArrowUp' ? allowed[Math.max(0, at - 1)]! : e.key === 'ArrowDown' ? allowed[Math.min(allowed.length - 1, at + 1)]! : e.key === 'Home' ? 0 : e.key === 'End' ? 3 : null;
     if (to === null) return;
     e.preventDefault();
     setStop(to);
@@ -240,8 +251,8 @@ export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, 
   };
   const gripUp = () => {
     if (!drag) return;
-    let best = 0;
-    for (let i = 1; i < 4; i++) if (Math.abs(stopY(i) - drag.y) < Math.abs(stopY(best) - drag.y)) best = i;
+    let best: BarStop = 0;
+    for (const i of allowed) if (Math.abs(stopY(i) - drag.y) < Math.abs(stopY(best) - drag.y)) best = i;
     setDrag(null);
     setStop(best);
   };
@@ -253,7 +264,7 @@ export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, 
     <Bar.Provider value={state}>
       {drag ? (
         <div className="aerie-bar-rails" aria-hidden="true">
-          {STOPS.map((name, i) => (
+          {STOPS.map((name, i) => allowed.includes(i as BarStop) && (
             <i key={name} style={{ top: stopY(i) }}>
               <b>{name}</b>
             </i>
@@ -267,6 +278,7 @@ export function AppBar({ mode = 'desk', label, stop: stopProp, defaultStop = 1, 
         data-narrow={narrow ? '' : undefined}
         data-swapping={swapping ? '' : undefined}
         data-dragging={drag ? '' : undefined}
+        data-stop={inApp ? undefined : stop}
         style={{ '--bar-y': `${y}px` } as CSSProperties}
         aria-label={label ?? 'App bar'}
       >
@@ -379,6 +391,39 @@ export function BarTile({ icon, name, kind, menu, menuTitle, current, running, l
 /** The hairline between the desktop bar's groups and the apps that are open. */
 export function BarDivider() {
   return <hr />;
+}
+
+export interface BarLogoProps {
+  /** The deployment's mark, as an image URL. Empty draws the kit's placeholder mark. */
+  src?: string;
+  /** What it does, for the name under it and for screen readers, e.g. "Home". */
+  name: string;
+  /** You're on the desktop already. */
+  current?: boolean;
+  /** Something that needs you is on the desktop. */
+  lit?: boolean;
+  lead?: boolean;
+  onPress?(): void;
+}
+
+/**
+ * The logo button: the deployment's mark, the one way to the desktop. It starts the desktop bar, at
+ * its left, and ends the side rail, at its bottom, so it's in the same corner of the eye from every app.
+ */
+export function BarLogo({ src, name, current, lit, lead, onPress }: BarLogoProps) {
+  const words = [name, current ? 'you’re here' : '', lit ? 'needs your attention' : ''].filter(Boolean).join(', ');
+  return (
+    <button
+      type="button"
+      className={cx('aerie-bar-tile', 'aerie-bar-logo', lit && 'aerie-bar-lit', lit && lead && 'aerie-bar-lead')}
+      aria-current={current ? 'page' : undefined}
+      aria-label={words}
+      onClick={() => onPress?.()}
+    >
+      {src ? <img src={src} alt="" /> : <Icon name="mark" />}
+      <span>{name}</span>
+    </button>
+  );
 }
 
 /** The side rail's fixed block: Home and Apps, then what's open. It's the same in every app. */

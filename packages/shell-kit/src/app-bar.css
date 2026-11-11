@@ -53,6 +53,11 @@
 .aerie-bar .aerie-bar-tile[aria-expanded='true'] { background: color-mix(in srgb, var(--grey-9) 10%, transparent); color: var(--grey-9); }
 .aerie-bar .aerie-bar-tile:focus-visible { outline: 2px solid var(--grey-9); outline-offset: -2px; }
 .aerie-bar-start svg { color: var(--grey-9); }
+/* the logo button: the deployment's mark, the way to the desktop. It starts the desktop bar and ends the rail. */
+.aerie-bar .aerie-bar-logo :is(svg, img) { width: var(--bar-icon); height: var(--bar-icon); color: var(--grey-9); object-fit: contain; }
+.aerie-bar[data-narrow] .aerie-bar-logo :is(svg, img) { width: var(--bar-icon-narrow); height: var(--bar-icon-narrow); }
+.aerie-bar[data-mode='desk'] .aerie-bar-logo { border-right: 1px solid var(--grey-hairline); }
+.aerie-bar[data-mode='app'] .aerie-bar-logo { flex: none; min-height: var(--bar-rail-tile); border-top: 1px solid var(--grey-5); }
 /* the screen you're on, and an open app on the desktop, carry a hard line on the bar's inner edge */
 .aerie-bar-tile[aria-current]::after, .aerie-bar-running::after {
   content: ''; position: absolute; background: var(--grey-9); left: var(--bar-inset); right: var(--bar-inset); top: 0; height: var(--bar-mark);

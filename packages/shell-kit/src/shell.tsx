@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone } from './floors.js';
 import { Background } from './background.js';
+import { restingStop } from './app-bar.js';
 import { Flat } from './background-flat.js';
 import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
@@ -41,6 +42,8 @@ export function Shell({ model, children }: ShellProps) {
   const water = useRef<Water | null>(null);
 
   const here = model.currentFloor;
+  // The desktop holds its own app (Home): the stage clears the bar, which rests at an edge.
+  const holding = !!model.desktop && model.openNow?.id === model.desktop;
   const tone = here ? floorTone(here) : 'you';
   // A water preset's name, as hosts set it before the set existed, means the water in that preset.
   const preset = model.background in wavePresets;
@@ -126,14 +129,15 @@ export function Shell({ model, children }: ShellProps) {
       data-floor-kind={here?.kind}
       data-floor-tone={here ? floorTone(here) : undefined}
       data-background={background}
-      data-bar={model.openNow ? 'app' : 'desk'}
+      data-bar={model.onDesk ? 'desk' : 'app'}
+      data-desktop={holding ? restingStop(model.settings.barStop ?? 1, true) : undefined}
       data-view={model.view}
       data-gauge={model.currentFloor ? '' : undefined}
     >
-      {/* Apps sit on flat ground; the desktop's background steps away while one is open (PDR-014). */}
+      {/* Apps sit on flat ground; the desktop's background steps away while one is open (PDR-014). The desktop's own app sits on it. */}
       <div className="aerie-ground">
         <Flat floor={tone} />
-        <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!!model.openNow} />
+        <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!model.onDesk} />
       </div>
       <Band model={model} tab={tab} mood={mood} place={place} />
       <ShellBar model={model} inert={model.isOpen} />
