@@ -1675,6 +1675,61 @@
             ]
           }
         },
+        "signals": {
+          "array": {
+            "object": {
+              "kind": {
+                "enum": [
+                  "change",
+                  "moved",
+                  "incident",
+                  "contradiction",
+                  "meeting",
+                  "due",
+                  "coming",
+                  "new-thing",
+                  "question",
+                  "queue"
+                ]
+              },
+              "reason": "string",
+              "about": "string",
+              "yours": "boolean",
+              "seen": "boolean",
+              "canAct": "boolean",
+              "important": "boolean",
+              "when": {
+                "enum": [
+                  "today",
+                  "tomorrow"
+                ]
+              },
+              "atRisk": "boolean",
+              "wroteOneSide": "boolean",
+              "inQuestion": "number"
+            },
+            "required": [
+              "kind",
+              "reason"
+            ]
+          }
+        },
+        "rule": {
+          "object": {
+            "points": {
+              "record": "number"
+            },
+            "seenContradiction": "number",
+            "yourSide": "number",
+            "meetingTomorrow": "number",
+            "perItemInQuestion": "number",
+            "dueAtRisk": "number",
+            "presentAt": "number",
+            "strongAt": "number",
+            "strongMax": "number",
+            "importantIsStrong": "boolean"
+          }
+        },
         "scores": {
           "record": {
             "object": {

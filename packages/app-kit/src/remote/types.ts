@@ -5,7 +5,7 @@
  */
 import type { QuillRemoteElementName } from './vocabulary.js';
 import type { ThingView } from '../thing-view.js';
-import type { DoorDescriptor, DoorScore } from '../doors.js';
+import type { DoorDescriptor, DoorRule, DoorScore, DoorSignal } from '../doors.js';
 
 type Field = {
   label: string;
@@ -101,6 +101,10 @@ export interface QuillRemoteProperties {
   'quill-door-gallery': {
     label: string;
     doors: DoorDescriptor[];
+    /** What waits behind the doors: the host scores them with `rule` (DEFAULT_RULE where it says nothing). */
+    signals?: DoorSignal[];
+    rule?: Partial<Omit<DoorRule, 'points'>> & { points?: Partial<DoorRule['points']> };
+    /** Scores the app made itself; when given, `signals` and `rule` are not used. */
     scores?: Record<string, DoorScore>;
     cap?: number;
     light?: 'alive' | 'still';

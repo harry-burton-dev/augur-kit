@@ -104,4 +104,22 @@ describe('quill-door-gallery', () => {
       ['ask', 'when is the Heron due'],
     ]);
   });
+
+  it('scores the doors itself from the signals the app sends, with its rule', () => {
+    drawRemote(() => {
+      const gallery = document.createElement('quill-door-gallery');
+      gallery.label = 'Ways in';
+      gallery.doors = ATLAS_DOORS;
+      gallery.signals = [
+        { kind: 'queue', reason: 'Settle it: two employers', canAct: true },
+        { kind: 'change', reason: 'The Heron is delayed' },
+      ];
+      gallery.rule = { presentAt: 2 };
+      gallery.light = 'still';
+      return gallery;
+    });
+    expect(document.querySelector('[data-door="put-right"]')!.getAttribute('data-step')).toBe('needs');
+    // One change scores 1, under the rule's present-at of 2.
+    expect(document.querySelector('[data-door="changed"]')!.getAttribute('data-step')).toBe('quiet');
+  });
 });
