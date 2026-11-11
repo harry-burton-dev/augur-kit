@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
-import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone } from './floors.js';
+import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
+import { FloorPicker } from './floor-picker.js';
 import { Background } from './background.js';
 import { Flat } from './background-flat.js';
 import { ShellBar } from './shell-bar.js';
@@ -137,7 +138,7 @@ export function Shell({ model, children }: ShellProps) {
       </div>
       <Band model={model} tab={tab} mood={mood} place={place} />
       <ShellBar model={model} inert={model.isOpen} />
-      <Gauge model={model} tab={tab} />
+      <FloorPicker model={model} tab={tab} />
       {model.card ? (
         <div className={`aerie-card aerie-${model.card.kind}`} aria-hidden="true">
           {model.card.kick ? <span className="aerie-kick">{model.card.kick}</span> : null}
@@ -249,76 +250,6 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
         <span className="aerie-clock">{time}</span>
       </div>
     </header>
-  );
-}
-
-/**
- * The edge gauge: one notch per floor from yours to the org, the one you're
- * on lit in its colour, with a dot where something waits and the open app
- * pinned beside it. Pointing at it or tabbing into it opens it out: each
- * floor's name and who sees what's on it, and which floor the app is showing.
- */
-function Gauge({ model, tab }: { model: ShellModel; tab: number }) {
-  if (!model.currentFloor) return null;
-  const stack = floorStack(model.floors, model.floor, model.lastTeam).reverse();
-  const waiting = model.waitingByFloor();
-  const app = model.openNow;
-  const rest = model.floorsRest;
-  return (
-    <nav className={`aerie-gauge${rest ? ' aerie-rest' : ''}`} aria-label="Floors" inert={model.isOpen}>
-      {rest ? (
-        <p className="aerie-why" id="floors-rest">
-          <span>{rest}, so moving floors wouldn’t change it.</span>
-        </p>
-      ) : null}
-      <ol>
-        {stack.map((f) => {
-          const count = waiting.get(f.id) ?? 0;
-          const name = f.kind === 'personal' ? 'Your own floor' : f.name;
-          const here = f.id === model.floor;
-          return (
-            <li key={f.id}>
-              <button
-                tabIndex={tab}
-                aria-label={[name, here ? 'you’re here' : '', count ? `${count} waiting` : ''].filter(Boolean).join(', ')}
-                aria-describedby={rest ? `floors-rest floor-${f.id}` : `floor-${f.id}`}
-                aria-current={here ? 'location' : undefined}
-                aria-disabled={rest && !here ? 'true' : undefined}
-                data-waiting={count > 0 ? '' : undefined}
-                onClick={() => !rest && model.goToFloor(f.id)}
-              >
-                <span className="aerie-label" id={`floor-${f.id}`}>
-                  <span>
-                    <b>
-                      {name} {here ? <em>You’re here</em> : count ? <em className="aerie-waiting">{count} waiting</em> : null}
-                    </b>
-                    <span>
-                      {f.kind === 'team' ? `${floorKindOf(f)}. ` : ''}
-                      {floorMeaning(f)}
-                    </span>
-                    {here && app && !rest ? (
-                      <span className="aerie-bound">
-                        <Icon name={app.icon ?? 'apps'} size={14} />
-                        {app.name} is showing this floor
-                      </span>
-                    ) : null}
-                  </span>
-                </span>
-                {here && app ? (
-                  <span className="aerie-pinned" aria-hidden="true">
-                    <Icon name={app.icon ?? 'apps'} size={12} />
-                  </span>
-                ) : null}
-                <span className="aerie-notch">
-                  <Icon name={floorIconOf(f)} size={14} />
-                  {count ? <span className="aerie-dot" /> : null}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
   );
 }
 
