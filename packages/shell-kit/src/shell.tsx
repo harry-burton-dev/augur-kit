@@ -3,6 +3,8 @@ import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
 import { FloorPicker } from './floor-picker.js';
 import { Background } from './background.js';
+import { restingStop } from './app-bar.js';
+import { tokenValue } from './motion.js';
 import { Flat } from './background-flat.js';
 import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
@@ -14,6 +16,13 @@ export interface ShellProps {
   model: ShellModel;
   /** The stage: the app that's open, or the desktop's own content when none is. */
   children?: ReactNode;
+  /**
+   * The open app's pane at the window's right edge (`AppPane`), drawn while an app is open and not the
+   * desktop's own. The shell hands it what goes at its top (the clock and the notification indicator, which
+   * leave the band while the pane holds them) and whether it should open over the page (a narrow window).
+   * The stage, the band and the floor picker all end where the pane starts.
+   */
+  pane?: (parts: { top: ReactNode; over: boolean }) => ReactNode;
 }
 
 /** The root element, carrying its model, so a test or a tool can reach it as the Lit element's own fields. */
@@ -34,14 +43,18 @@ const isTyping = (e: Event) => {
  * the stream at its top. Esc goes back a step, then closes. It draws a
  * `ShellModel`; the host sets what it knows on the model and listens to it.
  */
-export function Shell({ model, children }: ShellProps) {
+export function Shell({ model, children, pane }: ShellProps) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
   const root = useRef<ShellElement>(null);
   const stage = useRef<HTMLElement>(null);
   const place = useRef<HTMLElement>(null);
   const water = useRef<Water | null>(null);
+  const slot = useRef<HTMLDivElement>(null);
+  const narrow = useNarrow();
 
   const here = model.currentFloor;
+  // The desktop holds its own app (Home): the stage clears the bar, which rests at an edge.
+  const holding = !!model.desktop && model.openNow?.id === model.desktop;
   const tone = here ? floorTone(here) : 'you';
   // A water preset's name, as hosts set it before the set existed, means the water in that preset.
   const preset = model.background in wavePresets;
@@ -87,6 +100,9 @@ export function Shell({ model, children }: ShellProps) {
   const cap = model.caption();
   const capMood = !model.view || model.view === 'stream' ? mood : 'quiet';
   const tab = model.isOpen ? -1 : 0;
+  // The pane is the open app's: none on the desktop or while the desktop's own app is open.
+  const paned = !!pane && !model.onDesk && !holding;
+  usePaneInset(root, slot, paned);
   const back = () => (model.view ? model.closeView() : model.close());
 
   const onSkyKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -127,16 +143,18 @@ export function Shell({ model, children }: ShellProps) {
       data-floor-kind={here?.kind}
       data-floor-tone={here ? floorTone(here) : undefined}
       data-background={background}
-      data-bar={model.openNow ? 'app' : 'desk'}
+      data-bar={model.onDesk ? 'desk' : 'app'}
+      data-desktop={holding ? restingStop(model.settings.barStop ?? 1, true) : undefined}
       data-view={model.view}
       data-gauge={model.currentFloor ? '' : undefined}
+      data-pane={paned ? '' : undefined}
     >
-      {/* Apps sit on flat ground; the desktop's background steps away while one is open (PDR-014). */}
+      {/* Apps sit on flat ground; the desktop's background steps away while one is open (PDR-014). The desktop's own app sits on it. */}
       <div className="aerie-ground">
         <Flat floor={tone} />
-        <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!!model.openNow} />
+        <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!model.onDesk} />
       </div>
-      <Band model={model} tab={tab} mood={mood} place={place} />
+      <Band model={model} tab={tab} mood={mood} place={place} paned={paned} />
       <ShellBar model={model} inert={model.isOpen} />
       <FloorPicker model={model} tab={tab} />
       {model.card ? (
@@ -150,6 +168,11 @@ export function Shell({ model, children }: ShellProps) {
       <main ref={stage} className="aerie-stage" aria-label={model.openNow?.name || undefined}>
         {children}
       </main>
+      {paned ? (
+        <div ref={slot} className="aerie-pane-slot" inert={model.isOpen}>
+          {pane!({ top: <StatusAndClock model={model} tab={tab} mood={mood} />, over: narrow })}
+        </div>
+      ) : null}
       <ShellMenu open={model.isOpen} mood={mood} onKeyDown={onSkyKey} onDismiss={back}>
         <MenuArc
           items={model.functions}
@@ -211,9 +234,60 @@ function useNews(model: ShellModel) {
   return said;
 }
 
-function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; mood: string; place: RefObject<HTMLElement | null> }) {
+/**
+ * How wide the pane at the edge is now, on the shell as --pane-inset, so the stage, the band and the floor
+ * picker (--gauge-right) end where it starts. Set on the element, not through React, as it follows the
+ * pane's own transition frame by frame.
+ */
+function usePaneInset(root: RefObject<HTMLElement | null>, slot: RefObject<HTMLElement | null>, paned: boolean) {
+  useLayoutEffect(() => {
+    const shell = root.current;
+    const el = slot.current;
+    if (!shell) return;
+    const set = (px: number) => shell.style.setProperty('--pane-inset', `${px}px`);
+    if (!paned || !el) {
+      shell.style.removeProperty('--pane-inset');
+      return;
+    }
+    set(el.getBoundingClientRect().width);
+    if (typeof ResizeObserver !== 'function') return;
+    const watch = new ResizeObserver(() => set(el.getBoundingClientRect().width));
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, [root, slot, paned]);
+}
+
+/** A window narrower than frame-overlay-below: the pane opens over the page there, as the app frame's drawer does. */
+function useNarrow() {
+  const query = () => (typeof matchMedia === 'function' ? matchMedia(`(max-width: ${tokenValue('frame-overlay-below', 1100) - 1}px)`) : undefined);
+  const [narrow, setNarrow] = useState(() => !!query()?.matches);
+  useEffect(() => {
+    const q = query();
+    if (!q) return;
+    const on = () => setNarrow(q.matches);
+    on();
+    q.addEventListener('change', on);
+    return () => q.removeEventListener('change', on);
+  }, []);
+  return narrow;
+}
+
+/** The notification indicator and the clock: in the band, or at the top of the pane while one is drawn. */
+function StatusAndClock({ model, tab, mood }: { model: ShellModel; tab: number; mood: string }) {
   const words = model.statusLabel || (model.online ? streamWords(model.heard) : 'Offline');
   const time = new Date(model.now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return (
+    <>
+      <button className={`aerie-status aerie-${mood}`} tabIndex={tab} aria-label={`${words}. Open notifications.`} onClick={() => model.openView('stream')}>
+        <i className="aerie-point" />
+        <span className="aerie-status-words">{words}</span>
+      </button>
+      <span className="aerie-clock">{time}</span>
+    </>
+  );
+}
+
+function Band({ model, tab, mood, place, paned }: { model: ShellModel; tab: number; mood: string; place: RefObject<HTMLElement | null>; paned: boolean }) {
   const here = model.currentFloor;
   const app = model.openNow;
   return (
@@ -242,13 +316,8 @@ function Band({ model, tab, mood, place }: { model: ShellModel; tab: number; moo
           {model.area ? <span>{model.area}</span> : null}
         </p>
       ) : null}
-      <div className="aerie-right">
-        <button className={`aerie-status aerie-${mood}`} tabIndex={tab} aria-label={`${words}. Open notifications.`} onClick={() => model.openView('stream')}>
-          <i className="aerie-point" />
-          {words}
-        </button>
-        <span className="aerie-clock">{time}</span>
-      </div>
+      {/* While the pane is drawn it holds the indicator and the clock; the band keeps its slot so its layout holds. */}
+      <div className="aerie-right">{paned ? null : <StatusAndClock model={model} tab={tab} mood={mood} />}</div>
     </header>
   );
 }

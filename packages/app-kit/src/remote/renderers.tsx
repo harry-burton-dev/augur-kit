@@ -27,7 +27,7 @@ import { Grid, Split, Stack } from '../layout.js';
 import { ThingPage } from '../thing-page.js';
 import type { ThingActionId, ThingView } from '../thing-view.js';
 import { AskLine, DoorGallery } from '../door-gallery.js';
-import type { DoorDescriptor, DoorScore } from '../doors.js';
+import { DEFAULT_RULE, scoreDoors, type DoorDescriptor, type DoorRule, type DoorScore, type DoorSignal } from '../doors.js';
 import { readerPicturePath, type QuillRemoteElementName } from './vocabulary.js';
 
 /** What an element brings to its renderer. */
@@ -694,7 +694,8 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
     );
   },
   'quill-door-gallery': (parts) => {
-    const { label = '', doors = [], scores = {}, ask, ...rest } = p(parts);
+    const { label = '', doors = [], scores, signals = [], rule, ask, ...rest } = p(parts);
+    const tuned: DoorRule = { ...DEFAULT_RULE, ...rule, points: { ...DEFAULT_RULE.points, ...rule?.points } };
     const asked = event(parts, 'ask');
     const recent = event(parts, 'recent');
     return (
@@ -702,7 +703,7 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
         {...rest}
         label={label}
         doors={doors as DoorDescriptor[]}
-        scores={scores as Record<string, DoorScore>}
+        scores={(scores ?? scoreDoors(doors as DoorDescriptor[], signals as DoorSignal[], tuned)) as Record<string, DoorScore>}
         onOpen={(id) => event(parts, 'open')?.(id)}
         ask={
           ask && asked ? (

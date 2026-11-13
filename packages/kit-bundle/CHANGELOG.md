@@ -1,5 +1,32 @@
 # @augur/kit-bundle
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [3f1605b]
+  - @augur/kit-common@0.20.0
+  - @augur/app-kit@0.22.2
+
+## 0.6.0
+
+### Minor Changes
+
+- 1edb24c: One logo button replaces the rail's Home and Apps: it starts the desktop bar and ends the rail, and goes to the desktop. `ShellModel.logo` takes the deployment's mark (the kit's placeholder `mark` icon until it sets one). `ShellModel.desktop` names the app drawn on the desktop (Home): while it's open the bar stays across the screen, resting at an edge like a taskbar, the background stays, and the app isn't offered again as a tile. New: `BarLogo`, `AppBar`'s `edges`, `restingStop`, `ShellModel.onDesk`, and Common's `mark` icon.
+
+### Patch Changes
+
+- Updated dependencies [1edb24c]
+  - @augur/kit-common@0.19.0
+  - @augur/app-kit@0.22.1
+
+## 0.5.19
+
+### Patch Changes
+
+- Updated dependencies [13c192a]
+  - @augur/app-kit@0.22.0
+
 ## 0.5.18
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@augur/app-kit",
-  "version": "0.21.0",
+  "version": "0.22.2",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",

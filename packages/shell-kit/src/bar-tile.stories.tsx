@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { AppBar, BarDivider, BarTile, RailBlock, RailPages, RailPair } from './app-bar.js';
+import { AppBar, BarDivider, BarLogo, BarTile, RailBlock, RailPages } from './app-bar.js';
 import { Screen } from './app-bar.fixture.js';
 import { iconNames } from '@augur/kit-common';
 
 /**
  * A tile on the app bar: one large icon with its name under it. With `menu` it opens a start menu.
- * In the docked rail it takes a `kind`: `half` for Home and Apps, `app` for an open app, `page` for
- * one of the app's pages. The controls are the tile's own props.
+ * In the docked rail it takes a `kind`: `app` for an open app, `page` for one of the app's pages.
+ * The logo button (BarLogo) starts the desktop bar and ends the rail. The controls are the tile's own props.
  */
 const meta = {
   title: 'Aerie/App bar/Bar tile',
@@ -45,16 +45,12 @@ export const Lead: Story = { args: { lit: true, lead: true } };
 /** An open app on the desktop bar carries a hard line. */
 export const Running: Story = { args: { icon: 'library', name: 'Artifacts', running: true } };
 
-/** The tiles in the docked rail: the fixed block (a pair, then open apps) and the app's pages. */
+/** The tiles in the docked rail: the fixed block (the open apps), the app's pages, and the logo at the bottom. */
 export const InTheRail: Story = {
   render: (args) => (
     <Screen height={640}>
       <AppBar mode="app">
         <RailBlock>
-          <RailPair>
-            <BarTile kind="half" icon="home" name="Home" />
-            <BarTile kind="half" icon="apps" name="Apps" />
-          </RailPair>
           <BarTile kind="app" icon="library" name="Artifacts" current lit />
           <BarTile kind="app" icon="compass" name="Mandate" />
         </RailBlock>
@@ -63,6 +59,7 @@ export const InTheRail: Story = {
           <BarTile kind="page" icon="clock" name="Recent" />
           <BarTile kind="page" icon="people" name="Shared" />
         </RailPages>
+        <BarLogo name="Home" />
       </AppBar>
     </Screen>
   ),
@@ -77,6 +74,42 @@ export const Divider: Story = {
         <BarTile icon="work" name="Work" />
         <BarDivider />
         <BarTile icon="library" name="Artifacts" running />
+      </AppBar>
+    </Screen>
+  ),
+};
+
+/** The logo button on the desktop bar, first, with the kit's placeholder mark: you're on the desktop. */
+export const Logo: Story = {
+  render: () => (
+    <Screen height={180}>
+      <AppBar stop={0}>
+        <BarLogo name="Home" current />
+        <BarTile icon="work" name="Work" />
+      </AppBar>
+    </Screen>
+  ),
+};
+
+/** A deployment's own mark, from its logo URL. */
+const SAMPLE_MARK = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="gray" stroke-width="1.5"/></svg>')}`;
+export const LogoFromDeployment: Story = {
+  render: () => (
+    <Screen height={180}>
+      <AppBar stop={0}>
+        <BarLogo name="Home" src={SAMPLE_MARK} />
+        <BarTile icon="work" name="Work" />
+      </AppBar>
+    </Screen>
+  ),
+};
+
+/** Something on the desktop needs you: the logo lights. */
+export const LogoLit: Story = {
+  render: () => (
+    <Screen height={180}>
+      <AppBar stop={0}>
+        <BarLogo name="Home" lit lead />
       </AppBar>
     </Screen>
   ),

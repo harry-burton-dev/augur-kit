@@ -1,0 +1,81 @@
+/* The app pane (app-pane.tsx): the region at the window's right edge while an app is open. Styled as the
+   nav bar is (app-bar.css: the same grey, hairline and ink), and quiet inside: words in muted grey, lines
+   rather than boxes, a shadow only when it is over the page. Every value is a token. */
+
+.aerie-pane {
+  flex: none; position: relative; display: flex; flex-direction: column; width: var(--app-pane-strip); height: 100%; min-height: 0;
+  color: var(--grey-9); font-family: var(--font-sans); font-size: var(--type-small); line-height: var(--leading-small);
+  background: color-mix(in srgb, var(--grey-2) 86%, transparent); border-left: 1px solid var(--grey-hairline);
+  transition: width var(--motion-slow) var(--ease-out);
+  animation: aerie-pane-in var(--motion-slow) var(--ease-out);
+}
+.aerie-pane[data-open] { width: var(--about-panel); }
+/* Over the page (a narrow frame): from the edge, its full open width, raised over the app. */
+.aerie-pane[data-over] { position: absolute; top: 0; right: 0; bottom: 0; z-index: 3; background: var(--grey-2); box-shadow: var(--shadow-overlay); }
+:where(.aerie-pane) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:where(.aerie-pane) button:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: calc(var(--focus-ring) * -1); border-radius: var(--radius-key); }
+
+/* the top: what the shell puts there, stacked in the strip and side by side when open */
+.aerie-pane-top {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: var(--region-inset-block) var(--space-2); border-bottom: 1px solid var(--grey-hairline); color: var(--grey-6);
+}
+.aerie-pane[data-open] .aerie-pane-top { flex-direction: row; justify-content: space-between; padding-inline: var(--region-inset-inline); }
+
+/* The shell's notification indicator keeps only its dot in the strip; its words come back when the pane opens
+   and stay its name (aria-label) either way. */
+.aerie-pane:not([data-open]) .aerie-status-words { display: none; }
+/* The time first, then the indicator; in the strip the time keeps to one line. */
+.aerie-pane-top .aerie-clock { order: -1; white-space: nowrap; }
+.aerie-pane:not([data-open]) .aerie-clock { font-size: var(--type-label); line-height: var(--leading-label); }
+
+/* the dock image: the app's own mark */
+.aerie-pane-dock { flex: none; display: flex; justify-content: center; padding: var(--space-4) var(--space-2); border-bottom: 1px solid var(--grey-hairline); }
+.aerie-pane[data-open] .aerie-pane-dock { justify-content: flex-start; padding-inline: var(--region-inset-inline); }
+
+/* the titles: accordion headers, running down the strip while it is closed */
+.aerie-pane-sections { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden auto; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+.aerie-pane-section { flex: none; display: flex; flex-direction: column; min-height: 0; border-bottom: 1px solid var(--grey-hairline); }
+.aerie-pane-section[data-open] { flex: 1; }
+.aerie-pane-heading { margin: 0; font: inherit; }
+.aerie-pane-title {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); width: 100%;
+  padding: var(--space-3) var(--space-2); color: var(--grey-6); font-weight: 500;
+  transition: color var(--motion-instant) var(--ease-standard);
+}
+.aerie-pane-title span { writing-mode: vertical-rl; }
+.aerie-pane-title:hover, .aerie-pane-title[aria-expanded='true'] { color: var(--grey-9); }
+.aerie-pane[data-open] .aerie-pane-title {
+  flex-direction: row; padding: var(--space-3) var(--region-inset-inline); text-align: left;
+  font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase;
+}
+.aerie-pane[data-open] .aerie-pane-title span { writing-mode: horizontal-tb; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the open section is marked as the rail marks where you are */
+.aerie-pane-title[aria-expanded='true']::after { content: ''; position: absolute; left: 0; top: var(--space-2); bottom: var(--space-2); width: var(--bar-mark); background: var(--grey-9); }
+
+.aerie-pane-body { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; padding: 0 var(--region-inset-inline) var(--stack-loose); }
+.aerie-pane-body[hidden] { display: none; }
+.aerie-pane-empty { margin: 0; color: var(--grey-6); }
+
+@keyframes aerie-pane-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .aerie-pane { animation: none; transition: none; }
+}
+
+/* ── in the shell: the pane takes the window's right edge while an app is open ──
+   The shell sets --pane-inset to the pane's width as it is now (shell.tsx), and everything else at the edge
+   ends there: the stage (and the floor picker's lane, when there is one), the band, and the floor picker,
+   which sits to the pane's left through --gauge-right. Over the page, the pane keeps only its strip in the
+   inset and opens over the app. */
+.aerie-pane-slot {
+  position: absolute; z-index: 4; top: 0; right: 0; bottom: 0; display: flex; min-width: var(--app-pane-strip);
+  transition: opacity var(--motion-slow) var(--ease-standard);
+}
+.aerie-pane-slot > .aerie-pane { height: 100%; }
+.aerie-shell[data-pane] { --gauge-right: calc(var(--pane-inset, var(--app-pane-strip)) + var(--space-2)); }
+.aerie-shell[data-pane] .aerie-stage { right: var(--pane-inset, var(--app-pane-strip)); }
+.aerie-shell[data-pane][data-gauge] .aerie-stage { right: calc(var(--gauge-lane) + var(--pane-inset, var(--app-pane-strip))); }
+.aerie-shell[data-pane] .aerie-band { right: var(--pane-inset, var(--app-pane-strip)); }
+.aerie-shell[data-pane] .aerie-gauge { right: var(--gauge-right); }
+/* Looking up, the pane steps back with the band. */
+.aerie-shell[data-open] .aerie-pane-slot { opacity: 0; pointer-events: none; }

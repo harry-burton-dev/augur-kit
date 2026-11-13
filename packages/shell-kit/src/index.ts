@@ -13,7 +13,7 @@ export { ShellMenu, MenuArc, MenuCaption, MenuView, MenuEsc, MenuUndo, MenuNote,
 export { ShellBar } from './shell-bar.js';
 export * from './shell-model.js';
 export { Water, resolveWave, wavePresets, DEFAULT_WAVE, type WaveMove, type WavePreset } from './water.js';
-export { AppBar, BarTile, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop } from './app-bar.js';
+export { AppBar, BarTile, BarLogo, BarDivider, RailBlock, RailPair, RailPages, StartMenu, StartMenuDivider, StartMenuItem, StartMenuFolder, useAppBar, type AppBarProps, type BarTileProps, type BarLogoProps, type StartMenuProps, type StartMenuItemProps, type StartMenuFolderProps, type BarStop, restingStop } from './app-bar.js';
 export { Background, backgrounds, DEFAULT_BACKGROUND, type BackgroundProps, type BackgroundChoice, type GroundProps } from './background.js';
 export { Horizon, type HorizonProps } from './background-horizon.js';
 export { Flat, type FlatProps } from './background-flat.js';
@@ -24,5 +24,6 @@ export { CommandPalette, isCommandKey, COMMAND_KEY, type CommandPaletteProps } f
 export { FrameRadial, thingAt, type FrameRadialProps } from './frame-radial.js';
 export { RailPlaces, type RailPlacesProps } from './rail-places.js';
 export { AboutPanel, type AboutPanelProps } from './about-panel.js';
+export { AppPane, type AppPaneProps } from './app-pane.js';
 export { PaneLayout, layoutHasAbout, type PaneLayoutName, type PaneLayoutProps } from './pane-layout.js';
 export { FRAME_WORDS, UNDER_CAP, COMMAND_ICON, capUnder, commandReason, iconOf, insideApp, paletteId, paletteItems, placePath, radialActions, type CommandSource, type FrameAboutSection, type FrameCommand, type FramePlace, type FrameRadialEntry, type FrameThing, type FrameUnderItem, type FrameWords } from './frame.js';
