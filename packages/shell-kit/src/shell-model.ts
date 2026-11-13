@@ -911,10 +911,25 @@ export class ShellModel extends EventTarget {
     return this.apps.find((a) => a.id === id)?.name ?? id;
   }
 
-  /** How many notifications wait on each floor. */
+  /**
+   * What needs you on each floor, newest first. Like the app bar's lights, only what needs you counts: a quiet
+   * notification or a muted app's lands in the stream without lighting a floor.
+   */
+  waitingOnFloors() {
+    const byFloor = new Map<string, ShellNotification[]>();
+    for (const n of this.heard) {
+      if (!n.floor || n.level !== 'needs') continue;
+      const list = byFloor.get(n.floor) ?? [];
+      list.push(n);
+      byFloor.set(n.floor, list);
+    }
+    return byFloor;
+  }
+
+  /** How many things need you on each floor (see waitingOnFloors). */
   waitingByFloor() {
     const counts = new Map<string, number>();
-    for (const n of this.notifications) if (n.floor) counts.set(n.floor, (counts.get(n.floor) ?? 0) + 1);
+    for (const [floor, list] of this.waitingOnFloors()) counts.set(floor, list.length);
     return counts;
   }
 
