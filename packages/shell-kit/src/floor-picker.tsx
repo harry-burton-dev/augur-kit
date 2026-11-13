@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone, type ShellFloor } from './floors.js';
-import type { ShellModel } from './shell-model.js';
+import type { ShellModel, ShellNotification } from './shell-model.js';
 
 /*
  * The floor picker: where you are among your floors, and the way to another one.
@@ -33,7 +33,8 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
 
   // The floors to show, top floor first: the model keeps them bottom first.
   const floors = floorStack(model.floors, model.floor, model.lastTeam).reverse();
-  const waiting = model.waitingByFloor();
+  const waitingOn = model.waitingOnFloors();
+  const waiting = new Map([...waitingOn].map(([floor, list]) => [floor, list.length]));
   // Why the picker rests, when it does: the open app is the same on every floor.
   const rest = model.floorsRest;
   // What waits on floors other than the one you're on, all together.
@@ -54,7 +55,7 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
               floor={floor}
               here={floor.id === model.floor}
               waiting={waiting.get(floor.id) ?? 0}
-              waitingFor={model.notifications.filter((n) => n.floor === floor.id).map((n) => n.title)}
+              waitingFor={waitingOn.get(floor.id) ?? []}
               app={model.openNow}
               rest={rest}
               tab={tab}
@@ -79,8 +80,8 @@ interface FloorButtonProps {
   here: boolean;
   /** How many things wait for you on this floor. */
   waiting: number;
-  /** What those things are, by title: the glance shown when you point at a floor where something waits. */
-  waitingFor: string[];
+  /** What those things are: the glance shown when you point at a floor where something waits. */
+  waitingFor: ShellNotification[];
   /** The app that's open, if one is. */
   app: { name: string; icon?: string } | undefined;
   /** Why floors can't be changed right now; empty when they can. */
@@ -121,8 +122,8 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
           {/* The glance: what waits here. Pointing at a floor where something waits shows this row at once. */}
           {waitingFor.length ? (
             <span className="aerie-glance">
-              {waitingFor.slice(0, GLANCE).map((title) => (
-                <span key={title}>{title}</span>
+              {waitingFor.slice(0, GLANCE).map((n) => (
+                <span key={n.id}>{n.title}</span>
               ))}
               {waitingFor.length > GLANCE ? <span>and {waitingFor.length - GLANCE} more</span> : null}
             </span>
