@@ -28,6 +28,8 @@ there before changing what the kit promises.
   reaches deployments only when an AUGUR pull request bumps `release/kit.json` there.
 - `pnpm install`, then `pnpm lint`, `pnpm build`, `pnpm typecheck`, `pnpm test`. Nothing here needs a
   package token: the kit depends only on public packages.
-- Merge your own pull request once CI is green, after merging fresh `origin/main` into it.
+- Before a pull request: REVIEW.md. The paths it changes set its tier, which says what it needs before it
+  merges (the description's sections, a `/code-review` run, Harry's ok on his paths); the Review check checks it.
+- Merge your own pull request once CI and the Review check are green, after merging fresh `origin/main` into it.
 - Nothing in the repository names the tool that wrote it: no assistant trailers on commits or attribution
   in pull requests, and no links to private chats.
