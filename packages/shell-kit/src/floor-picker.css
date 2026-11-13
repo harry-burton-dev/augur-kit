@@ -1,0 +1,141 @@
+/* The floor picker (floor-picker.tsx): the Ladder (picked 11 Nov 2026). One square box per floor on a rail at the
+   right edge, and the words they open out to. It speaks the app bar's language: greys, hairlines, square corners,
+   no blur. Where you are is the brightest box with a hard line at the screen's edge. Colour is only for what waits.
+   Every value is a token. The picker keeps a lane of its own (the token gauge-lane); shell.css ends the stage there.
+
+   In this file, top to bottom:
+     1. Where it sits        5. Opening out, and the wait before it
+     2. The rail and boxes   6. The glance at what waits on a floor
+     3. Where you are        7. The pulse where something waits
+     4. The words            8. Resting, and reduced motion */
+
+/* ── 1. Where it sits ──
+   --gauge-right is its gap from the shell's right edge. Anything that takes the edge (a drawer) sets it on
+   .aerie-shell to move the picker left; nothing else places it. */
+.aerie-gauge {
+  --gauge-open-wait: calc(var(--motion-instant) * 0);
+  position: absolute; z-index: 3; right: var(--gauge-right, var(--space-2)); top: 50%; transform: translateY(-50%);
+  padding: var(--space-2); border: 1px solid transparent;
+  transition: opacity var(--motion-slow) var(--ease-standard), background var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard);
+}
+.aerie-shell[data-open] .aerie-gauge { opacity: 0; pointer-events: none; }
+
+/* ── 2. The rail and the boxes ── */
+.aerie-gauge ol {
+  position: relative; list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);
+  transition: gap var(--motion-base) var(--ease-standard);
+}
+/* the rail: a hairline down the middle of the boxes */
+.aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: calc(var(--gauge-notch) / 2 - 0.5px); width: 1px; background: var(--grey-hairline); }
+.aerie-gauge button { position: relative; display: flex; align-items: center; justify-content: flex-end; color: var(--grey-6); text-align: right; }
+.aerie-gauge button:focus-visible { outline: 0; }
+/* a floor's box, with its icon */
+.aerie-gauge .aerie-notch {
+  position: relative; isolation: isolate; flex: none; display: grid; place-items: center;
+  width: var(--gauge-notch); height: var(--gauge-notch);
+  background: var(--grey-2); border: 1px solid var(--grey-hairline);
+  transition: color var(--motion-quick), border-color var(--motion-quick);
+}
+.aerie-gauge button:hover .aerie-notch, .aerie-gauge button:focus-visible .aerie-notch { color: var(--grey-9); border-color: var(--grey-6); }
+.aerie-gauge button:focus-visible .aerie-notch { box-shadow: 0 0 0 2px var(--focus); }
+
+/* ── 3. Where you are ──
+   The brightest box, a hard line on the screen's edge (as the app bar marks the page you're on), and the open app
+   pinned beside it. */
+.aerie-gauge button[aria-current] .aerie-notch { color: var(--grey-9); border-color: var(--grey-9); }
+.aerie-gauge button[aria-current]::after { content: ''; position: absolute; right: calc(var(--space-2) * -1); top: var(--space-1); bottom: var(--space-1); width: 2px; background: var(--grey-9); }
+.aerie-gauge .aerie-pinned {
+  flex: none; display: grid; place-items: center; overflow: hidden;
+  width: var(--gauge-pinned); height: var(--gauge-pinned); margin-right: var(--space-1);
+  color: var(--grey-9); background: var(--grey-3); border: 1px solid var(--grey-4);
+  transition: width var(--motion-base) var(--ease-standard), margin var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), border-width var(--motion-base) var(--ease-standard);
+}
+
+/* ── 4. The words ──
+   Each floor's name, who sees it, and what waits there. Shut at rest: the box they sit in has no size, and grows
+   to its own size in both directions as it fades in, so nothing jumps. */
+.aerie-gauge .aerie-label {
+  display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); overflow: hidden; opacity: 0;
+  color: var(--grey-6); font-size: var(--type-small); line-height: var(--leading-small); letter-spacing: normal; text-transform: none;
+  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard);
+}
+.aerie-gauge .aerie-label > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3)); min-height: 0; padding-right: var(--space-3); display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+/* the name */
+.aerie-gauge .aerie-label b { display: flex; align-items: baseline; gap: var(--space-2); font-weight: 500; color: var(--grey-9); }
+.aerie-gauge button:not([aria-current]) .aerie-label b { color: var(--grey-7); font-weight: 400; }
+.aerie-gauge button:hover .aerie-label b { color: var(--grey-9); }
+/* "You're here" and "2 waiting", beside the name */
+.aerie-gauge .aerie-label em { font-style: normal; font-family: var(--font-mono); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--grey-6); }
+.aerie-gauge .aerie-label em.aerie-waiting { color: var(--needs-light); }
+/* "Documents is showing this floor" */
+.aerie-gauge .aerie-label .aerie-bound { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); color: var(--grey-8); }
+.aerie-gauge .aerie-label .aerie-bound svg { color: var(--grey-9); }
+/* Two lines that sit shut like the words and open with them: why the picker rests (above the list), and what waits
+   on your other floors (under it). */
+.aerie-gauge .aerie-why, .aerie-gauge .aerie-elsewhere {
+  display: grid; grid-template: minmax(0, 0fr) / minmax(0, 0fr); justify-content: end; overflow: hidden; opacity: 0; margin: 0; text-align: right;
+  transition: grid-template-rows var(--motion-base) var(--ease-standard), grid-template-columns var(--motion-base) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard), margin var(--motion-base) var(--ease-standard), padding var(--motion-base) var(--ease-standard);
+}
+.aerie-gauge .aerie-why > span, .aerie-gauge .aerie-elsewhere > span { box-sizing: border-box; width: calc(var(--gauge-words) + var(--space-3) + var(--gauge-notch)); min-height: 0; }
+.aerie-gauge .aerie-why { color: var(--grey-8); font-size: var(--type-small); line-height: var(--leading-small); }
+.aerie-gauge .aerie-elsewhere { color: var(--needs-light); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+.aerie-gauge .aerie-elsewhere > span { padding-right: var(--space-2); }
+
+/* ── 5. Opening out, and the wait before it ──
+   The pointer has to rest on the picker for a moment (the token gauge-wait) before it opens, so passing over it on
+   the way to something else opens nothing. Tabbing into it opens it at once, and it closes at once.
+   --gauge-open-wait is that wait: nothing when you tab in, gauge-wait when you point. */
+.aerie-gauge:hover:not(:has(:focus-visible)) { --gauge-open-wait: var(--gauge-wait); }
+/* The ground: clear at rest; half see-through the moment the pointer is on it, so it answers at once ... */
+.aerie-gauge:hover, .aerie-gauge:has(:focus-visible) { background: color-mix(in srgb, var(--grey-2) 55%, transparent); border-color: var(--grey-hairline); }
+/* ... and solid, with its edge and shadow (this layer behind everything), only once it opens. */
+.aerie-gauge::after { content: ''; position: absolute; inset: -1px; z-index: -1; background: var(--grey-2); border: 1px solid var(--grey-4); box-shadow: var(--shadow-overlay); opacity: 0; pointer-events: none; transition: opacity var(--motion-base) var(--ease-standard); }
+.aerie-gauge:hover::after, .aerie-gauge:has(:focus-visible)::after { opacity: 1; transition-delay: var(--gauge-open-wait); }
+/* The wait, drawn: while the pointer rests on the picker a line climbs its left edge. What has filled is the time
+   waited, what is left is the time to go. When it reaches the top the picker opens. */
+.aerie-gauge::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 2px; background: var(--grey-9); transform: scaleY(0); transform-origin: 50% 100%; opacity: 0; pointer-events: none; transition: transform var(--motion-quick) var(--ease-standard), opacity var(--motion-quick) var(--ease-standard); }
+.aerie-gauge:hover::before { opacity: 1; transform: scaleY(1); transition: transform var(--gauge-open-wait) linear, opacity var(--motion-instant) linear; }
+/* What opens, after the wait: the boxes spread, the words and the two lines grow in, the pinned app folds away. */
+.aerie-gauge:hover ol, .aerie-gauge:has(:focus-visible) ol { transition-delay: var(--gauge-open-wait); gap: var(--space-4); }
+.aerie-gauge:hover .aerie-label, .aerie-gauge:has(:focus-visible) .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)); }
+.aerie-gauge:hover .aerie-pinned, .aerie-gauge:has(:focus-visible) .aerie-pinned { transition-delay: var(--gauge-open-wait); width: 0; margin-right: 0; opacity: 0; border-width: 0; }
+.aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why,
+.aerie-gauge:hover .aerie-elsewhere, .aerie-gauge:has(:focus-visible) .aerie-elsewhere { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: var(--gauge-open-wait), var(--gauge-open-wait), calc(var(--gauge-open-wait) + var(--motion-instant)), var(--gauge-open-wait), var(--gauge-open-wait); }
+.aerie-gauge.aerie-rest:hover .aerie-why, .aerie-gauge.aerie-rest:has(:focus-visible) .aerie-why { margin-bottom: var(--space-4); }
+.aerie-gauge:hover .aerie-elsewhere, .aerie-gauge:has(:focus-visible) .aerie-elsewhere { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--grey-hairline); }
+
+/* ── 6. The glance ──
+   A floor's words list what waits there. Pointing at a floor where something waits opens that one row at once,
+   without the wait, so you see what it wants before you go. */
+.aerie-gauge .aerie-glance { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-top: var(--space-1); padding-right: var(--space-2); border-right: 2px solid var(--needs-light); color: var(--grey-9); }
+.aerie-gauge button[data-waiting]:hover .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: calc(var(--motion-instant) * 0); }
+
+/* ── 7. The pulse ──
+   Where something waits, the needs-you light breathes inside the box (::before), and the floor's own colour swells
+   from its middle past the box's edge and falls back (::after), as if it were trying to get out. Floors pulse a
+   beat apart, bottom floor first (--floor-step, set on each floor in floor-picker.tsx). */
+.aerie-gauge button[data-tone='you'] { --floor-own: var(--floor-you-high); }
+.aerie-gauge button[data-tone='team'] { --floor-own: var(--floor-team-high); }
+.aerie-gauge button[data-tone='department'] { --floor-own: var(--floor-department-high); }
+.aerie-gauge button[data-tone='org'] { --floor-own: var(--floor-org-high); }
+.aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
+.aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.aerie-gauge button[data-waiting] .aerie-notch::before { background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 60%, transparent), transparent); animation: aerie-light-breathe var(--motion-ping) var(--ease-standard) infinite alternate; }
+.aerie-gauge button[data-waiting] .aerie-notch::after { background: radial-gradient(circle, var(--floor-own) 0%, transparent 70%); animation: aerie-floor-escape var(--motion-ping) var(--ease-out) infinite alternate; animation-delay: calc(var(--floor-step, 0) * var(--motion-quick)); }
+@keyframes aerie-floor-escape { from { opacity: 0.2; transform: scale(0.5); } to { opacity: 0.6; transform: scale(1.7); } }
+
+/* ── 8. Resting, and reduced motion ──
+   Resting: the open app is the same on every floor, so the picker stays in view, dimmed, and says why when it opens. */
+.aerie-gauge.aerie-rest button[aria-disabled='true'] { cursor: not-allowed; }
+.aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-notch, .aerie-gauge.aerie-rest button[aria-disabled='true'] .aerie-label { opacity: 0.5; }
+.aerie-gauge.aerie-rest button[aria-disabled='true']:hover .aerie-notch { color: var(--grey-6); border-color: var(--grey-hairline); }
+/* Reduced motion, from the system or AUGUR's own switch: the lights hold still and the wait line doesn't climb. */
+@media (prefers-reduced-motion: reduce) {
+  .aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge::before { display: none; }
+}
+:root[data-motion='reduce'] {
+  .aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge::before { display: none; }
+}

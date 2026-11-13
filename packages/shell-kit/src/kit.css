@@ -5,6 +5,7 @@
 @import '@augur/kit-common/theme.css';
 @import '@augur/kit-common/theme-shell.css';
 @import './shell.css' layer(components);
+@import './floor-picker.css' layer(components);
 @import './app-bar.css' layer(components);
 @import './backgrounds.css' layer(components);
 @import './frame.css' layer(components);
