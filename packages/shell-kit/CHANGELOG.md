@@ -1,5 +1,22 @@
 # @augur/shell-kit
 
+## 0.14.1
+
+### Patch Changes
+
+- 40928d3: The floor picker counts, glances at and pulses for only what needs you, as the app bar's lights do: a quiet notification, a muted app's, or one at the info, running, done or failed level no longer lights a floor. New `ShellModel.waitingOnFloors()` gives what waits on each floor; the glance keys its rows by notification id, so two with the same title both show.
+
+## 0.14.0
+
+### Minor Changes
+
+- f7436d6: The floor picker is the Ladder, in the app bar's language: a square box per floor on a rail, the brightest with a hard line at the edge where you are. It opens out only once the pointer has rested on it for a moment (the token `gauge-wait`), with a line that climbs its edge to show the wait; tabbing in opens it at once. Pointing at a floor where something waits shows what it is at once, and that floor's box pulses. Opened out, it says what waits on your other floors. Its gap from the shell's edge is one variable, `--gauge-right`. New tokens: `gauge-wait`, `gauge-words`. The token build finds the token files on Windows.
+
+### Patch Changes
+
+- Updated dependencies [f7436d6]
+  - @augur/kit-common@0.21.0
+
 ## 0.13.0
 
 ### Minor Changes

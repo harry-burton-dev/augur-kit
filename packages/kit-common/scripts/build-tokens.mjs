@@ -71,7 +71,8 @@ const theme = (set, reset) => ({ dictionary }) => {
 };
 
 const sd = new StyleDictionary({
-  source: [join(root, 'tokens/*.tokens.json')],
+  // Globs take forward slashes, on Windows too.
+  source: [join(root, 'tokens/*.tokens.json').replaceAll('\\', '/')],
   usesDtcg: true,
   log: { verbosity: 'silent' },
   hooks: {
