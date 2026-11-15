@@ -18,7 +18,14 @@ pnpm install
 pnpm storybook        # the parts, at http://localhost:6007
 pnpm lint && pnpm build && pnpm typecheck && pnpm test
 pnpm changeset        # say what your change releases
+pnpm api:update       # after changing an export of Common or Quill (needs pnpm build); commit etc/*.api.md
+pnpm allowlist:update # after adding to the remote allowlist; commit its baseline
 ```
+
+CI also runs `pnpm check:api` and `pnpm check:allowlist`. Within a major Common and Quill only add: a pull
+request whose API report loses a line needs a breaking changeset (a minor while 0.x, with a `Breaking:` line),
+or a `Not breaking:` line saying why. The remote allowlist only adds against its committed baseline;
+`pnpm allowlist:update --breaking` takes something away, for the app contract's next major only.
 
 `pnpm test` also draws every story and runs axe on it (`storybook/a11y.test.tsx`): a serious or critical
 finding fails. Colour contrast needs a real browser, so it is checked in the Storybook's Accessibility panel.
