@@ -210,14 +210,16 @@
 .aerie-shell[data-floor-kind='org'] { --floor-mark: var(--floor-org-high); }
 /* The area title card: fades in, holds, and fades out where it is. It ignores the pointer and covers nothing you need.
    Its name fits the window: shell.tsx measures it at its full size and sets --card-fit to shrink it until its longest
-   unbreakable run fits, down to the heading size; a name still too long there wraps anywhere. The card clips its
-   entrance, whose letters start wider apart. */
-.aerie-card { position: absolute; z-index: 5; inset: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); text-align: center; pointer-events: none; animation: aerie-card-life var(--motion-title) var(--ease-standard) both; }
+   unbreakable run fits, down to the heading size; a name still too long there wraps inside a word (data-wrap). The
+   card clips sideways only, for its entrance, whose letters start wider apart. The kicker's words wrap the same way. */
+.aerie-card { position: absolute; z-index: 5; inset: 0; overflow-x: clip; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); text-align: center; pointer-events: none; animation: aerie-card-life var(--motion-title) var(--ease-standard) both; }
 .aerie-card::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 40% at 50% 50%, color-mix(in srgb, var(--slate-deep) 72%, transparent), transparent); }
 .aerie-card .aerie-kick { display: flex; align-items: center; max-width: calc(100% - 2 * var(--card-edge, var(--edge))); gap: var(--space-4); font-size: var(--type-meta); letter-spacing: var(--tracking-mark); text-transform: uppercase; color: var(--floor-mark); margin-right: calc(var(--tracking-mark) * -1); animation: aerie-card-in var(--motion-calm) var(--ease-standard) var(--motion-base) both; }
 .aerie-card .aerie-kick::before, .aerie-card .aerie-kick::after { content: ''; flex: none; width: var(--space-7); height: 1px; background: linear-gradient(to right, transparent, var(--floor-mark)); }
 .aerie-card .aerie-kick::after { transform: scaleX(-1); }
-.aerie-card .aerie-name { margin: 0; max-width: calc(100% - 2 * var(--card-edge, var(--edge))); font-size: max(var(--type-heading), calc(var(--type-display-fluid) * var(--card-fit, 1))); overflow-wrap: anywhere; line-height: var(--leading-display-fluid); font-weight: 200; letter-spacing: var(--tracking-title); text-transform: uppercase; color: var(--ink); margin-right: calc(var(--tracking-title) * -1); animation: aerie-card-track calc(var(--motion-calm) * 2) var(--ease-out) both; }
+.aerie-card .aerie-kick > span { min-width: 0; overflow-wrap: anywhere; }
+.aerie-card .aerie-name { margin: 0; max-width: calc(100% - 2 * var(--card-edge, var(--edge))); font-size: max(var(--type-heading), calc(var(--type-display-fluid) * var(--card-fit, 1))); line-height: var(--leading-display-fluid); font-weight: 200; letter-spacing: var(--tracking-title); text-transform: uppercase; color: var(--ink); margin-right: calc(var(--tracking-title) * -1); animation: aerie-card-track calc(var(--motion-calm) * 2) var(--ease-out) both; }
+.aerie-card .aerie-name[data-wrap] { overflow-wrap: anywhere; }
 .aerie-card .aerie-line { font-size: var(--type-small); color: var(--ink-muted); animation: aerie-card-in var(--motion-calm) var(--ease-standard) var(--motion-calm) both; }
 @keyframes aerie-card-life { 0% { opacity: 0; } 10% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes aerie-card-track { from { letter-spacing: calc(var(--tracking-title) * 2); opacity: 0; filter: blur(8px); } }

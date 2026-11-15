@@ -60,24 +60,40 @@ describe('Shell title card', () => {
     model.card = { kind: 'app', kick: 'App', name };
     return draw(model).querySelector<HTMLElement>('.aerie-card .aerie-name')!;
   };
-  const measure = (room: number, need: number) => {
+  /** The name needs `need` px at the resting tracking and full size, and scales with --card-fit down to `floor`. */
+  const measure = (room: number, need: number, floor = 0) => {
+    vi.stubGlobal('ResizeObserver', undefined); // happy-dom's never reports, so the card fits at once
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(room);
-    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(need);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (this: HTMLElement) {
+      if (this.style.getPropertyPriority('letter-spacing') !== 'important') return need * 2; // the entrance's wider tracking
+      const fit = Number(this.style.getPropertyValue('--card-fit') || 1);
+      return Math.round(need * Math.max(fit, floor));
+    });
   };
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
-  it('shrinks a name wider than the window by just enough to fit', () => {
+  it('shrinks a name wider than the window, measured at its resting tracking, by just enough to fit', () => {
     measure(300, 600);
     const name = card('Knowledge graph explorer');
     expect(name.textContent).toBe('Knowledge graph explorer');
-    expect(name.style.getPropertyValue('--card-fit')).toBe('0.5');
+    expect(Number(name.style.getPropertyValue('--card-fit'))).toBeCloseTo(0.49);
+    expect(name.hasAttribute('data-wrap')).toBe(false);
+    expect(name.style.getPropertyValue('letter-spacing')).toBe('');
   });
 
-  it('leaves a name that fits at its full size, and measures it at its resting tracking', () => {
+  it('leaves a name that fits at its full size', () => {
     measure(300, 200);
     const name = card('Home');
     expect(name.style.getPropertyValue('--card-fit')).toBe('');
-    expect(name.style.getPropertyValue('letter-spacing')).toBe('');
+    expect(name.hasAttribute('data-wrap')).toBe(false);
+  });
+
+  it('lets a name too long even at the floor size wrap inside a word', () => {
+    measure(300, 3000, 0.3);
+    expect(card('Informationsverarbeitungssystemverwaltung').hasAttribute('data-wrap')).toBe(true);
   });
 });
 

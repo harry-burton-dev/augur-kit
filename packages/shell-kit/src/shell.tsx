@@ -34,6 +34,54 @@ const isTyping = (e: Event) => {
 };
 
 /**
+ * The title card's name, as large as the token allows and no wider than the window. It is measured at its resting
+ * tracking (its entrance starts wider) and shrunk by --card-fit, with a little to spare, until its longest
+ * unbreakable run fits. If it still doesn't fit at the floor size (shell.css), it may wrap inside a word
+ * (data-wrap). It measures again when the window changes and when the web font arrives.
+ */
+function CardName({ name }: { name: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let live = true;
+    const over = () => el.scrollWidth > el.clientWidth;
+    const fit = () => {
+      if (!live) return;
+      el.style.removeProperty('--card-fit');
+      el.removeAttribute('data-wrap');
+      el.style.setProperty('letter-spacing', 'var(--tracking-title)', 'important');
+      const room = el.clientWidth;
+      const need = el.scrollWidth;
+      if (room > 0 && need > room) {
+        el.style.setProperty('--card-fit', String((room / need) * FIT_SPARE));
+        if (over()) el.setAttribute('data-wrap', '');
+      }
+      el.style.removeProperty('letter-spacing');
+    };
+    document.fonts?.ready.then(fit, () => undefined);
+    if (typeof ResizeObserver !== 'function' || !el.parentElement) {
+      fit();
+      return () => void (live = false);
+    }
+    // Its first call, before paint, is the first fit.
+    const observer = new ResizeObserver(fit);
+    observer.observe(el.parentElement);
+    return () => {
+      live = false;
+      observer.disconnect();
+    };
+  }, [name]);
+  return (
+    <p ref={ref} className="aerie-name">
+      {name}
+    </p>
+  );
+}
+/** What --card-fit leaves to spare, for the browser rounding the widths it reports. */
+const FIT_SPARE = 0.98;
+
+/**
  * The frame every app runs inside (Aerie, ADR 0015). It holds who you are,
  * the floor you're on, system status, the apps and the notification stream,
  * and nothing about any app's domain. Apps go in its children (the stage).
@@ -43,38 +91,6 @@ const isTyping = (e: Event) => {
  * the stream at its top. Esc goes back a step, then closes. It draws a
  * `ShellModel`; the host sets what it knows on the model and listens to it.
  */
-/**
- * The title card's name, as large as the token allows and no wider than the window: measured at full size with its
- * resting tracking (its entrance starts wider), then shrunk by --card-fit until its longest unbreakable run fits.
- */
-function CardName({ name }: { name: string }) {
-  const ref = useRef<HTMLParagraphElement>(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const fit = () => {
-      el.style.removeProperty('--card-fit');
-      el.style.setProperty('letter-spacing', 'var(--tracking-title)', 'important');
-      el.style.setProperty('overflow-wrap', 'normal', 'important');
-      const room = el.clientWidth;
-      const need = el.scrollWidth;
-      el.style.removeProperty('letter-spacing');
-      el.style.removeProperty('overflow-wrap');
-      if (room > 0 && need > room) el.style.setProperty('--card-fit', String(room / need));
-    };
-    fit();
-    if (typeof ResizeObserver !== 'function' || !el.parentElement) return;
-    const observer = new ResizeObserver(fit);
-    observer.observe(el.parentElement);
-    return () => observer.disconnect();
-  }, [name]);
-  return (
-    <p ref={ref} className="aerie-name">
-      {name}
-    </p>
-  );
-}
-
 export function Shell({ model, children, pane }: ShellProps) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
   const root = useRef<ShellElement>(null);
@@ -195,7 +211,11 @@ export function Shell({ model, children, pane }: ShellProps) {
       <FloorPicker model={model} tab={tab} />
       {model.card ? (
         <div className={`aerie-card aerie-${model.card.kind}`} aria-hidden="true">
-          {model.card.kick ? <span className="aerie-kick">{model.card.kick}</span> : null}
+          {model.card.kick ? (
+            <span className="aerie-kick">
+              <span>{model.card.kick}</span>
+            </span>
+          ) : null}
           <CardName name={model.card.name} />
           {model.card.line ? <span className="aerie-line">{model.card.line}</span> : null}
         </div>
