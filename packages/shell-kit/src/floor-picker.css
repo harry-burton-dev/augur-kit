@@ -117,9 +117,9 @@
    on a floor, the needs-you light rings out once past that box's edge and settles (.aerie-ring, from the model's
    arrivedOn). --ring-since is how long ago it arrived, as a negative delay, so a box drawn again later is past it. */
 .aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
-.aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge .aerie-ring { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.aerie-gauge button[data-waiting] .aerie-notch::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .aerie-gauge button[data-waiting] .aerie-notch::before { background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 35%, transparent), transparent); }
-.aerie-gauge .aerie-ring { background: radial-gradient(circle, var(--needs-light) 0%, transparent 70%); opacity: 0; animation: aerie-waiting-arrives var(--motion-ping) var(--ease-out) 1 both; animation-delay: var(--ring-since, calc(var(--motion-instant) * 0)); }
+.aerie-gauge .aerie-ring { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(circle, var(--needs-light) 0%, transparent 70%); opacity: 0; animation: aerie-waiting-arrives var(--motion-ping) var(--ease-out) 1 both; animation-delay: var(--ring-since); }
 @keyframes aerie-waiting-arrives { from { opacity: 0.6; transform: scale(0.5); } to { opacity: 0; transform: scale(1.7); } }
 
 /* ── 8. Resting, and reduced motion ──

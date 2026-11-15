@@ -511,9 +511,11 @@ export class ShellModel extends EventTarget {
 
   /** Add a notification. It changes the status words and pulses the point once; the Shell never opens itself. */
   notify(n: ShellNotification) {
+    const heard = !n.quiet && !this.muted.includes(n.app);
+    // A new thing that needs you rings its floor; posting one again with the same id (an update) doesn't.
+    if (heard && n.floor && n.level === 'needs' && !this.notifications.some((x) => x.id === n.id)) this.arrivedOn.set(n.floor, Date.now());
     this.notifications = [n, ...this.notifications.filter((x) => x.id !== n.id)];
-    if (n.quiet || this.muted.includes(n.app)) return;
-    if (n.floor && n.level === 'needs') this.arrivedOn.set(n.floor, Date.now());
+    if (!heard) return;
     this.arriving = true;
     clearTimeout(this.arriveTimer);
     this.arriveTimer = setTimeout(() => {

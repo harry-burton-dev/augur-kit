@@ -158,8 +158,30 @@ describe('Shell floor gauge', () => {
     // A quiet one doesn't ring.
     act(() => model.notify({ id: 'n10', app: 'docs', level: 'needs', title: 'Quiet', time: '2026-11-05T09:00:00Z', floor: 'dept', quiet: true }));
     expect(ring()).toBe(first);
+    // Posting one again (an update to it) doesn't ring.
+    act(() => model.notify({ id: 'n9', app: 'docs', level: 'needs', title: 'Sign the plan, v2', time: '2026-11-01T09:00:00Z', floor: 'dept' }));
+    expect(ring()).toBe(first);
     const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'floor-picker.css'), 'utf8');
+    // Nothing loops: it holds still at rest.
+    expect(css).not.toContain('infinite');
     expect(css).toMatch(/aerie-waiting-arrives var\(--motion-ping\) var\(--ease-out\) 1 both/);
+  });
+
+  it('draws a ring again later as already played, and keeps its delay across renders', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-04T10:00:00Z') });
+    const model = exampleShell();
+    draw(model);
+    const since = () => (document.querySelector('.aerie-gauge .aerie-ring') as HTMLElement | null)?.style.getPropertyValue('--ring-since');
+    act(() => model.notify({ id: 'n9', app: 'docs', level: 'needs', title: 'Sign the plan', time: '2026-11-04T10:00:00Z', floor: 'dept' }));
+    expect(since()).toBe('0ms');
+    act(() => vi.advanceTimersByTime(700));
+    expect(since()).toBe('0ms');
+    // Dealt with, then undone a while later: the ring comes back already past.
+    act(() => model.dismiss('n9'));
+    act(() => model.dismiss('n1'));
+    act(() => vi.advanceTimersByTime(5000));
+    act(() => model.restore());
+    expect(since()).toBe('-5700ms');
   });
 
   it('gives the app the whole width when there are no floors to show', () => {

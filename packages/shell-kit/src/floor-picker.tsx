@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorStack, type ShellFloor } from './floors.js';
 import type { ShellModel, ShellNotification } from './shell-model.js';
@@ -148,12 +148,18 @@ function FloorButton({ floor, here, waiting, waitingFor, arrived, app, rest, tab
       {/* The box, with the floor's icon. Marked when something waits here (data-waiting, above). */}
       <span className="aerie-notch">
         <Icon name={floorIconOf(floor)} size={14} />
-        {/* The ring: plays once when something arrives (a new key restarts it). Started that long ago, so drawing
-            the box again later (moving floors, a new chain) doesn't play it twice. */}
-        {waiting && arrived ? (
-          <span className="aerie-ring" key={arrived} style={{ '--ring-since': `${arrived - Date.now()}ms` } as CSSProperties} aria-hidden="true" />
-        ) : null}
+        {/* The ring: plays once when something arrives here (a new arrival is a new key, which restarts it). */}
+        {waiting && arrived ? <Ring key={arrived} arrived={arrived} /> : null}
       </span>
     </button>
   );
+}
+
+/**
+ * The ring that plays once on a floor's box when something arrives. Its delay is how long ago that was, as a
+ * negative number, fixed when it's drawn: drawn again later (moving floors, a new chain) it is already past.
+ */
+function Ring({ arrived }: { arrived: number }) {
+  const [since] = useState(() => arrived - Date.now());
+  return <span className="aerie-ring" style={{ '--ring-since': `${since}ms` } as CSSProperties} aria-hidden="true" />;
 }
