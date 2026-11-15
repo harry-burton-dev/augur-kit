@@ -140,6 +140,23 @@ describe('Shell floor gauge', () => {
     expect(css).not.toContain('--app-drawer-inset');
   });
 
+  it('rings a floor once when something new waits there, and not when something is dealt with', () => {
+    const model = exampleShell();
+    draw(model);
+    const box = () => document.querySelector('.aerie-gauge button[data-waiting] .aerie-notch');
+    const first = box();
+    expect(first).not.toBeNull();
+    // Something new on the same floor: the box is redrawn, so its one ring plays again.
+    act(() => model.notify({ id: 'n9', app: 'docs', level: 'needs', title: 'Sign the plan', time: '2026-11-04T09:00:00Z', floor: 'dept' }));
+    const second = box();
+    expect(second).not.toBe(first);
+    // Dealing with an older one leaves the newest in place: no ring.
+    act(() => model.dismiss('n1'));
+    expect(box()).toBe(second);
+    const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'floor-picker.css'), 'utf8');
+    expect(css).not.toContain('infinite');
+  });
+
   it('gives the app the whole width when there are no floors to show', () => {
     const model = exampleShell();
     model.floors = [];

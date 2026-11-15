@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
-import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone, type ShellFloor } from './floors.js';
-import type { ShellModel, ShellNotification } from './shell-model.js';
+import { floorIconOf, floorKindOf, floorMeaning, floorStack, type ShellFloor } from './floors.js';
+import { toTime, type ShellModel, type ShellNotification } from './shell-model.js';
 
 /*
  * The floor picker: where you are among your floors, and the way to another one.
@@ -24,7 +24,7 @@ export interface FloorPickerProps {
 
 /**
  * The floor picker at the right edge: one box per floor from yours up to the top, the one you're
- * on brightest, a pulse where something waits, and the open app pinned beside your floor. Resting the
+ * on brightest, a steady mark where something waits (it rings once when something new arrives), and the open app pinned beside your floor. Resting the
  * pointer on it for a moment, or tabbing into it, opens it out to show each floor's name, who sees
  * what's on it and what waits there. Pointing at a floor where something waits shows that at once.
  */
@@ -49,7 +49,7 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
       ) : null}
       <ol>
         {floors.map((floor, i) => (
-          // --floor-step: how many floors up this one is, 0 for your own. The pulse runs a beat later per step.
+          // --floor-step: how many floors up this one is, 0 for your own. The ring on arrival runs a beat later per step.
           <li key={floor.id} style={{ '--floor-step': floors.length - 1 - i } as CSSProperties}>
             <FloorButton
               floor={floor}
@@ -96,6 +96,8 @@ const GLANCE = 2;
 
 function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }: FloorButtonProps) {
   const name = floor.kind === 'personal' ? 'Your own floor' : floor.name;
+  // The newest thing waiting here. The box is keyed on it, so it is redrawn, and rings once, only when something new arrives.
+  const newest = waitingFor.reduce<ShellNotification | undefined>((a, n) => (!a || toTime(n.time) > toTime(a.time) ? n : a), undefined);
   const said = [name, here ? 'you’re here' : '', waiting ? `${waiting} waiting` : ''].filter(Boolean).join(', ');
 
   return (
@@ -106,7 +108,6 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
       aria-current={here ? 'location' : undefined}
       aria-disabled={rest && !here ? 'true' : undefined}
       data-waiting={waiting > 0 ? '' : undefined}
-      data-tone={floorTone(floor)}
       onClick={() => !rest && onGo()}
     >
       {/* The words: hidden at rest, shown when the picker opens out. */}
@@ -144,8 +145,8 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
         </span>
       ) : null}
 
-      {/* The box, with the floor's icon. It pulses when something waits here (data-waiting, above). */}
-      <span className="aerie-notch">
+      {/* The box, with the floor's icon. Marked when something waits here (data-waiting, above). */}
+      <span className="aerie-notch" key={newest?.id ?? ''}>
         <Icon name={floorIconOf(floor)} size={14} />
       </span>
     </button>
