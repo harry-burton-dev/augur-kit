@@ -22,10 +22,12 @@ interface DemoProps {
   app?: string;
   /** The open app shows the same on every floor, so the picker rests. */
   same?: boolean;
+  /** Something new arrives on the org's floor a moment after it opens, to show the ring. */
+  arrives?: boolean;
 }
 
 /** The picker in the Shell, where it lives. Choosing a floor goes there, as the host would. */
-function Shown({ floor = 'team', app = 'docs', same = false }: DemoProps) {
+function Shown({ floor = 'team', app = 'docs', same = false, arrives = false }: DemoProps) {
   const [model] = useState(() => {
     const m = exampleShell(undefined, app);
     m.floors = floors;
@@ -46,6 +48,11 @@ function Shown({ floor = 'team', app = 'docs', same = false }: DemoProps) {
     model.addEventListener('ui-floor', go);
     return () => model.removeEventListener('ui-floor', go);
   }, [model]);
+  useEffect(() => {
+    if (!arrives) return;
+    const t = setTimeout(() => model.notify({ id: 'n5', app: 'mandate', level: 'needs', title: 'Approve the new plan', time: '2026-11-03T10:00:00Z', floor: 'org' }), 600);
+    return () => clearTimeout(t);
+  }, [model, arrives]);
   return (
     <div style={{ position: 'relative', height: '640px' }}>
       <Shell model={model} />
@@ -70,8 +77,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** On a team's floor with an app open: four floors, yours brightest, a pulse where something waits. Rest the pointer on the right edge to open it out; point at a pulsing floor to glance at what waits. */
+/** On a team's floor with an app open: four floors, yours brightest, a steady mark where something waits. Rest the pointer on the right edge to open it out; point at a marked floor to glance at what waits. */
 export const InAnApp: Story = {};
+/** Something new arrives on the org's floor a moment after it opens: that floor's box rings once, then holds still. */
+export const SomethingArrives: Story = { args: { arrives: true } };
 /** On the desktop, on your own floor. */
 export const OnTheDesktop: Story = { args: { app: '', floor: 'me' } };
 /** The open app is the same on every floor, so the picker rests and says why. */
