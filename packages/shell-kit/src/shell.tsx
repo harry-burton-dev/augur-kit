@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
 import { FloorPicker } from './floor-picker.js';
@@ -164,7 +164,9 @@ export function Shell({ model, children, pane }: ShellProps) {
       {model.card ? (
         <div className={`aerie-card aerie-${model.card.kind}`} aria-hidden="true">
           {model.card.kick ? <span className="aerie-kick">{model.card.kick}</span> : null}
-          <p className="aerie-name">{model.card.name}</p>
+          <p className="aerie-name" style={{ '--card-word': Math.max(1, ...model.card.name.split(/\s+/).map((word) => word.length)) } as CSSProperties}>
+            {model.card.name}
+          </p>
           {model.card.line ? <span className="aerie-line">{model.card.line}</span> : null}
         </div>
       ) : null}

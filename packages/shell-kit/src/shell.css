@@ -214,7 +214,10 @@
 .aerie-card .aerie-kick { display: flex; align-items: center; gap: var(--space-4); font-size: var(--type-meta); letter-spacing: var(--tracking-mark); text-transform: uppercase; color: var(--floor-mark); margin-right: calc(var(--tracking-mark) * -1); animation: aerie-card-in var(--motion-calm) var(--ease-standard) var(--motion-base) both; }
 .aerie-card .aerie-kick::before, .aerie-card .aerie-kick::after { content: ''; width: var(--space-7); height: 1px; background: linear-gradient(to right, transparent, var(--floor-mark)); }
 .aerie-card .aerie-kick::after { transform: scaleX(-1); }
-.aerie-card .aerie-name { margin: 0; font-size: var(--type-display-fluid); line-height: var(--leading-display-fluid); font-weight: 200; letter-spacing: var(--tracking-title); text-transform: uppercase; color: var(--ink); margin-right: calc(var(--tracking-title) * -1); animation: aerie-card-track calc(var(--motion-calm) * 2) var(--ease-out) both; }
+/* The name fits the window: as large as the token allows, smaller when its longest word (--card-word, in letters,
+   from shell.tsx) wouldn't fit across. The widest capital (W) at this weight and tracking takes about 1.4em. */
+.aerie-card { container-type: inline-size; }
+.aerie-card .aerie-name { margin: 0; max-width: calc(100% - 2 * var(--edge)); font-size: min(var(--type-display-fluid), calc((100cqi - 2 * var(--edge)) / (var(--card-word, 1) * 1.4))); line-height: var(--leading-display-fluid); font-weight: 200; letter-spacing: var(--tracking-title); text-transform: uppercase; color: var(--ink); margin-right: calc(var(--tracking-title) * -1); animation: aerie-card-track calc(var(--motion-calm) * 2) var(--ease-out) both; }
 .aerie-card .aerie-line { font-size: var(--type-small); color: var(--ink-muted); animation: aerie-card-in var(--motion-calm) var(--ease-standard) var(--motion-calm) both; }
 @keyframes aerie-card-life { 0% { opacity: 0; } 10% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes aerie-card-track { from { letter-spacing: calc(var(--tracking-title) * 2); opacity: 0; filter: blur(8px); } }

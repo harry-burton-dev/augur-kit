@@ -54,6 +54,16 @@ describe('Shell landmarks and names', () => {
   });
 });
 
+describe('Shell title card', () => {
+  it('sizes the name by its longest word, so it fits the window', () => {
+    const model = exampleShell();
+    model.card = { kind: 'app', kick: 'App', name: 'Knowledge graph explorer' };
+    const name = draw(model).querySelector<HTMLElement>('.aerie-card .aerie-name')!;
+    expect(name.textContent).toBe('Knowledge graph explorer');
+    expect(name.style.getPropertyValue('--card-word')).toBe('9');
+  });
+});
+
 describe('Shell unavailable functions', () => {
   it('keeps an unavailable function on the arc, says why, and does not run it when pressed', () => {
     const model = exampleShell('stream');
