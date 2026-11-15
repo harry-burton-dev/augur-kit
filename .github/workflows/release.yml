@@ -3,11 +3,15 @@ name: Release
 # Merging it is the release. This workflow then:
 #   1. publishes each package whose version isn't in GitHub Packages yet, as @<owner>/augur-<name>
 #      (scripts/publish-packages.mjs), for AUGUR and apps to build against;
-#   2. when the kit bundle's version is new, signs its kit.json with cosign keyless before it is
-#      published (the package carries the signature), and makes the GitHub release kit@<version>: the
-#      bundle as kit-<version>.tgz and its kit.json, each signed, so the signature names this workflow
-#      on this repository's main. AUGUR's release checks it, then serves the bundle at its
-#      KIT_URL (ADR 0048 in the AUGUR repository). Every kit release starts as a beta (a pre-release).
+#   2. when the kit bundle's version is not in the registry yet, signs its kit.json with cosign keyless
+#      before it is published (the package carries the signature, and the publish script refuses the
+#      bundle without it);
+#   3. when there is no GitHub release kit@<version> yet, makes one: the bundle as kit-<version>.tgz and
+#      its kit.json, each signed, so the signature names this workflow on this repository's main. The
+#      release is made from the bundle as published (by this run or an earlier one), so its bytes and
+#      signature are the ones AUGUR installs. AUGUR's release checks it, then serves the bundle at its
+#      KIT_URL (ADR 0048 in the AUGUR repository). Every kit release starts as a beta.
+# Nothing is published until the packages are built, type-checked and tested.
 on:
   push:
     branches: [main]
@@ -65,24 +69,40 @@ jobs:
       - name: Build
         if: steps.pending.outputs.releases == '0'
         run: pnpm build
-      - name: Is this kit released yet?
+      - name: Typecheck
+        if: steps.pending.outputs.releases == '0'
+        run: pnpm typecheck
+      - name: Test
+        if: steps.pending.outputs.releases == '0'
+        run: pnpm test
+      # Two questions, asked apart: is the bundle in the registry (if not, it is signed now, before it is
+      # published), and is there a GitHub release for it. A run that stopped between publishing and
+      # releasing answers yes to the first and no to the second. A bundle this repository may not
+      # publish (403) is neither signed nor released.
+      - name: Is this kit published and released yet?
         id: kit
         if: steps.pending.outputs.releases == '0'
         run: |
           v=$(node -p "require('./packages/kit-bundle/package.json').version")
-          if [ "$v" = "0.0.0" ] || gh release view "kit@$v" >/dev/null 2>&1; then
+          if [ "$v" = "0.0.0" ]; then
             echo "Kit $v needs no release"
-          else
-            echo "version=$v" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          published=$(node scripts/publish-packages.mjs status @augur/kit-bundle)
+          echo "Kit $v in the registry: $published"
+          if [ "$published" = "unpublished" ]; then echo "sign=$v" >> "$GITHUB_OUTPUT"; fi
+          if [ "$published" != "blocked" ] && ! gh release view "kit@$v" >/dev/null 2>&1; then
+            echo "release=$v" >> "$GITHUB_OUTPUT"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
-      - if: steps.kit.outputs.version
+          NODE_AUTH_TOKEN: ${{ github.token }}
+      - if: steps.kit.outputs.sign || steps.kit.outputs.release
         uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
       # Signed before the packages are published, so @augur/kit-bundle carries its own signature
       # (dist/kit.json.sigstore.json): AUGUR checks it from the package, with no release download.
       - name: Sign the kit
-        if: steps.kit.outputs.version
+        if: steps.kit.outputs.sign
         run: cosign sign-blob --yes --bundle packages/kit-bundle/dist/kit.json.sigstore.json packages/kit-bundle/dist/kit.json
       - name: Publish packages
         id: publish
@@ -90,19 +110,39 @@ jobs:
         run: node scripts/publish-packages.mjs
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
+      # Made from the bundle as published, so the release holds the bytes and signature AUGUR installs.
+      # If the bundle didn't go out in this run (403, or held behind a package that didn't), there is
+      # nothing to release yet; the last step fails the run. Otherwise wait for the registry to show it.
       - name: Release the kit
-        if: steps.kit.outputs.version
+        if: steps.kit.outputs.release
         run: |
-          v="${{ steps.kit.outputs.version }}"
+          v="${{ steps.kit.outputs.release }}"
+          if [ "$(node scripts/publish-packages.mjs status @augur/kit-bundle)" != "published" ]; then
+            case " ${{ steps.publish.outputs.blocked }} " in
+              *-kit-common@*|*-app-kit@*|*-kit-bundle@*)
+                echo "::warning::Kit $v is not in the registry, so it is not released yet."
+                exit 0 ;;
+            esac
+            for i in 1 2 3 4 5 6; do
+              sleep 10
+              [ "$(node scripts/publish-packages.mjs status @augur/kit-bundle)" = "published" ] && break
+              if [ "$i" = 6 ]; then
+                echo "::error::Kit $v was published but the registry doesn't show it after a minute. Re-run this workflow to release it."
+                exit 1
+              fi
+            done
+          fi
           out="$RUNNER_TEMP/kit"
           mkdir -p "$out"
-          tar -czf "$out/kit-$v.tgz" -C packages/kit-bundle/dist .
+          dist="$(node scripts/publish-packages.mjs fetch @augur/kit-bundle "$RUNNER_TEMP/published")/dist"
+          tar -czf "$out/kit-$v.tgz" -C "$dist" .
           cosign sign-blob --yes --bundle "$out/kit-$v.tgz.sigstore.json" "$out/kit-$v.tgz"
           node scripts/kit-notes.mjs "$v" > "$out/notes.md"
           gh release create "kit@$v" --prerelease --target "$GITHUB_SHA" --title "Kit $v" --notes-file "$out/notes.md" \
-            "$out/kit-$v.tgz" "$out/kit-$v.tgz.sigstore.json" packages/kit-bundle/dist/kit.json packages/kit-bundle/dist/kit.json.sigstore.json
+            "$out/kit-$v.tgz" "$out/kit-$v.tgz.sigstore.json" "$dist/kit.json" "$dist/kit.json.sigstore.json"
         env:
           GH_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ github.token }}
       # Last, so a package this repository may not publish yet doesn't hold back the others or the kit.
       - name: Every package published
         if: steps.publish.outputs.blocked

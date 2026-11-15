@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Icon } from '@augur/kit-common';
-import { floorIconOf, floorKindOf, floorMeaning, floorStack, floorTone, type ShellFloor } from './floors.js';
+import { floorIconOf, floorKindOf, floorMeaning, floorStack, type ShellFloor } from './floors.js';
 import type { ShellModel, ShellNotification } from './shell-model.js';
 
 /*
@@ -24,7 +24,7 @@ export interface FloorPickerProps {
 
 /**
  * The floor picker at the right edge: one box per floor from yours up to the top, the one you're
- * on brightest, a pulse where something waits, and the open app pinned beside your floor. Resting the
+ * on brightest, a steady mark where something waits (it rings once when something new arrives), and the open app pinned beside your floor. Resting the
  * pointer on it for a moment, or tabbing into it, opens it out to show each floor's name, who sees
  * what's on it and what waits there. Pointing at a floor where something waits shows that at once.
  */
@@ -48,14 +48,14 @@ export function FloorPicker({ model, tab }: FloorPickerProps) {
         </p>
       ) : null}
       <ol>
-        {floors.map((floor, i) => (
-          // --floor-step: how many floors up this one is, 0 for your own. The pulse runs a beat later per step.
-          <li key={floor.id} style={{ '--floor-step': floors.length - 1 - i } as CSSProperties}>
+        {floors.map((floor) => (
+          <li key={floor.id}>
             <FloorButton
               floor={floor}
               here={floor.id === model.floor}
               waiting={waiting.get(floor.id) ?? 0}
               waitingFor={waitingOn.get(floor.id) ?? []}
+              arrived={model.arrivedOn.get(floor.id)}
               app={model.openNow}
               rest={rest}
               tab={tab}
@@ -82,6 +82,8 @@ interface FloorButtonProps {
   waiting: number;
   /** What those things are: the glance shown when you point at a floor where something waits. */
   waitingFor: ShellNotification[];
+  /** When something that needs you last arrived here (epoch ms), if it has since the Shell started. */
+  arrived: number | undefined;
   /** The app that's open, if one is. */
   app: { name: string; icon?: string } | undefined;
   /** Why floors can't be changed right now; empty when they can. */
@@ -94,7 +96,7 @@ interface FloorButtonProps {
 /** How many waiting things a floor's glance names before it says "and N more". */
 const GLANCE = 2;
 
-function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }: FloorButtonProps) {
+function FloorButton({ floor, here, waiting, waitingFor, arrived, app, rest, tab, onGo }: FloorButtonProps) {
   const name = floor.kind === 'personal' ? 'Your own floor' : floor.name;
   const said = [name, here ? 'you’re here' : '', waiting ? `${waiting} waiting` : ''].filter(Boolean).join(', ');
 
@@ -106,7 +108,6 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
       aria-current={here ? 'location' : undefined}
       aria-disabled={rest && !here ? 'true' : undefined}
       data-waiting={waiting > 0 ? '' : undefined}
-      data-tone={floorTone(floor)}
       onClick={() => !rest && onGo()}
     >
       {/* The words: hidden at rest, shown when the picker opens out. */}
@@ -144,10 +145,21 @@ function FloorButton({ floor, here, waiting, waitingFor, app, rest, tab, onGo }:
         </span>
       ) : null}
 
-      {/* The box, with the floor's icon. It pulses when something waits here (data-waiting, above). */}
+      {/* The box, with the floor's icon. Marked when something waits here (data-waiting, above). */}
       <span className="aerie-notch">
         <Icon name={floorIconOf(floor)} size={14} />
+        {/* The ring: plays once when something arrives here (a new arrival is a new key, which restarts it). */}
+        {waiting && arrived ? <Ring key={arrived} arrived={arrived} /> : null}
       </span>
     </button>
   );
+}
+
+/**
+ * The ring that plays once on a floor's box when something arrives. Its delay is how long ago that was, as a
+ * negative number, fixed when it's drawn: drawn again later (moving floors, a new chain) it is already past.
+ */
+function Ring({ arrived }: { arrived: number }) {
+  const [since] = useState(() => arrived - Date.now());
+  return <span className="aerie-ring" style={{ '--ring-since': `${since}ms` } as CSSProperties} aria-hidden="true" />;
 }
