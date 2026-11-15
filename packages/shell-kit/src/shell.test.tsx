@@ -55,12 +55,29 @@ describe('Shell landmarks and names', () => {
 });
 
 describe('Shell title card', () => {
-  it('sizes the name by its longest word, so it fits the window', () => {
+  const card = (name: string) => {
     const model = exampleShell();
-    model.card = { kind: 'app', kick: 'App', name: 'Knowledge graph explorer' };
-    const name = draw(model).querySelector<HTMLElement>('.aerie-card .aerie-name')!;
+    model.card = { kind: 'app', kick: 'App', name };
+    return draw(model).querySelector<HTMLElement>('.aerie-card .aerie-name')!;
+  };
+  const measure = (room: number, need: number) => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(room);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(need);
+  };
+  afterEach(() => vi.restoreAllMocks());
+
+  it('shrinks a name wider than the window by just enough to fit', () => {
+    measure(300, 600);
+    const name = card('Knowledge graph explorer');
     expect(name.textContent).toBe('Knowledge graph explorer');
-    expect(name.style.getPropertyValue('--card-word')).toBe('9');
+    expect(name.style.getPropertyValue('--card-fit')).toBe('0.5');
+  });
+
+  it('leaves a name that fits at its full size, and measures it at its resting tracking', () => {
+    measure(300, 200);
+    const name = card('Home');
+    expect(name.style.getPropertyValue('--card-fit')).toBe('');
+    expect(name.style.getPropertyValue('letter-spacing')).toBe('');
   });
 });
 

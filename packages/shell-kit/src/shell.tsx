@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Icon, IconButton, Menu, ms } from '@augur/kit-common';
 import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
 import { FloorPicker } from './floor-picker.js';
@@ -43,6 +43,38 @@ const isTyping = (e: Event) => {
  * the stream at its top. Esc goes back a step, then closes. It draws a
  * `ShellModel`; the host sets what it knows on the model and listens to it.
  */
+/**
+ * The title card's name, as large as the token allows and no wider than the window: measured at full size with its
+ * resting tracking (its entrance starts wider), then shrunk by --card-fit until its longest unbreakable run fits.
+ */
+function CardName({ name }: { name: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.removeProperty('--card-fit');
+      el.style.setProperty('letter-spacing', 'var(--tracking-title)', 'important');
+      el.style.setProperty('overflow-wrap', 'normal', 'important');
+      const room = el.clientWidth;
+      const need = el.scrollWidth;
+      el.style.removeProperty('letter-spacing');
+      el.style.removeProperty('overflow-wrap');
+      if (room > 0 && need > room) el.style.setProperty('--card-fit', String(room / need));
+    };
+    fit();
+    if (typeof ResizeObserver !== 'function' || !el.parentElement) return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(el.parentElement);
+    return () => observer.disconnect();
+  }, [name]);
+  return (
+    <p ref={ref} className="aerie-name">
+      {name}
+    </p>
+  );
+}
+
 export function Shell({ model, children, pane }: ShellProps) {
   useSyncExternalStore(model.subscribe, model.getRevision, model.getRevision);
   const root = useRef<ShellElement>(null);
@@ -164,9 +196,7 @@ export function Shell({ model, children, pane }: ShellProps) {
       {model.card ? (
         <div className={`aerie-card aerie-${model.card.kind}`} aria-hidden="true">
           {model.card.kick ? <span className="aerie-kick">{model.card.kick}</span> : null}
-          <p className="aerie-name" style={{ '--card-word': Math.max(1, ...model.card.name.split(/\s+/).map((word) => word.length)) } as CSSProperties}>
-            {model.card.name}
-          </p>
+          <CardName name={model.card.name} />
           {model.card.line ? <span className="aerie-line">{model.card.line}</span> : null}
         </div>
       ) : null}
