@@ -24,19 +24,21 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      # Apps draw only with what the remote allowlist allows: it may add, never take away, against the
+      # baseline committed beside it (scripts/check-allowlist.mjs).
+      - name: Does the remote allowlist only add?
+        run: pnpm check:allowlist
       - name: Every change says how it is released
         if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
         run: pnpm changeset status --since=origin/${{ github.base_ref }}
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      # Apps draw only with what the remote allowlist allows: it may add, never take away, against the
-      # baseline committed beside it (scripts/check-allowlist.mjs).
-      - name: Does the remote allowlist only add?
-        run: pnpm check:allowlist
       # Common's and Quill's public surface against their committed API reports, and the changeset a
-      # removal needs (scripts/check-api.mjs). Needs the build above.
+      # removal needs (scripts/check-api.mjs). Needs the build above. Run by hand, it compares with main.
+      # The Version packages pull request only spends changesets that were checked as they merged.
       - name: Do the API reports match?
+        if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
         env:
-          BASE_REF: ${{ github.base_ref }}
+          BASE_REF: ${{ github.base_ref || github.event.repository.default_branch }}
         run: pnpm check:api
