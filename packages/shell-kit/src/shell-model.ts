@@ -590,6 +590,11 @@ export class ShellModel extends EventTarget {
     this.emit('ui-setting', { key, value });
   }
 
+  /** Whether ` alone opens and closes the Shell: on unless Settings turned it off. */
+  get summonKeyOn(): boolean {
+    return this.settings.summonKey !== false;
+  }
+
   /** The floor the person is on, when floors are set. */
   get currentFloor(): ShellFloor | undefined {
     return this.floors.find((f) => f.id === this.floor);
