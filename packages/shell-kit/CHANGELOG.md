@@ -1,5 +1,23 @@
 # @augur/shell-kit
 
+## 0.15.1
+
+### Patch Changes
+
+- 519262d: Floor picker: its boxes are 32px (token `gauge-notch`), Endstate's box size, up from 28px. The picker's lane (`gauge-lane`) grows with it, so the open app ends 4px further left.
+- Updated dependencies [519262d]
+  - @augur/kit-common@0.21.1
+
+## 0.15.0
+
+### Minor Changes
+
+- 8a2a98f: The Shell's one-key shortcut (`) can be turned off in Settings ("Open with `"), and a text field keeps a `typed in it (WCAG 2.2, 2.1.4 Character Key Shortcuts). Ctrl or ⌘ K still works everywhere, except where the focused part takes it for itself with preventDefault.`ShellSettings.summonKey` is on unless false (`ShellModel.summonKeyOn`); a host that saves settings must save it too. The keys list says what opens the Shell.
+
+### Patch Changes
+
+- ef96adb: Floor picker: a floor where something waits now holds a steady needs-you mark and rings once when something new arrives, instead of pulsing forever in the floor's own colour (Endstate rules 8 and 10).
+
 ## 0.14.1
 
 ### Patch Changes

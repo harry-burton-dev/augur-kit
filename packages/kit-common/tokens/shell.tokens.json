@@ -324,9 +324,9 @@
       "$description": "An app's pane narrower than this (its own width, a container query) uses edge-tight for its inline inset."
     },
     "gauge-notch": {
-      "$value": "28px",
+      "$value": "32px",
       "$type": "dimension",
-      "$description": "The floor picker's box: the square mark for each floor."
+      "$description": "The floor picker's box: the square mark for each floor, at Endstate's box size."
     },
     "gauge-words": {
       "$value": "240px",

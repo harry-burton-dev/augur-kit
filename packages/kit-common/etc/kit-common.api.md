@@ -1656,7 +1656,7 @@ export const tokens: {
     readonly "app-pane-strip": "64px";
     readonly "split-list": "360px";
     readonly "pane-tight-below": "640px";
-    readonly "gauge-notch": "28px";
+    readonly "gauge-notch": "32px";
     readonly "gauge-words": "240px";
     readonly "gauge-pinned": "22px";
     readonly "gauge-lane": "calc({gauge-notch} + {gauge-pinned} + {space-1} + {space-2} * 3 + 2px)";
