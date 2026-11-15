@@ -1,5 +1,13 @@
 # @augur/shell-kit
 
+## 0.15.1
+
+### Patch Changes
+
+- 519262d: Floor picker: its boxes are 32px (token `gauge-notch`), Endstate's box size, up from 28px. The picker's lane (`gauge-lane`) grows with it, so the open app ends 4px further left.
+- Updated dependencies [519262d]
+  - @augur/kit-common@0.21.1
+
 ## 0.15.0
 
 ### Minor Changes
