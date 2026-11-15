@@ -8,8 +8,17 @@
 // The scope comes from PACKAGE_SCOPE, or else the repository's owner; the registry from PACKAGE_REGISTRY.
 //
 // node scripts/publish-packages.mjs [--dry-run]
-// Run by the Release workflow once the Version packages PR has merged, after the packages are built.
-// A version that's already in the registry is skipped, so running it again does nothing.
+// Run by the Release workflow once the Version packages PR has merged, after the packages are built and
+// tested. A version that's already in the registry is skipped, so running it again does nothing. Every
+// package is looked up before any is published, and they go out in dependency order (kit-common first).
+// The kit bundle is refused without its signature: AUGUR can never take an unsigned one.
+//
+// node scripts/publish-packages.mjs status <@augur/name>
+//   Prints whether that package's version is "published", "unpublished" or "blocked" (403). The Release
+//   workflow signs the kit when the bundle is not in the registry yet, whatever GitHub releases exist.
+// node scripts/publish-packages.mjs fetch <@augur/name> <dir>
+//   Unpacks that package's version, as published, into <dir>/package: a kit release made after the
+//   bundle went out uses the published bytes and their signature, not a fresh build.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -70,6 +79,54 @@ export function libraries(root = '.') {
     .filter(({ pkg }) => pkg.name?.startsWith(OWN_SCOPE) && Array.isArray(pkg.files));
 }
 
+/** The kit bundle carries kit.json's signature; without it AUGUR refuses the bundle and its version is lost. */
+export const SIGNATURES = { '@augur/kit-bundle': 'dist/kit.json.sigstore.json' };
+
+/** A package that must carry a signature and doesn't. */
+export const unsigned = ({ directory, pkg }) =>
+  Boolean(SIGNATURES[pkg.name]) && !existsSync(join(directory, SIGNATURES[pkg.name]));
+
+const internal = (pkg) =>
+  ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((f) => Object.keys(pkg[f] ?? {})).filter((n) => n.startsWith(OWN_SCOPE));
+
+/** The packages in publish order: each after the @augur packages it depends on, otherwise as found. */
+export function publishOrder(libs) {
+  const byName = new Map(libs.map((lib) => [lib.pkg.name, lib]));
+  const out = [];
+  const state = new Map();
+  const visit = (lib) => {
+    if (state.get(lib.pkg.name) === 'done') return;
+    if (state.get(lib.pkg.name) === 'visiting') throw new Error(`${lib.pkg.name} depends on itself through other packages`);
+    state.set(lib.pkg.name, 'visiting');
+    for (const dep of internal(lib.pkg)) if (byName.has(dep)) visit(byName.get(dep));
+    state.set(lib.pkg.name, 'done');
+    out.push(lib);
+  };
+  libs.forEach(visit);
+  return out;
+}
+
+/**
+ * What a publish run will do, decided before anything goes out: each package is "skip" (already
+ * published), "blocked" (403) or "publish". Throws, publishing nothing, when a package to publish
+ * lacks its signature.
+ */
+export function plan(libs, published) {
+  const steps = publishOrder(libs).map((lib) => {
+    try {
+      return { ...lib, action: published(lib) ? 'skip' : 'publish' };
+    } catch (err) {
+      if (!isForbidden(err)) throw err;
+      return { ...lib, action: 'blocked' };
+    }
+  });
+  const missing = steps.filter((s) => s.action === 'publish' && unsigned(s));
+  if (missing.length) {
+    throw new Error(`Not publishing anything: ${missing.map((s) => `${s.pkg.name}@${s.pkg.version} has no ${SIGNATURES[s.pkg.name]}`).join('; ')}. Sign it first (the Release workflow's Sign the kit step).`);
+  }
+  return steps;
+}
+
 function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...opts });
 }
@@ -90,8 +147,7 @@ function isPublished(name, version, npmrc, registry) {
   }
 }
 
-function main() {
-  const dryRun = process.argv.includes('--dry-run');
+function setup({ dryRun = false } = {}) {
   const repository = process.env.GITHUB_REPOSITORY;
   const scope = process.env.PACKAGE_SCOPE || process.env.GITHUB_REPOSITORY_OWNER || repository?.split('/')[0];
   const registry = process.env.PACKAGE_REGISTRY || DEFAULT_REGISTRY;
@@ -102,21 +158,54 @@ function main() {
   const work = mkdtempSync(join(tmpdir(), 'augur-packages-'));
   const npmrc = join(work, '.npmrc');
   writeFileSync(npmrc, `${new URL(registry).href.replace(/^https?:/, '')}:_authToken=${token ?? ''}\n`);
+  return { repository, scope, registry, work, npmrc };
+}
+
+function find(name) {
+  const lib = libraries().find(({ pkg }) => pkg.name === name);
+  if (!lib) throw new Error(`${name} isn't a package in ${LIBRARIES}/`);
+  return lib;
+}
+
+function status(name) {
+  const { pkg } = find(name);
+  const { scope, registry, npmrc } = setup();
+  try {
+    console.log(isPublished(publishedName(name, scope), pkg.version, npmrc, registry) ? 'published' : 'unpublished');
+  } catch (err) {
+    if (!isForbidden(err)) throw err;
+    console.log('blocked');
+  }
+}
+
+function fetch(name, dir) {
+  if (!dir) throw new Error('usage: node scripts/publish-packages.mjs fetch <@augur/name> <dir>');
+  const { pkg } = find(name);
+  const { scope, registry, npmrc } = setup();
+  mkdirSync(dir, { recursive: true });
+  const spec = `${publishedName(name, scope)}@${pkg.version}`;
+  const tarball = run('npm', ['pack', spec, '--pack-destination', dir, '--registry', registry, '--userconfig', npmrc]).trim().split('\n').pop();
+  run('tar', ['-xzf', join(dir, tarball), '-C', dir]);
+  console.log(join(dir, 'package'));
+}
+
+function publish() {
+  const dryRun = process.argv.includes('--dry-run');
+  const { repository, scope, registry, work, npmrc } = setup({ dryRun });
   const tag = distTag(process.env.GITHUB_REF_NAME);
 
+  const steps = plan(libraries(), ({ pkg }) => !dryRun && isPublished(publishedName(pkg.name, scope), pkg.version, npmrc, registry));
   const done = [];
   // Packages this repository may not touch are skipped, so the rest (and the kit release) still go out;
   // the Release workflow fails at its end while any are left.
   const blocked = [];
-  for (const { directory, pkg } of libraries()) {
+  for (const { directory, pkg, action } of steps) {
     const name = publishedName(pkg.name, scope);
-    try {
-      if (!dryRun && isPublished(name, pkg.version, npmrc, registry)) {
-        console.log(`${name}@${pkg.version} is already published`);
-        continue;
-      }
-    } catch (err) {
-      if (!isForbidden(err)) throw err;
+    if (action === 'skip') {
+      console.log(`${name}@${pkg.version} is already published`);
+      continue;
+    }
+    if (action === 'blocked') {
       blocked.push(`${name}@${pkg.version}`);
       continue;
     }
@@ -146,6 +235,13 @@ function main() {
     if (process.env.GITHUB_OUTPUT) writeFileSync(process.env.GITHUB_OUTPUT, `blocked=${blocked.join(' ')}\n`, { flag: 'a' });
     else process.exitCode = 1;
   }
+}
+
+function main() {
+  const [mode, ...rest] = process.argv.slice(2);
+  if (mode === 'status') status(rest[0]);
+  else if (mode === 'fetch') fetch(rest[0], rest[1]);
+  else publish();
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) main();
