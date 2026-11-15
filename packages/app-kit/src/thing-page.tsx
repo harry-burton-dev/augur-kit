@@ -49,7 +49,8 @@ export interface ThingPageProps {
   className?: string;
 }
 
-const Heading = ({ level, id, className, children }: { level: number; id?: string; className: string; children: ReactNode }) => {
+/** A heading at the level asked for, at most h6. */
+export const Heading = ({ level, id, className, children }: { level: number; id?: string; className: string; children: ReactNode }) => {
   const Tag = `h${Math.min(6, level)}` as 'h2';
   return (
     <Tag id={id} className={className}>

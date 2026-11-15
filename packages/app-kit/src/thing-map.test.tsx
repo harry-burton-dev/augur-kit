@@ -46,6 +46,11 @@ describe('mapAround', () => {
     expect(groups.flatMap((g) => g.nodes.map((n) => n.neighbour.id))).toEqual(['n0', 'n3', 'n1', 'n4', 'n2', 'n5']);
   });
 
+  it('lets an app lower the cap, never raise it', () => {
+    expect(mapAround(many(30), 50).groups.flatMap((g) => g.nodes)).toHaveLength(THING_MAP_CAP);
+    expect(mapAround(many(30), 3).more).toBe(27);
+  });
+
   it('puts a neighbour with no group in the other group, and lays out the same every time', () => {
     const around = [{ id: 'a', relation: 'Runs', name: 'A' }];
     expect(mapAround(around, 12, 'Other things').groups[0]!.name).toBe('Other things');
@@ -76,6 +81,18 @@ describe('ThingMap', () => {
     expect(onEverything).toHaveBeenCalled();
     draw(<ThingMap thing={busiest} around={many(15)} />);
     expect(document.querySelector('.quill-thing-foot')!.textContent).toBe('3 more around it');
+  });
+
+  it('does not say nothing is known when it only draws none of them', () => {
+    draw(<ThingMap thing={busiest} around={many(3)} cap={0} />);
+    expect(document.body.textContent).not.toContain('Nothing is known around it yet.');
+    expect(document.querySelector('.quill-thing-foot')!.textContent).toBe('3 more around it');
+  });
+
+  it('draws the same neighbour twice when it relates in two ways', () => {
+    const twice = [{ id: 'norland', relation: 'Operated by', name: 'Norland', group: 'Companies' }, { id: 'norland', relation: 'Owned by', name: 'Norland', group: 'Companies' }];
+    draw(<ThingMap thing={busiest} around={twice} />);
+    expect([...document.querySelectorAll('.quill-thing-map-relation')].map((r) => r.textContent)).toEqual(['Operated by', 'Owned by']);
   });
 
   it('says plainly when nothing is around it, and offers the way back', () => {

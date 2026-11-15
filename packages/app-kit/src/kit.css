@@ -1514,7 +1514,7 @@
   .quill-thing-map-field[data-empty] .quill-thing-map-centre { position: static; transform: none; }
   .quill-thing-map-centre { left: 50%; top: 50%; max-width: var(--aside-min); display: flex; flex-direction: column; align-items: center; gap: var(--space-1); border-color: var(--ink); }
   .quill-thing-map-name { margin: 0; font-size: var(--type-title-s); line-height: var(--leading-title-s); font-weight: var(--weight-heading); overflow-wrap: anywhere; }
-  .quill-thing-map-group-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
+  .quill-thing-map-group-name { margin: 0; }
   .quill-thing-map-nodes { list-style: none; margin: 0; padding: 0; }
   .quill-thing-map-node {
     left: calc(var(--map-inline) + (100% - 2 * var(--map-inline)) * var(--x) / 100);
@@ -1522,19 +1522,21 @@
     width: max-content; max-width: var(--aside-min); display: flex; flex-direction: column; align-items: center;
     font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink-muted); overflow-wrap: anywhere;
   }
-  .quill-thing-map-node .quill-thing-link { align-self: center; text-align: center; }
-  .quill-thing-map-relation { font-size: var(--type-small); line-height: var(--leading-small); }
+  /* A place is one row tall: the relation on one line, the name on at most two (read aloud whole). */
+  .quill-thing-map-node .quill-thing-link, .quill-thing-map-node .quill-thing-neighbour { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; align-self: center; text-align: center; }
+  .quill-thing-map-relation { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--type-small); line-height: var(--leading-small); }
 
-  /* Narrower than --measure-read: the ring folds into its groups, as lists. */
-  @container quill-thing-map (width < 40rem) {
+  /* Narrower than the ring needs (a node and the middle side by side, at their widest, each side of it):
+     the ring folds into its groups, as lists. */
+  @container quill-thing-map (width < 48rem) {
     .quill-thing-map-field { height: auto; display: flex; flex-direction: column; gap: var(--stack); }
     .quill-thing-map-lines { display: none; }
     .quill-thing-map-centre, .quill-thing-map-node { position: static; transform: none; text-align: start; align-items: flex-start; }
     .quill-thing-map-centre { max-width: none; }
     .quill-thing-map-node { width: auto; max-width: none; display: block; background: none; border: 0; border-top: 1px solid var(--hairline); border-radius: 0; padding: var(--space-2) 0; }
-    .quill-thing-map-node .quill-thing-link { display: inline; }
-    .quill-thing-map-relation { font-size: inherit; line-height: inherit; }
+    .quill-thing-map-node .quill-thing-link, .quill-thing-map-node .quill-thing-neighbour { display: inline; -webkit-line-clamp: none; overflow: visible; }
+    .quill-thing-map-relation { white-space: normal; font-size: inherit; line-height: inherit; }
     .quill-thing-map-group { display: flex; flex-direction: column; gap: var(--space-1); }
-    .quill-thing-map-group-name { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+    .quill-thing-map-group-name.quill-sr { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
   }
 }

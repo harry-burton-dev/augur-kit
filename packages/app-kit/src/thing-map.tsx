@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { cx, Icon } from '@augur/kit-common';
 import { mapAround, THING_MAP_CAP, THING_MAP_WORDS, type ThingMapWords } from './thing-map-layout.js';
+import { Heading } from './thing-page.js';
 import type { ThingNeighbour, ThingView } from './thing-view.js';
 
 export interface ThingMapProps {
@@ -30,16 +31,13 @@ export interface ThingMapProps {
  */
 export function ThingMap({ thing, around, cap = THING_MAP_CAP, words = THING_MAP_WORDS, onOpen, onBack, onEverything, level = 1, className }: ThingMapProps) {
   const { groups, more, rows } = mapAround(around, cap, words.other);
-  const id = `thing-map-${thing.id}`;
-  const Name = `h${level}` as 'h1';
-  const Group = `h${level + 1}` as 'h2';
   const nodes = groups.flatMap((g) => g.nodes);
   return (
     <section className={cx('quill-thing-map', className)} aria-label={words.label(thing.name)} data-thing-map={thing.id}>
       <div className="quill-thing-map-field" data-empty={nodes.length ? undefined : ''} style={{ '--map-rows': rows } as CSSProperties}>
         <svg className="quill-thing-map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          {nodes.map((n) => (
-            <line key={n.neighbour.id} x1="50" y1="50" x2={n.x} y2={n.y} vectorEffect="non-scaling-stroke" />
+          {nodes.map((n, i) => (
+            <line key={i} x1="50" y1="50" x2={n.x} y2={n.y} vectorEffect="non-scaling-stroke" />
           ))}
         </svg>
         <div className="quill-thing-map-centre">
@@ -47,17 +45,19 @@ export function ThingMap({ thing, around, cap = THING_MAP_CAP, words = THING_MAP
             <Icon name={thing.kind.icon} size={16} />
             {thing.kind.name}
           </p>
-          <Name id={`${id}-name`} className="quill-thing-map-name">
+          <Heading level={level} className="quill-thing-map-name">
             {thing.name}
-          </Name>
+          </Heading>
         </div>
         {groups.length ? (
           groups.map((g) => (
             <div key={g.name} className="quill-thing-map-group">
-              <Group className="quill-thing-caps quill-thing-map-group-name">{g.name}</Group>
+              <Heading level={level + 1} className="quill-thing-caps quill-thing-map-group-name quill-sr">
+                {g.name}
+              </Heading>
               <ul className="quill-thing-map-nodes">
-                {g.nodes.map((n) => (
-                  <li key={n.neighbour.id} className="quill-thing-map-node" style={{ '--x': n.x, '--y': n.y } as CSSProperties}>
+                {g.nodes.map((n, i) => (
+                  <li key={i} className="quill-thing-map-node" style={{ '--x': n.x, '--y': n.y } as CSSProperties}>
                     <span className="quill-thing-map-relation">{n.neighbour.relation}</span>{' '}
                     {onOpen ? (
                       <button type="button" className="quill-thing-link" data-strong="" onClick={() => onOpen(n.neighbour.id, n.neighbour)}>
@@ -71,7 +71,7 @@ export function ThingMap({ thing, around, cap = THING_MAP_CAP, words = THING_MAP
               </ul>
             </div>
           ))
-        ) : (
+        ) : around.length ? null : (
           <p className="quill-thing-empty quill-thing-map-empty">{words.empty}</p>
         )}
       </div>

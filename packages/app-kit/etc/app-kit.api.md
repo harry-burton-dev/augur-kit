@@ -3876,6 +3876,7 @@ export interface ThingMapLayout {
     // (undocumented)
     groups: ThingMapGroup[];
     more: number;
+    rows: number;
 }
 
 // @public

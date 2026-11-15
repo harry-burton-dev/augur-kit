@@ -696,6 +696,7 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
   },
   'quill-thing-map': (parts) => {
     const { thing, around = [], cap, level } = p(parts);
+    if (!thing) return null;
     const open = event(parts, 'open');
     const back = event(parts, 'back');
     const everything = event(parts, 'everything');

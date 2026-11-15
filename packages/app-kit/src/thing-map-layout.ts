@@ -6,7 +6,7 @@
  * their ranked order, a group's neighbours sit next to each other, and one empty place parts two groups.
  * Neighbours go down the right of the ring and up the left, evenly spaced from top to bottom on each side.
  */
-import type { ThingNeighbour } from './thing-view.js';
+import { THING_WORDS, type ThingNeighbour } from './thing-view.js';
 
 /** One neighbour on the map, where it sits as a share of the map's width and height (0 to 100). */
 export interface ThingMapNode {
@@ -28,7 +28,7 @@ export interface ThingMapLayout {
   rows: number;
 }
 
-/** How many neighbours the map draws before the rest wait in everything we know. */
+/** How many neighbours the map draws, at most, before the rest wait in everything we know. */
 export const THING_MAP_CAP = 12;
 
 /** How far out the ring sits, as a share of the map's width and height from the middle. */
@@ -36,14 +36,16 @@ const RING = { x: 50, y: 50 };
 
 /**
  * Lays out the first `cap` neighbours (they come ranked) round the thing, by group. A neighbour with no
- * group goes in `otherGroup`.
+ * group goes in `otherGroup`. `cap` can lower the map's own cap, never raise it.
  */
 export function mapAround(around: readonly ThingNeighbour[], cap = THING_MAP_CAP, otherGroup = 'Things'): ThingMapLayout {
-  const drawn = around.slice(0, Math.max(0, cap));
+  const drawn = around.slice(0, Math.max(0, Math.min(cap, THING_MAP_CAP)));
   const byName = new Map<string, ThingNeighbour[]>();
   for (const n of drawn) {
     const name = n.group || otherGroup;
-    byName.set(name, [...(byName.get(name) ?? []), n]);
+    const members = byName.get(name);
+    if (members) members.push(n);
+    else byName.set(name, [n]);
   }
   const named = [...byName];
   const parted = named.length > 1;
@@ -85,6 +87,6 @@ export const THING_MAP_WORDS: ThingMapWords = {
   label: (name) => `What is around ${name}`,
   back: 'Back to its page',
   empty: 'Nothing is known around it yet.',
-  more: (n) => `${n} more around it`,
+  more: THING_WORDS.moreAround,
   other: 'Things',
 };
