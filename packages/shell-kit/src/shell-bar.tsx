@@ -120,7 +120,8 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
             item={item}
             folder={folder}
             appsMenu={appsMenu}
-            opens={running.map((id) => openTile(id))}
+            opens={running.map((id) => byId.get(id)!)}
+            openTile={(a) => openTile(a.id)}
           />
         )}
       </AppBar>
@@ -130,18 +131,22 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
 
 type Group = { group: ShellAppGroup; apps: ShellApp[] };
 
-/** The desktop's tiles: the groups, More for those that don't fit, then the open apps. */
-
 /**
- * How many groups get a tile of their own on a bar with `room` tiles, beside the logo and `opens` open apps.
- * The rest go under More. On a narrow bar that can be none: the logo and More alone, so nothing is cut off.
+ * What gets a tile of its own on the desktop bar, with `room` tiles across it: the logo, then `groups` groups
+ * (a folder bar has one, Apps, which never folds), then `opens` open apps. When they don't all fit, More takes
+ * the rest, groups first, so nothing runs past the edge however narrow the screen (WCAG 2.2 reflow at 320 px).
+ * More then always holds at least two things, never standing in for one. On a folder bar, Apps takes them.
  */
-export const groupsShown = (groups: number, room: number, opens: number) => {
-  const space = room - opens - 1;
-  return groups <= space ? groups : Math.max(0, space - 1);
+export const desktopFit = (groups: number, opens: number, room: number, folder = false) => {
+  if (1 + groups + opens <= room) return { groups, opens, more: false };
+  // A folder bar's Apps tile already holds a menu: the open apps that don't fit go under it, not under More.
+  if (folder) return { groups, opens: Math.min(opens, Math.max(0, room - 1 - groups)), more: false };
+  const opensShown = Math.min(opens, Math.max(0, room - 2));
+  return { groups: Math.max(0, room - 2 - opensShown), opens: opensShown, more: true };
 };
 
-function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens }: {
+/** The desktop's tiles: the groups, More for those that don't fit, then the open apps. */
+function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens, openTile }: {
   logo: ReactNode;
   groups: Group[];
   holds: 'groups' | 'folder';
@@ -150,27 +155,36 @@ function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, app
   item(a: ShellApp): ReactNode;
   folder(g: Group): ReactNode;
   appsMenu: ReactNode;
-  opens: ReactNode[];
+  opens: ShellApp[];
+  openTile(a: ShellApp): ReactNode;
 }) {
   const { room } = useAppBar();
-  const cut = groupsShown(groups.length, room, opens.length);
-  const rest = groups.slice(cut);
+  const inFolder = holds === 'folder';
+  const fit = desktopFit(inFolder ? 1 : groups.length, opens.length, room, inFolder);
+  const rest = inFolder ? [] : groups.slice(fit.groups);
+  const later = opens.slice(fit.opens);
   const all = groups.flatMap((g) => g.apps);
   return (
     <>
       {logo}
-      {holds === 'folder' ? (
-        <BarTile icon="apps" name="Apps" start menu={appsMenu} lit={litGroup(all)} lead={leadGroup(all)} />
+      {inFolder ? (
+        <BarTile icon="apps" name="Apps" start menu={<>{appsMenu}{later.map(item)}</>} lit={litGroup(all) || litGroup(later)} lead={leadGroup(all) || leadGroup(later)} />
       ) : (
-        <>
-          {groups.slice(0, cut).map((g) => (
-            <BarTile key={g.group.id || 'apps'} icon={g.group.icon} name={g.group.name} menu={<>{g.apps.map(item)}</>} lit={litGroup(g.apps)} lead={leadGroup(g.apps)} />
-          ))}
-          {rest.length ? <BarTile icon="more" name="More" menu={<>{rest.map(folder)}</>} lit={rest.some((g) => litGroup(g.apps))} /> : null}
-        </>
+        groups.slice(0, fit.groups).map((g) => (
+          <BarTile key={g.group.id || 'apps'} icon={g.group.icon} name={g.group.name} menu={<>{g.apps.map(item)}</>} lit={litGroup(g.apps)} lead={leadGroup(g.apps)} />
+        ))
       )}
-      {opens.length ? <BarDivider /> : null}
-      {opens}
+      {fit.more ? (
+        <BarTile
+          icon="more"
+          name="More"
+          menu={<>{rest.map(folder)}{later.map(item)}</>}
+          lit={rest.some((g) => litGroup(g.apps)) || litGroup(later)}
+          lead={rest.some((g) => leadGroup(g.apps)) || leadGroup(later)}
+        />
+      ) : null}
+      {fit.opens ? <BarDivider /> : null}
+      {opens.slice(0, fit.opens).map(openTile)}
     </>
   );
 }

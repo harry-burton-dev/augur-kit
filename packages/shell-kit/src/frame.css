@@ -67,14 +67,19 @@
   display: flex; flex-direction: column; gap: var(--section-gap); padding-block-end: var(--pane-inset-bottom);
 }
 .aerie-app-screen[hidden] { display: none; }
-@container aerie-pane (width < 640px) { .aerie-app-head, .aerie-app-screen { --pane-inline: var(--edge-tight); } }
+/* A tight pane: a tighter inset, and a split's columns count their padding in their width, so one stacked at
+   full width never runs past the pane (WCAG 2.2 reflow at 320 px). Wider, they keep the widths they always had. */
+@container aerie-pane (width < 640px) {
+  .aerie-app-head, .aerie-app-screen { --pane-inline: var(--edge-tight); }
+  .aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > *, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :not(.aerie-frame-pane) { box-sizing: border-box; }
+}
 /* flush and canvas: the screen meets the pane's edges; the head keeps its inset. */
 .aerie-app-frame:is([data-inset='flush'], [data-layout='canvas']) .aerie-app-screen { padding: 0; gap: 0; }
 /* split: a list column and its detail, each padding itself, a hairline between. The detail wraps under the
    list by itself when both can't keep part-min-width. The screen's first part is the list; the rest is the detail. */
 .aerie-app-frame[data-layout='split'] .aerie-app-screen { flex-direction: row; flex-wrap: wrap; align-items: stretch; align-content: flex-start; gap: 0; padding-inline: 0; }
 .aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > *, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :not(.aerie-frame-pane) {
-  box-sizing: border-box; flex: 999 1 0; min-width: min(var(--part-min-width), 100%); padding: 0 var(--pane-inline); display: flex; flex-direction: column; gap: var(--section-gap);
+  flex: 999 1 0; min-width: min(var(--part-min-width), 100%); padding: 0 var(--pane-inline); display: flex; flex-direction: column; gap: var(--section-gap);
 }
 .aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > :first-child, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :first-child:not(.aerie-frame-pane) {
   flex: 1 1 var(--split-list); padding-inline: var(--region-inset-inline); border-inline-end: 1px solid var(--hairline);

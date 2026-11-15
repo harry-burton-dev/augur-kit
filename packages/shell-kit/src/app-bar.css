@@ -35,9 +35,6 @@
 .aerie-bar[data-mode='app'] .aerie-bar-tiles { flex-direction: column; overflow: hidden; }
 /* on the desktop the tiles never scroll (More takes what doesn't fit), so light can spill past a tile */
 .aerie-bar[data-mode='desk'] .aerie-bar-tiles { overflow: visible; }
-/* except on a narrow screen with apps open: More takes groups, not open apps, so there the row scrolls, on the
-   thin bar, rather than run past the edge (WCAG 2.2 reflow at 320 px). Light past a tile is clipped then. */
-.aerie-bar[data-mode='desk'][data-narrow] .aerie-bar-tiles { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
 .aerie-bar[data-swapping] .aerie-bar-tiles { opacity: 0; }
 .aerie-bar-tiles > hr { flex: none; margin: 0; border: 0; background: var(--grey-hairline); width: 1px; align-self: stretch; }
 
