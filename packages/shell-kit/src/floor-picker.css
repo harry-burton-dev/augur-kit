@@ -111,15 +111,15 @@
 .aerie-gauge .aerie-glance { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-top: var(--space-1); padding-right: var(--space-2); border-right: 2px solid var(--needs-light); color: var(--grey-9); }
 .aerie-gauge button[data-waiting]:hover .aerie-label { grid-template: minmax(0, 1fr) / minmax(0, 1fr); opacity: 1; transition-delay: calc(var(--motion-instant) * 0); }
 
-/* ── 7. The pulse ──
+/* ── 7. The mark where something waits ──
    Where something waits, the box holds a steady needs-you mark: its edge and a faint light from below, still at
    rest (Endstate rules 8 and 10: colour only for what waits, nothing moves at rest). When something new arrives
-   the needs-you light rings out once past the box's edge and settles. The ring replays because the box is redrawn
-   for each new arrival (its key in floor-picker.tsx). Floors ring a beat apart, bottom floor first (--floor-step). */
+   on a floor, the needs-you light rings out once past that box's edge and settles (.aerie-ring, from the model's
+   arrivedOn). --ring-since is how long ago it arrived, as a negative delay, so a box drawn again later is past it. */
 .aerie-gauge button[data-waiting] .aerie-notch { color: var(--grey-9); border-color: color-mix(in srgb, var(--needs-light) 60%, var(--grey-4)); }
-.aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge button[data-waiting] .aerie-notch::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.aerie-gauge button[data-waiting] .aerie-notch::before, .aerie-gauge .aerie-ring { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .aerie-gauge button[data-waiting] .aerie-notch::before { background: radial-gradient(70% 100% at 50% 100%, color-mix(in srgb, var(--needs-light) 35%, transparent), transparent); }
-.aerie-gauge button[data-waiting] .aerie-notch::after { background: radial-gradient(circle, var(--needs-light) 0%, transparent 70%); opacity: 0; animation: aerie-waiting-arrives var(--motion-ping) var(--ease-out) 1 both; animation-delay: calc(var(--floor-step, 0) * var(--motion-quick)); }
+.aerie-gauge .aerie-ring { background: radial-gradient(circle, var(--needs-light) 0%, transparent 70%); opacity: 0; animation: aerie-waiting-arrives var(--motion-ping) var(--ease-out) 1 both; animation-delay: var(--ring-since, calc(var(--motion-instant) * 0)); }
 @keyframes aerie-waiting-arrives { from { opacity: 0.6; transform: scale(0.5); } to { opacity: 0; transform: scale(1.7); } }
 
 /* ── 8. Resting, and reduced motion ──
@@ -129,10 +129,10 @@
 .aerie-gauge.aerie-rest button[aria-disabled='true']:hover .aerie-notch { color: var(--grey-6); border-color: var(--grey-hairline); }
 /* Reduced motion, from the system or AUGUR's own switch: no ring on arrival (the steady mark stays) and the wait line doesn't climb. */
 @media (prefers-reduced-motion: reduce) {
-  .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge .aerie-ring { animation: none; }
   .aerie-gauge::before { display: none; }
 }
 :root[data-motion='reduce'] {
-  .aerie-gauge button[data-waiting] .aerie-notch::after { animation: none; }
+  .aerie-gauge .aerie-ring { animation: none; }
   .aerie-gauge::before { display: none; }
 }

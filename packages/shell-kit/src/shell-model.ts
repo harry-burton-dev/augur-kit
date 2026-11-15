@@ -312,6 +312,8 @@ export class ShellModel extends EventTarget {
   said = '';
   /** A notification just arrived and pulses the point once. */
   arriving = false;
+  /** When something last arrived that needs you, by floor id (epoch ms): the floor picker rings that floor once. */
+  arrivedOn = new Map<string, number>();
 
   private _current = '';
   private _floor = '';
@@ -511,6 +513,7 @@ export class ShellModel extends EventTarget {
   notify(n: ShellNotification) {
     this.notifications = [n, ...this.notifications.filter((x) => x.id !== n.id)];
     if (n.quiet || this.muted.includes(n.app)) return;
+    if (n.floor && n.level === 'needs') this.arrivedOn.set(n.floor, Date.now());
     this.arriving = true;
     clearTimeout(this.arriveTimer);
     this.arriveTimer = setTimeout(() => {
