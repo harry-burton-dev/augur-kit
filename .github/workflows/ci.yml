@@ -30,3 +30,13 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
+      # Apps draw only with what the remote allowlist allows: it may add, never take away, against the
+      # baseline committed beside it (scripts/check-allowlist.mjs).
+      - name: Does the remote allowlist only add?
+        run: pnpm check:allowlist
+      # Common's and Quill's public surface against their committed API reports, and the changeset a
+      # removal needs (scripts/check-api.mjs). Needs the build above.
+      - name: Do the API reports match?
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: pnpm check:api
