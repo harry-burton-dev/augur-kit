@@ -111,14 +111,26 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
       # Made from the bundle as published, so the release holds the bytes and signature AUGUR installs.
-      # If the bundle didn't go out in this run (403), there is nothing to release yet.
+      # If the bundle didn't go out in this run (403, or held behind a package that didn't), there is
+      # nothing to release yet; the last step fails the run. Otherwise wait for the registry to show it.
       - name: Release the kit
         if: steps.kit.outputs.release
         run: |
           v="${{ steps.kit.outputs.release }}"
           if [ "$(node scripts/publish-packages.mjs status @augur/kit-bundle)" != "published" ]; then
-            echo "::warning::Kit $v is not in the registry, so it is not released yet."
-            exit 0
+            case " ${{ steps.publish.outputs.blocked }} " in
+              *-kit-common@*|*-app-kit@*|*-kit-bundle@*)
+                echo "::warning::Kit $v is not in the registry, so it is not released yet."
+                exit 0 ;;
+            esac
+            for i in 1 2 3 4 5 6; do
+              sleep 10
+              [ "$(node scripts/publish-packages.mjs status @augur/kit-bundle)" = "published" ] && break
+              if [ "$i" = 6 ]; then
+                echo "::error::Kit $v was published but the registry doesn't show it after a minute. Re-run this workflow to release it."
+                exit 1
+              fi
+            done
           fi
           out="$RUNNER_TEMP/kit"
           mkdir -p "$out"

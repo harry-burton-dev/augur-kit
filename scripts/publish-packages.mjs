@@ -108,23 +108,23 @@ export function publishOrder(libs) {
 
 /**
  * What a publish run will do, decided before anything goes out: each package is "skip" (already
- * published), "blocked" (403, or an @augur package it depends on is blocked) or "publish". Throws,
- * publishing nothing, when a package to publish lacks its signature; a dry run only warns.
+ * published), "blocked" (403), "held" (it would be published, but an @augur package it depends on is
+ * blocked or held) or "publish". Throws, publishing nothing, when a package to publish lacks its
+ * signature; a dry run only warns.
  */
 export function plan(libs, published, { dryRun = false } = {}) {
-  const blocked = new Set();
+  const waiting = new Set();
   const steps = publishOrder(libs).map((lib) => {
-    if (internal(lib.pkg).some((dep) => blocked.has(dep))) {
-      blocked.add(lib.pkg.name);
-      return { ...lib, action: 'blocked' };
-    }
+    let action;
     try {
-      return { ...lib, action: published(lib) ? 'skip' : 'publish' };
+      action = published(lib) ? 'skip' : 'publish';
     } catch (err) {
       if (!isForbidden(err)) throw err;
-      blocked.add(lib.pkg.name);
-      return { ...lib, action: 'blocked' };
+      action = 'blocked';
     }
+    if (action === 'publish' && internal(lib.pkg).some((dep) => waiting.has(dep))) action = 'held';
+    if (action === 'blocked' || action === 'held') waiting.add(lib.pkg.name);
+    return { ...lib, action };
   });
   const missing = steps.filter((s) => s.action === 'publish' && unsigned(s));
   if (missing.length) {
@@ -211,8 +211,13 @@ function publish() {
   // Packages this repository may not touch are skipped, so the rest (and the kit release) still go out;
   // the Release workflow fails at its end while any are left.
   const blocked = [];
+  const held = [];
   for (const { directory, pkg, action } of steps) {
     const name = publishedName(pkg.name, scope);
+    if (action === 'held') {
+      held.push(`${name}@${pkg.version}`);
+      continue;
+    }
     if (action === 'skip') {
       console.log(`${name}@${pkg.version} is already published`);
       continue;
@@ -241,6 +246,7 @@ function publish() {
     done.push(`${name}@${pkg.version}`);
   }
   console.log(done.length ? `Published (${tag}): ${done.join(', ')}` : 'Nothing new to publish');
+  if (held.length) console.log(`::warning::Held back until the packages they depend on are published: ${held.join(', ')}.`);
   if (blocked.length) {
     const why = `This repository may not read or write ${blocked.join(', ')}: in each package's settings, add ${repository ?? 'this repository'} under Manage Actions access with the Write role.`;
     console.log(`::warning::${why}`);

@@ -117,12 +117,18 @@ test('a 403 marks that package blocked; any other failure stops the run', () => 
     if (pkg.name === '@augur/kit-common') throw forbidden;
     return false;
   });
-  assert.deepEqual(steps.map((s) => s.action), ['blocked', 'blocked'], 'the bundle depends on kit-common, so it waits too');
-  assert.deepEqual(plan([common, { directory: 'x', pkg: { name: '@augur/other', version: '1.0.0' } }], ({ pkg }) => {
-    if (pkg.name === '@augur/kit-common') throw forbidden;
-    return false;
-  }).map((s) => s.action), ['blocked', 'publish'], 'a package that does not depend on it still goes out');
+  assert.deepEqual(steps.map((s) => s.action), ['blocked', 'held'], 'the bundle depends on kit-common, so it waits');
   assert.throws(() => plan([common], () => { throw new Error('ETIMEDOUT'); }), /ETIMEDOUT/);
+});
+
+test('only a package that would be published waits for a blocked dependency', () => {
+  const forbidden = Object.assign(new Error('x'), { stderr: 'npm error code E403' });
+  const other = { directory: 'x', pkg: { name: '@augur/other', version: '1.0.0' } };
+  const steps = plan([common, bundle(true), other], ({ pkg }) => {
+    if (pkg.name === '@augur/kit-common') throw forbidden;
+    return pkg.name === '@augur/kit-bundle';
+  });
+  assert.deepEqual(steps.map((s) => [s.pkg.name, s.action]), [['@augur/kit-common', 'blocked'], ['@augur/kit-bundle', 'skip'], ['@augur/other', 'publish']]);
 });
 
 // The Release workflow, read as text: each step's `if`, by step name.
@@ -136,7 +142,12 @@ test('the release signs the kit when the bundle is not in the registry, whatever
 
 test('a bundle this repository may not publish is not released', () => {
   assert.match(workflow, /if \[ "\$published" != "blocked" \] && ! gh release view "kit@\$v"/);
-  assert.match(workflow, /if \[ "\$\(node scripts\/publish-packages.mjs status @augur\/kit-bundle\)" != "published" \]; then\n.+\n\s+exit 0\n/);
+  assert.match(workflow, /\*-kit-common@\*\|\*-app-kit@\*\|\*-kit-bundle@\*\)\n.+not released yet.+\n\s+exit 0 ;;/);
+});
+
+test('a published bundle the registry is slow to show is waited for, and fails the run rather than going unreleased', () => {
+  assert.match(workflow, /for i in 1 2 3 4 5 6; do\n\s+sleep 10\n/);
+  assert.match(workflow, /::error::Kit \$v was published but the registry doesn't show it after a minute.+\n\s+exit 1\n/);
 });
 
 test('the release builds, type-checks and tests before it signs or publishes', () => {
