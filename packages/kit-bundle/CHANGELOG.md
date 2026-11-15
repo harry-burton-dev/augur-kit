@@ -1,5 +1,12 @@
 # @augur/kit-bundle
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [cd48b20]
+  - @augur/app-kit@0.23.0
+
 ## 0.6.2
 
 ### Patch Changes
