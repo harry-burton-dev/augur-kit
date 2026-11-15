@@ -1619,6 +1619,59 @@
         "map": "nothing"
       }
     },
+    "quill-thing-map": {
+      "part": "ThingMap",
+      "properties": {
+        "thing": {
+          "object": {
+            "id": "string",
+            "name": "string",
+            "kind": {
+              "object": {
+                "name": "string",
+                "icon": "icon"
+              },
+              "required": [
+                "name",
+                "icon"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "kind"
+          ]
+        },
+        "around": {
+          "array": {
+            "object": {
+              "id": "string",
+              "relation": "string",
+              "name": "string",
+              "group": "string"
+            },
+            "required": [
+              "id",
+              "relation",
+              "name"
+            ]
+          }
+        },
+        "cap": "number",
+        "level": {
+          "enum": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "events": {
+        "open": "the id of the thing around it",
+        "back": "nothing",
+        "everything": "nothing"
+      }
+    },
     "quill-door-gallery": {
       "part": "DoorGallery",
       "properties": {
