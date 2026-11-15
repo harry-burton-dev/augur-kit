@@ -1258,6 +1258,45 @@ export const QUILL_REMOTE_ELEMENTS: {
             readonly map: "nothing";
         };
     };
+    readonly 'quill-thing-map': {
+        readonly part: "ThingMap";
+        readonly properties: {
+            readonly thing: {
+                readonly object: {
+                    readonly id: "string";
+                    readonly name: "string";
+                    readonly kind: {
+                        readonly object: {
+                            readonly name: "string";
+                            readonly icon: "icon";
+                        };
+                        readonly required: readonly ["name", "icon"];
+                    };
+                };
+                readonly required: readonly ["id", "name", "kind"];
+            };
+            readonly around: {
+                readonly array: {
+                    readonly object: {
+                        readonly id: "string";
+                        readonly relation: "string";
+                        readonly name: "string";
+                        readonly group: "string";
+                    };
+                    readonly required: readonly ["id", "relation", "name"];
+                };
+            };
+            readonly cap: "number";
+            readonly level: {
+                readonly enum: string[];
+            };
+        };
+        readonly events: {
+            readonly open: "the id of the thing around it";
+            readonly back: "nothing";
+            readonly everything: "nothing";
+        };
+    };
     readonly 'quill-door-gallery': {
         readonly part: "DoorGallery";
         readonly properties: {
@@ -1573,6 +1612,12 @@ export interface QuillRemoteEvents {
     'quill-text-field': {
         change: string;
         commit: string;
+    };
+    // (undocumented)
+    'quill-thing-map': {
+        open: string;
+        back: undefined;
+        everything: undefined;
     };
     // (undocumented)
     'quill-thing-page': {
@@ -2067,6 +2112,13 @@ export interface QuillRemoteProperties {
         busy?: boolean;
     };
     // (undocumented)
+    'quill-thing-map': {
+        thing: Pick<ThingView, 'id' | 'name' | 'kind'>;
+        around: ThingView['around'];
+        cap?: number;
+        level?: '1' | '2';
+    };
+    // (undocumented)
     'quill-thing-page': {
         view: ThingView;
         map?: boolean;
@@ -2261,10 +2313,10 @@ export type RemoteType = 'string' | 'number' | 'boolean' | 'icon' | 'scalar' | {
 // dist/remote/types.d.ts:58:9 - (ae-forgotten-export) The symbol "Id" needs to be exported by the entry point elements.d.ts
 // dist/remote/types.d.ts:62:9 - (ae-forgotten-export) The symbol "Action" needs to be exported by the entry point elements.d.ts
 // dist/remote/types.d.ts:469:9 - (ae-forgotten-export) The symbol "ThingView" needs to be exported by the entry point elements.d.ts
-// dist/remote/types.d.ts:480:9 - (ae-forgotten-export) The symbol "DoorDescriptor" needs to be exported by the entry point elements.d.ts
-// dist/remote/types.d.ts:482:9 - (ae-forgotten-export) The symbol "DoorSignal" needs to be exported by the entry point elements.d.ts
-// dist/remote/types.d.ts:483:9 - (ae-forgotten-export) The symbol "DoorRule" needs to be exported by the entry point elements.d.ts
-// dist/remote/types.d.ts:487:9 - (ae-forgotten-export) The symbol "DoorScore" needs to be exported by the entry point elements.d.ts
+// dist/remote/types.d.ts:486:9 - (ae-forgotten-export) The symbol "DoorDescriptor" needs to be exported by the entry point elements.d.ts
+// dist/remote/types.d.ts:488:9 - (ae-forgotten-export) The symbol "DoorSignal" needs to be exported by the entry point elements.d.ts
+// dist/remote/types.d.ts:489:9 - (ae-forgotten-export) The symbol "DoorRule" needs to be exported by the entry point elements.d.ts
+// dist/remote/types.d.ts:493:9 - (ae-forgotten-export) The symbol "DoorScore" needs to be exported by the entry point elements.d.ts
 
 // (No @packageDocumentation comment for this package)
 

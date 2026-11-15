@@ -74,6 +74,30 @@ describe('quill-thing-page', () => {
   });
 });
 
+describe('quill-thing-map', () => {
+  it('draws what is around a thing and sends opens and the way back', () => {
+    const heard: [string, unknown][] = [];
+    drawRemote(() => {
+      const map = document.createElement('quill-thing-map');
+      map.thing = { id: heron.id, name: heron.name, kind: heron.kind };
+      map.around = heron.around;
+      map.cap = 2;
+      for (const e of ['open', 'back', 'everything']) map.addEventListener(e, (ev) => heard.push([e, (ev as CustomEvent).detail]));
+      return map;
+    });
+    expect(document.querySelector('.quill-thing-map-name')!.textContent).toBe(heron.name);
+    expect(document.querySelectorAll('.quill-thing-map-node')).toHaveLength(2);
+    act(() => document.querySelector<HTMLButtonElement>('.quill-thing-map-node button')!.click());
+    act(() => button('Back to its page').click());
+    act(() => button(`${heron.around.length - 2} more around it`).click());
+    expect(heard).toEqual([
+      ['open', heron.around[0]!.id],
+      ['back', null],
+      ['everything', null],
+    ]);
+  });
+});
+
 describe('quill-door-gallery', () => {
   it('draws the doors with their steps and sends opens and asks back', () => {
     const heard: [string, unknown][] = [];

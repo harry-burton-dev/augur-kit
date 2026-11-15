@@ -1209,6 +1209,9 @@ export interface ListProps {
 export const loadReader: () => Promise<MarkdownIt>;
 
 // @public
+export function mapAround(around: readonly ThingNeighbour[], cap?: number, otherGroup?: string): ThingMapLayout;
+
+// @public
 export interface MarkedPassage {
     // (undocumented)
     anchor: string;
@@ -2882,6 +2885,45 @@ export const QUILL_REMOTE_ELEMENTS: {
             readonly map: "nothing";
         };
     };
+    readonly 'quill-thing-map': {
+        readonly part: "ThingMap";
+        readonly properties: {
+            readonly thing: {
+                readonly object: {
+                    readonly id: "string";
+                    readonly name: "string";
+                    readonly kind: {
+                        readonly object: {
+                            readonly name: "string";
+                            readonly icon: "icon";
+                        };
+                        readonly required: readonly ["name", "icon"];
+                    };
+                };
+                readonly required: readonly ["id", "name", "kind"];
+            };
+            readonly around: {
+                readonly array: {
+                    readonly object: {
+                        readonly id: "string";
+                        readonly relation: "string";
+                        readonly name: "string";
+                        readonly group: "string";
+                    };
+                    readonly required: readonly ["id", "relation", "name"];
+                };
+            };
+            readonly cap: "number";
+            readonly level: {
+                readonly enum: string[];
+            };
+        };
+        readonly events: {
+            readonly open: "the id of the thing around it";
+            readonly back: "nothing";
+            readonly everything: "nothing";
+        };
+    };
     readonly 'quill-door-gallery': {
         readonly part: "DoorGallery";
         readonly properties: {
@@ -3755,6 +3797,12 @@ export const THING_ANSWER_KEYS: readonly ThingAnswerKey[];
 // @public (undocumented)
 export const THING_CAPS: ThingCaps;
 
+// @public
+export const THING_MAP_CAP = 12;
+
+// @public (undocumented)
+export const THING_MAP_WORDS: ThingMapWords;
+
 // @public (undocumented)
 export const THING_PROBLEM_KINDS: readonly ThingProblemKind[];
 
@@ -3810,6 +3858,62 @@ export interface ThingFact {
     source?: ThingSource;
     // (undocumented)
     value: string;
+}
+
+// @public
+export function ThingMap(input: ThingMapProps): JSX.Element;
+
+// @public (undocumented)
+export interface ThingMapGroup {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    nodes: ThingMapNode[];
+}
+
+// @public (undocumented)
+export interface ThingMapLayout {
+    // (undocumented)
+    groups: ThingMapGroup[];
+    more: number;
+    rows: number;
+}
+
+// @public
+export interface ThingMapNode {
+    // (undocumented)
+    neighbour: ThingNeighbour;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public (undocumented)
+export interface ThingMapProps {
+    around: ThingNeighbour[];
+    cap?: number;
+    // (undocumented)
+    className?: string;
+    level?: 1 | 2;
+    onBack?: () => void;
+    onEverything?: () => void;
+    onOpen?: (id: string, neighbour: ThingNeighbour) => void;
+    thing: Pick<ThingView, 'id' | 'name' | 'kind'>;
+    // (undocumented)
+    words?: ThingMapWords;
+}
+
+// @public
+export interface ThingMapWords {
+    // (undocumented)
+    back: string;
+    // (undocumented)
+    empty: string;
+    label: (name: string) => string;
+    // (undocumented)
+    more: (n: number) => string;
+    other: string;
 }
 
 // @public

@@ -98,6 +98,7 @@ export interface QuillRemoteProperties {
   'quill-floor-path': { label?: string; floors: RemoteFloorStep[] };
   'quill-filter-bar': { label: string; filters: RemoteFilter[]; value?: Record<string, string[]>; sorts?: { value: string; label: string; detail?: string; disabled?: boolean }[]; sort?: string; count?: number; noun?: [string, string]; busy?: boolean };
   'quill-thing-page': { view: ThingView; map?: boolean; thing?: { kind: string; id?: string; label?: string }; level?: '1' | '2' };
+  'quill-thing-map': { thing: Pick<ThingView, 'id' | 'name' | 'kind'>; around: ThingView['around']; cap?: number; level?: '1' | '2' };
   'quill-door-gallery': {
     label: string;
     doors: DoorDescriptor[];
@@ -225,6 +226,7 @@ export interface QuillRemoteEvents {
   'quill-floor-path': { open: string };
   'quill-filter-bar': { change: { value: Record<string, string[]>; sort: string } };
   'quill-thing-page': { action: 'wrong' | 'follow' | 'ask' | 'send'; open: string; source: string; everything: undefined; map: undefined };
+  'quill-thing-map': { open: string; back: undefined; everything: undefined };
   'quill-door-gallery': { open: string; ask: string; recent: string };
 }
 

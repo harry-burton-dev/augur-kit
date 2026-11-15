@@ -84,6 +84,8 @@ const thingView = {
   },
   required: ['id', 'name', 'kind', 'answer', 'problems', 'facts', 'around', 'total', 'reports'],
 } as const;
+/** The thing in the middle of its map: what it is and its name. */
+const thingMapCentre = { object: { id: S, name: S, kind: thingView.object.kind }, required: ['id', 'name', 'kind'] } as const;
 const doorStep = oneOf('quiet', 'present', 'strong', 'needs');
 const doorSignalKind = oneOf('change', 'moved', 'incident', 'contradiction', 'meeting', 'due', 'coming', 'new-thing', 'question', 'queue');
 /** One thing that may wait behind a door (`DoorSignal`): the host scores the doors from these. */
@@ -595,6 +597,14 @@ export const QUILL_REMOTE_ELEMENTS = {
       everything: 'nothing',
       map: 'nothing',
     },
+  },
+  'quill-thing-map': {
+    part: 'ThingMap',
+    // What is around a thing, one step away: the thing in the middle and its neighbours round it by group,
+    // as `thing-map-layout.ts` lays them out. `around` is the page's own sentences, ranked; past `cap` the map says
+    // how many more and, when the app listens to `everything`, opens them there. `back` returns to the page.
+    properties: { thing: thingMapCentre, around: thingView.object.around, cap: N, level: oneOf('1', '2') },
+    events: { open: 'the id of the thing around it', back: 'nothing', everything: 'nothing' },
   },
   'quill-door-gallery': {
     part: 'DoorGallery',

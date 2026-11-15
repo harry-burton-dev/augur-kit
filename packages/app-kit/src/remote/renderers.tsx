@@ -25,7 +25,8 @@ import { TagPicker } from '../tag-picker.js';
 import { AddTile, KindTile, Tiles } from '../tiles.js';
 import { Grid, Split, Stack } from '../layout.js';
 import { ThingPage } from '../thing-page.js';
-import type { ThingActionId, ThingView } from '../thing-view.js';
+import { ThingMap, type ThingMapProps } from '../thing-map.js';
+import type { ThingActionId, ThingNeighbour, ThingView } from '../thing-view.js';
 import { AskLine, DoorGallery } from '../door-gallery.js';
 import { DEFAULT_RULE, scoreDoors, type DoorDescriptor, type DoorRule, type DoorScore, type DoorSignal } from '../doors.js';
 import { readerPicturePath, type QuillRemoteElementName } from './vocabulary.js';
@@ -690,6 +691,24 @@ export const renderers: Record<QuillRemoteElementName, (parts: RemoteParts) => R
         onSource={source ? (s) => source(s.id ?? s.title) : undefined}
         onEverything={everything ? () => everything() : undefined}
         onMap={map && toMap ? () => toMap() : undefined}
+      />
+    );
+  },
+  'quill-thing-map': (parts) => {
+    const { thing, around = [], cap, level } = p(parts);
+    if (!thing) return null;
+    const open = event(parts, 'open');
+    const back = event(parts, 'back');
+    const everything = event(parts, 'everything');
+    return (
+      <ThingMap
+        thing={thing as ThingMapProps['thing']}
+        around={around as ThingNeighbour[]}
+        cap={cap}
+        level={level === '2' ? 2 : 1}
+        onOpen={open ? (id) => open(id) : undefined}
+        onBack={back ? () => back() : undefined}
+        onEverything={everything ? () => everything() : undefined}
       />
     );
   },

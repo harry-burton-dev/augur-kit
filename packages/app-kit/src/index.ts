@@ -46,4 +46,6 @@ export { QUILL_REMOTE_ELEMENTS, quillRemoteElementNames, isQuillRemoteElement, c
 export { VIRTUAL_FROM } from './remote/renderers.js';
 export { thingProps, type ThingMark } from './thing.js';
 export { ThingPage, TrustLine, type ThingPageProps, type TrustLineProps } from './thing-page.js';
+export { ThingMap, type ThingMapProps } from './thing-map.js';
+export { mapAround, THING_MAP_CAP, THING_MAP_WORDS, type ThingMapGroup, type ThingMapLayout, type ThingMapNode, type ThingMapWords } from './thing-map-layout.js';
 export { primaryAction, thingActions, trustLine, shortDate, atRest, validateThing, THING_CAPS, THING_ACTIONS, THING_QUIET_ORDER, THING_WORDS, THING_ANSWER_KEYS, THING_PROBLEM_KINDS, type ThingView, type ThingAnswer, type ThingAnswerKey, type ThingProblem, type ThingProblemKind, type ThingFact, type ThingNeighbour, type ThingSource, type ThingCaps, type ThingAction, type ThingActionId, type ThingWords } from './thing-view.js';
