@@ -1,5 +1,17 @@
 # @augur/shell-kit
 
+## 0.16.0
+
+### Minor Changes
+
+- 21eab1c: The desktop bar no longer runs past the edge on a narrow screen, down to 320 px (WCAG 2.2 reflow). More takes the open apps that don't fit as well as the groups, groups first, and lights and leads for what's under it, an open app that's off included. On a folder bar, Apps already lists them. More always holds two things or more. A split pane's column that can't keep part-min-width fills the pane inside its own padding, so none runs past it; wider panes keep their widths.
+
+### Patch Changes
+
+- aa98056: Muted text comes from the `ink-muted` token, never from transparency (WCAG 2.2, 1.4.3). Placeholders (fields, selects, the editor, the Shell's search) use `ink-muted` as it is, not a see-through mix of it. Someone away, a seen event, a read notification, a settled thread and a locked tile step back in `ink-muted` instead of fading, so their words keep 4.5:1; their pictures still fade. Only an inactive control still fades.
+- Updated dependencies [aa98056]
+  - @augur/kit-common@0.21.2
+
 ## 0.15.1
 
 ### Patch Changes
