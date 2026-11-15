@@ -3,3 +3,7 @@ packages:
   - "storybook"
 onlyBuiltDependencies:
   - esbuild
+# API Extractor asks for a minimatch release with a known vulnerability; take the patched release, as AUGUR
+# does. Drop this once it moves past it.
+overrides:
+  "@microsoft/api-extractor>minimatch": 11.0.4

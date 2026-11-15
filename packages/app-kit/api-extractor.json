@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  // Quill's public surface (entry point `@augur/app-kit`), written to etc/ and checked in CI (scripts/check-api.mjs, as in AUGUR's ADR 0052).
+  // A change to the report is a change to what apps build against: a removal needs a breaking changeset.
+  "mainEntryPointFilePath": "<projectFolder>/dist/index.d.ts",
+  "apiReport": {
+    "enabled": true,
+    "reportFileName": "app-kit",
+    "reportFolder": "<projectFolder>/etc/",
+    "reportTempFolder": "<projectFolder>/dist/api/"
+  },
+  "docModel": { "enabled": false },
+  "dtsRollup": { "enabled": false },
+  "tsdocMetadata": { "enabled": false },
+  "messages": {
+    "extractorMessageReporting": {
+      // The whole export is the surface; we don't tag @public/@beta per symbol.
+      "ae-missing-release-tag": { "logLevel": "none" }
+    },
+    // The comments are for people reading the code, not TSDoc: no doc site is built from them.
+    "tsdocMessageReporting": {
+      "default": { "logLevel": "none" }
+    }
+  }
+}
