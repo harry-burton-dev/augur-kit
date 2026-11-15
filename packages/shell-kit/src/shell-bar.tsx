@@ -131,6 +131,16 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
 type Group = { group: ShellAppGroup; apps: ShellApp[] };
 
 /** The desktop's tiles: the groups, More for those that don't fit, then the open apps. */
+
+/**
+ * How many groups get a tile of their own on a bar with `room` tiles, beside the logo and `opens` open apps.
+ * The rest go under More. On a narrow bar that can be none: the logo and More alone, so nothing is cut off.
+ */
+export const groupsShown = (groups: number, room: number, opens: number) => {
+  const space = room - opens - 1;
+  return groups <= space ? groups : Math.max(0, space - 1);
+};
+
 function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens }: {
   logo: ReactNode;
   groups: Group[];
@@ -143,8 +153,7 @@ function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, app
   opens: ReactNode[];
 }) {
   const { room } = useAppBar();
-  const space = room - opens.length - 1;
-  const cut = groups.length <= space ? groups.length : Math.max(1, space - 1);
+  const cut = groupsShown(groups.length, room, opens.length);
   const rest = groups.slice(cut);
   const all = groups.flatMap((g) => g.apps);
   return (

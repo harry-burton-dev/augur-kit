@@ -74,7 +74,7 @@
    list by itself when both can't keep part-min-width. The screen's first part is the list; the rest is the detail. */
 .aerie-app-frame[data-layout='split'] .aerie-app-screen { flex-direction: row; flex-wrap: wrap; align-items: stretch; align-content: flex-start; gap: 0; padding-inline: 0; }
 .aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > *, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :not(.aerie-frame-pane) {
-  flex: 999 1 0; min-width: min(var(--part-min-width), 100%); padding: 0 var(--pane-inline); display: flex; flex-direction: column; gap: var(--section-gap);
+  box-sizing: border-box; flex: 999 1 0; min-width: min(var(--part-min-width), 100%); padding: 0 var(--pane-inline); display: flex; flex-direction: column; gap: var(--section-gap);
 }
 .aerie-app-frame[data-layout='split'] .aerie-app-screen :where(.aerie-frame-pane) > :first-child, .aerie-app-frame[data-layout='split'] .aerie-app-screen > :first-child:not(.aerie-frame-pane) {
   flex: 1 1 var(--split-list); padding-inline: var(--region-inset-inline); border-inline-end: 1px solid var(--hairline);
