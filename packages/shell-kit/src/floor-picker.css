@@ -26,8 +26,8 @@
   display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);
   transition: gap var(--motion-base) var(--ease-standard);
 }
-/* the rail: a hairline down the middle of the boxes */
-.aerie-gauge ol::before { content: ''; position: absolute; top: var(--space-4); bottom: var(--space-4); right: calc(var(--gauge-notch) / 2 - 0.5px); width: 1px; background: var(--grey-hairline); }
+/* the rail: a hairline down the middle of the boxes, from the first box's centre to the last's */
+.aerie-gauge ol::before { content: ''; position: absolute; top: calc(var(--gauge-notch) / 2); bottom: calc(var(--gauge-notch) / 2); right: calc(var(--gauge-notch) / 2 - 0.5px); width: 1px; background: var(--grey-hairline); }
 .aerie-gauge button { position: relative; display: flex; align-items: center; justify-content: flex-end; color: var(--grey-6); text-align: right; }
 .aerie-gauge button:focus-visible { outline: 0; }
 /* a floor's box, with its icon */

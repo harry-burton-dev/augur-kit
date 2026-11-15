@@ -326,7 +326,7 @@
     "gauge-notch": {
       "$value": "32px",
       "$type": "dimension",
-      "$description": "The floor picker's box: the square mark for each floor. 32px, Endstate's box size."
+      "$description": "The floor picker's box: the square mark for each floor, at Endstate's box size."
     },
     "gauge-words": {
       "$value": "240px",
