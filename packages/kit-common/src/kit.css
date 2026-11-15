@@ -279,7 +279,7 @@
     font-size: var(--type-body); line-height: var(--leading-body); padding: var(--space-3) 0; resize: none;
   }
   textarea.augur-input { overflow: hidden; }
-  .augur-input::placeholder { color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
+  .augur-input::placeholder { color: var(--ink-muted); }
   .augur-state-mark { flex: none; display: flex; width: var(--glyph-lg); height: var(--glyph-lg); }
   .augur-state-mark:empty { display: none; }
   .augur-field-foot { display: flex; justify-content: space-between; gap: var(--space-3); min-height: var(--leading-small); }
@@ -317,7 +317,7 @@
     flex: 1; min-width: 0; padding: var(--space-3) 0; font-size: var(--type-body); line-height: var(--leading-body); color: var(--ink);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .augur-select-value[data-placeholder] { color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
+  .augur-select-value[data-placeholder] { color: var(--ink-muted); }
   .augur-chevron { flex: none; display: flex; color: var(--ink-muted); transition: transform var(--motion-base) var(--ease-standard); }
   .augur-field[data-open] .augur-chevron { transform: rotate(180deg); color: var(--ink); }
   /* Lists, menus and tips open over the shell's band, and over a dialog they open from. Depth is dimming only, never a blur (PDR-015). */
@@ -709,10 +709,17 @@
   /* People (Disc, PDR-018): the one true circle left. A flat grey disc with Instrument Sans initials, ringed
      in the floor's colour; you are ringed in plain ink, because green only means "needs you". Someone away
      is dimmed back, mark and name: presence is the kit's one depth move, never a dot or a colour. */
-  .augur-person { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); transition: opacity var(--motion-base) var(--ease-standard); }
+  .augur-person { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--type-meta); line-height: var(--leading-meta); color: var(--ink); transition: color var(--motion-base) var(--ease-standard); }
   .augur-person-text { display: flex; flex-direction: column; min-width: 0; }
   .augur-person-text small { font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
-  :is(.augur-person, .augur-people-one)[data-away] { opacity: 0.42; }
+  /*
+   * Stepped back: someone away, a seen event, a read note, a settled thread. Their words turn ink-muted rather than
+   * fading, so they keep 4.5:1 (WCAG 1.4.3); --ink follows, so parts drawn in ink step back with them. Marks are not
+   * words: a picture still fades, and an avatar's floor ring goes. Only an inactive control fades as a whole.
+   */
+  :is(.augur-person[data-away], .augur-people-one[data-away], .augur-event[data-seen], .augur-note:not([data-unread]) .augur-note-row, .augur-settled-body) { --ink: var(--ink-muted); color: var(--ink-muted); }
+  :is(.augur-person[data-away], .augur-people-one[data-away], .augur-event[data-seen], .augur-note:not([data-unread]) .augur-note-row, .augur-settled-body) .augur-avatar { --floor: transparent; }
+  :is(.augur-person[data-away], .augur-people-one[data-away], .augur-event[data-seen], .augur-note:not([data-unread]) .augur-note-row, .augur-settled-body) .augur-avatar img { opacity: 0.42; }
   .augur-avatar {
     --floor: transparent; --size: var(--space-5);
     position: relative; flex: none; display: grid; place-items: center; width: var(--size); height: var(--size); box-sizing: border-box; overflow: hidden; border-radius: 50%;
@@ -727,7 +734,7 @@
   .augur-avatar[data-tone='org'] { --floor: var(--floor-org-high); }
   .augur-avatar-more { background: transparent; color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
   .augur-people { display: inline-flex; }
-  .augur-people-one { display: inline-flex; border-radius: 50%; transition: opacity var(--motion-base) var(--ease-standard); }
+  .augur-people-one { display: inline-flex; border-radius: 50%; transition: color var(--motion-base) var(--ease-standard); }
   .augur-people > * + * { margin-left: calc(var(--space-1) * -1); }
   .augur-people > * + * .augur-avatar, .augur-people > .augur-avatar-more { outline: 2px solid var(--slate-deep); }
   :is(.augur-people-label, .augur-comments-head, .augur-activity-head, .augur-activity-asks-head, .augur-notes-head, .augur-point-label, .augur-since span, .augur-event-at, .augur-note-at, .augur-comment-by span, .augur-activity-pages > span) {
@@ -758,11 +765,11 @@
   .augur-settled { display: flex; flex-direction: column; gap: var(--space-1); }
   .augur-settled-line {
     display: flex; align-items: center; gap: var(--space-1); width: 100%; padding: var(--space-1) 0; border: 0; background: none; color: var(--ink);
-    font: inherit; font-size: var(--type-small); text-align: left; opacity: 0.42; cursor: pointer; transition: opacity var(--motion-quick) var(--ease-standard);
+    font: inherit; font-size: var(--type-small); text-align: left; color: var(--ink-muted); cursor: pointer; transition: color var(--motion-quick) var(--ease-standard);
   }
-  .augur-settled-line:hover, .augur-settled-line[aria-expanded='true'] { opacity: 0.72; }
-  .augur-settled-line:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); opacity: 1; }
-  .augur-settled-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-3); opacity: 0.72; }
+  .augur-settled-line:hover, .augur-settled-line[aria-expanded='true'] { color: var(--ink); }
+  .augur-settled-line:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); color: var(--ink); }
+  .augur-settled-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-3); }
 
   /* Activity (Since you left): asks pulled above in the one colour; below, one line per event with a mono
      time column; one ink line where you last looked, and what you had seen dimmed under it. */
@@ -770,8 +777,7 @@
   .augur-activity-asks { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--needs-you); }
   .augur-activity-asks .augur-activity-asks-head { margin: 0; color: var(--needs-you); }
   .augur-events { display: flex; flex-direction: column; gap: var(--space-2); }
-  .augur-event { display: flex; align-items: center; gap: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); transition: opacity var(--motion-base) var(--ease-standard); }
-  .augur-event[data-seen] { opacity: 0.42; }
+  .augur-event { display: flex; align-items: center; gap: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); transition: color var(--motion-base) var(--ease-standard); }
   .augur-event-at { flex: none; width: 3.5em; }
   .augur-event-text b { font-weight: 500; }
   .augur-event-what { padding: 0; border: 0; border-bottom: 1px solid var(--hairline-strong); background: none; color: inherit; font: inherit; }
@@ -800,7 +806,6 @@
   button.augur-note-row { cursor: pointer; }
   button.augur-note-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
   button.augur-note-row:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--focus-ring) var(--focus); }
-  .augur-note:not([data-unread]) .augur-note-row { opacity: 0.6; }
   .augur-note[data-unread] .augur-note-row { background: color-mix(in srgb, var(--ink) 7%, var(--well)); border-bottom-color: color-mix(in srgb, var(--ink) 18%, transparent); }
   .augur-note[data-needs] .augur-note-row { box-shadow: inset var(--key-edge-sm) 0 0 var(--needs-you); }
   .augur-note[data-needs] .augur-note-row:focus-visible { box-shadow: inset var(--key-edge-sm) 0 0 var(--needs-you), inset 0 0 0 var(--focus-ring) var(--focus); }

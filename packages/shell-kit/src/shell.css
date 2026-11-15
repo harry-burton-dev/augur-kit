@@ -180,7 +180,7 @@
 .aerie-search:focus-within { border-bottom-color: var(--focus); box-shadow: 0 1px 0 var(--focus); }
 .aerie-search svg { color: var(--ink-muted); }
 .aerie-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: var(--type-lead); line-height: var(--leading-lead); padding: var(--space-3) 0; }
-.aerie-search input::placeholder { color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
+.aerie-search input::placeholder { color: var(--ink-muted); }
 .aerie-pair { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-4); border-bottom: 1px solid var(--hairline); }
 .aerie-pair > span { color: var(--ink-muted); }
 .aerie-pair.aerie-version b { font-weight: inherit; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
