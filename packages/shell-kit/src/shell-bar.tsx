@@ -116,6 +116,7 @@ export function ShellBar({ model, inert }: { model: ShellModel; inert?: boolean 
             groups={groups}
             holds={model.barHolds}
             litGroup={litGroup}
+            litOpen={(list) => list.some((a) => lit(a.id))}
             leadGroup={leadGroup}
             item={item}
             folder={folder}
@@ -135,22 +136,24 @@ type Group = { group: ShellAppGroup; apps: ShellApp[] };
  * What gets a tile of its own on the desktop bar, with `room` tiles across it: the logo, then `groups` groups
  * (a folder bar has one, Apps, which never folds), then `opens` open apps. When they don't all fit, More takes
  * the rest, groups first, so nothing runs past the edge however narrow the screen (WCAG 2.2 reflow at 320 px).
- * More then always holds at least two things, never standing in for one. On a folder bar, Apps takes them.
+ * More then always holds at least two things, never standing in for one. On a folder bar, Apps already lists them.
  */
 export const desktopFit = (groups: number, opens: number, room: number, folder = false) => {
   if (1 + groups + opens <= room) return { groups, opens, more: false };
-  // A folder bar's Apps tile already holds a menu: the open apps that don't fit go under it, not under More.
+  // A folder bar's Apps menu already lists every app, open ones marked so: those that don't fit are there.
   if (folder) return { groups, opens: Math.min(opens, Math.max(0, room - 1 - groups)), more: false };
   const opensShown = Math.min(opens, Math.max(0, room - 2));
   return { groups: Math.max(0, room - 2 - opensShown), opens: opensShown, more: true };
 };
 
 /** The desktop's tiles: the groups, More for those that don't fit, then the open apps. */
-function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, appsMenu, opens, openTile }: {
+function DeskTiles({ logo, groups, holds, litGroup, litOpen, leadGroup, item, folder, appsMenu, opens, openTile }: {
   logo: ReactNode;
   groups: Group[];
   holds: 'groups' | 'folder';
   litGroup(list: ShellApp[]): boolean;
+  /** Whether any of these open apps needs you, as its own tile would light: even one that's off. */
+  litOpen(list: ShellApp[]): boolean;
   leadGroup(list: ShellApp[]): boolean;
   item(a: ShellApp): ReactNode;
   folder(g: Group): ReactNode;
@@ -163,12 +166,14 @@ function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, app
   const fit = desktopFit(inFolder ? 1 : groups.length, opens.length, room, inFolder);
   const rest = inFolder ? [] : groups.slice(fit.groups);
   const later = opens.slice(fit.opens);
+  // An open app whose group is under More too is already in that group's folder; the rest are listed loose.
+  const loose = later.filter((a) => !rest.some((g) => g.apps.includes(a)));
   const all = groups.flatMap((g) => g.apps);
   return (
     <>
       {logo}
       {inFolder ? (
-        <BarTile icon="apps" name="Apps" start menu={<>{appsMenu}{later.map(item)}</>} lit={litGroup(all) || litGroup(later)} lead={leadGroup(all) || leadGroup(later)} />
+        <BarTile icon="apps" name="Apps" start menu={appsMenu} lit={litGroup(all) || litOpen(later)} lead={leadGroup(all)} />
       ) : (
         groups.slice(0, fit.groups).map((g) => (
           <BarTile key={g.group.id || 'apps'} icon={g.group.icon} name={g.group.name} menu={<>{g.apps.map(item)}</>} lit={litGroup(g.apps)} lead={leadGroup(g.apps)} />
@@ -178,8 +183,8 @@ function DeskTiles({ logo, groups, holds, litGroup, leadGroup, item, folder, app
         <BarTile
           icon="more"
           name="More"
-          menu={<>{rest.map(folder)}{later.map(item)}</>}
-          lit={rest.some((g) => litGroup(g.apps)) || litGroup(later)}
+          menu={<>{rest.map(folder)}{loose.map(item)}</>}
+          lit={rest.some((g) => litGroup(g.apps)) || litOpen(later)}
           lead={rest.some((g) => leadGroup(g.apps)) || leadGroup(later)}
         />
       ) : null}
