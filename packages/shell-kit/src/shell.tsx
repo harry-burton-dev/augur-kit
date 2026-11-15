@@ -38,7 +38,7 @@ const isTyping = (e: Event) => {
  * the floor you're on, system status, the apps and the notification stream,
  * and nothing about any app's domain. Apps go in its children (the stage).
  *
- * Summoned with ` or Ctrl/⌘ K, the handle or the status, it is like looking
+ * Summoned with ` (unless Settings turns it off; never from a text field) or Ctrl/⌘ K, the handle or the status, it is like looking
  * up: the app tips away below and the functions sit on a shallow arc with
  * the stream at its top. Esc goes back a step, then closes. It draws a
  * `ShellModel`; the host sets what it knows on the model and listens to it.
@@ -69,7 +69,11 @@ export function Shell({ model, children, pane }: ShellProps) {
 
   useEffect(() => {
     const onWindowKey = (e: KeyboardEvent) => {
-      const summon = (e.key === '`' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping(e)) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k');
+      // ` is a character: a text field keeps it, and it can be turned off (WCAG 2.1.4). Ctrl or ⌘ K works anywhere,
+      // except where the focused part has taken it for itself (an editor's link, say) and said so with preventDefault.
+      const summon =
+        (e.key === '`' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping(e) && model.summonKeyOn) ||
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !e.defaultPrevented);
       if (summon) {
         e.preventDefault();
         model.toggle();
@@ -586,8 +590,8 @@ function Account({ model }: { model: ShellModel }) {
 }
 
 /** The keys the menu answers to, said in Settings. */
-const shellKeys = (floors: boolean) => [
-  { keys: '`', does: 'Open or close the shell (also Ctrl or ⌘ K)' },
+const shellKeys = (floors: boolean, summonKey: boolean) => [
+  summonKey ? { keys: '`', does: 'Open or close the shell (also Ctrl or ⌘ K)' } : { keys: 'Ctrl or ⌘ K', does: 'Open or close the shell' },
   { keys: '← →', does: 'Move along the arc' },
   { keys: 'Enter', does: 'Open' },
   { keys: 'x', does: 'Dismiss a notification' },
@@ -612,12 +616,13 @@ function Settings({ model }: { model: ShellModel }) {
       {toggle('aerie-rm', 'Reduce motion', !!s.reduceMotion, () => model.setSetting('reduceMotion', !s.reduceMotion))}
       {toggle('aerie-at', 'Area titles', s.areaTitles !== false, () => model.setSetting('areaTitles', s.areaTitles === false))}
       {toggle('aerie-ts', 'Toasts for new notifications', !!s.toasts, () => model.setSetting('toasts', !s.toasts))}
+      {toggle('aerie-sk', 'Open with `', model.summonKeyOn, () => model.setSetting('summonKey', !model.summonKeyOn))}
       <MenuPair label="Density">
         <MenuChoice label="Density" options={densities} value={s.density ?? 'comfortable'} onChange={(d) => model.setSetting('density', d as 'comfortable' | 'compact')} />
       </MenuPair>
       {model.version ? <MenuPair label="Version" value={model.version} version /> : null}
       <MenuGroup name="Keys" />
-      <MenuKeys keys={shellKeys(model.floors.length > 0)} />
+      <MenuKeys keys={shellKeys(model.floors.length > 0, model.summonKeyOn)} />
     </>
   );
 }

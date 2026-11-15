@@ -139,6 +139,8 @@ export interface ShellSettings {
   barStop?: 0 | 1 | 2 | 3;
   /** Off unless true: the host says each new notification once as a toast; the Shell itself still only pulses. */
   toasts?: boolean;
+  /** On unless false: ` alone opens and closes the Shell. Off, only Ctrl or ⌘ K does (WCAG 2.1.4, Character Key Shortcuts). */
+  summonKey?: boolean;
 }
 
 /** An area title card: the kind of place or the floor above, its name large, and who sees it. */
@@ -591,6 +593,11 @@ export class ShellModel extends EventTarget {
     this.settings = { ...this.settings, [key]: value };
     this.requestUpdate();
     this.emit('ui-setting', { key, value });
+  }
+
+  /** Whether ` alone opens and closes the Shell: on unless Settings turned it off. */
+  get summonKeyOn(): boolean {
+    return this.settings.summonKey !== false;
   }
 
   /** The floor the person is on, when floors are set. */
