@@ -127,6 +127,63 @@ describe('Shell floor keys', () => {
   });
 });
 
+// WCAG 2.2 2.1.4 Character Key Shortcuts: a one-key shortcut can be turned off, and a text field keeps its own keys.
+describe('Shell summon keys', () => {
+  const press = (init: KeyboardEventInit, on: EventTarget = window) =>
+    act(() => void on.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, composed: true, ...init })));
+
+  it('opens and closes with ` and with Ctrl or ⌘ K', () => {
+    const model = exampleShell();
+    draw(model);
+    press({ key: '`' });
+    expect(model.isOpen).toBe(true);
+    press({ key: 'k', ctrlKey: true });
+    expect(model.isOpen).toBe(false);
+    press({ key: 'K', metaKey: true });
+    expect(model.isOpen).toBe(true);
+  });
+
+  it('leaves ` alone once the one-key shortcut is off, and Ctrl or ⌘ K still works', () => {
+    const model = exampleShell();
+    model.setSetting('summonKey', false);
+    draw(model);
+    press({ key: '`' });
+    expect(model.isOpen).toBe(false);
+    press({ key: 'k', ctrlKey: true });
+    expect(model.isOpen).toBe(true);
+  });
+
+  it('gives ` and Ctrl or ⌘ K to the text field they are typed in', () => {
+    const model = exampleShell();
+    draw(model);
+    const field = document.createElement('input');
+    document.body.append(field);
+    try {
+      for (const init of [{ key: '`' }, { key: 'k', ctrlKey: true }, { key: 'k', metaKey: true }]) {
+        press(init, field);
+        expect(model.isOpen).toBe(false);
+      }
+    } finally {
+      field.remove();
+    }
+  });
+
+  it('offers the switch in Settings, and the keys list says what opens the shell', () => {
+    const model = exampleShell();
+    draw(model);
+    act(() => model.openView('settings'));
+    const on = document.querySelector<HTMLButtonElement>('[role="switch"][aria-labelledby="aerie-sk"]')!;
+    expect(document.getElementById('aerie-sk')!.textContent).toBe('Open with `');
+    expect(on.getAttribute('aria-checked')).toBe('true');
+    act(() => on.click());
+    expect(model.settings.summonKey).toBe(false);
+    expect(on.getAttribute('aria-checked')).toBe('false');
+    const keys = [...document.querySelectorAll('.aerie-keys kbd')].map((k) => k.textContent);
+    expect(keys).toContain('Ctrl or ⌘ K');
+    expect(keys).not.toContain('`');
+  });
+});
+
 describe('Shell floor gauge', () => {
   it('keeps a lane of its own, so the open app ends where the gauge starts', () => {
     const model = exampleShell();

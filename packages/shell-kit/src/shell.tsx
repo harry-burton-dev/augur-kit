@@ -69,7 +69,8 @@ export function Shell({ model, children, pane }: ShellProps) {
 
   useEffect(() => {
     const onWindowKey = (e: KeyboardEvent) => {
-      const summon = (e.key === '`' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping(e)) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k');
+      // A text field keeps every key typed in it, Ctrl or ⌘ K too (the field's own, as a link in an editor is).
+      const summon = !isTyping(e) && ((e.key === '`' && !e.ctrlKey && !e.metaKey && !e.altKey && model.settings.summonKey !== false) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'));
       if (summon) {
         e.preventDefault();
         model.toggle();
@@ -586,8 +587,8 @@ function Account({ model }: { model: ShellModel }) {
 }
 
 /** The keys the menu answers to, said in Settings. */
-const shellKeys = (floors: boolean) => [
-  { keys: '`', does: 'Open or close the shell (also Ctrl or ⌘ K)' },
+const shellKeys = (floors: boolean, summonKey: boolean) => [
+  summonKey ? { keys: '`', does: 'Open or close the shell (also Ctrl or ⌘ K)' } : { keys: 'Ctrl or ⌘ K', does: 'Open or close the shell' },
   { keys: '← →', does: 'Move along the arc' },
   { keys: 'Enter', does: 'Open' },
   { keys: 'x', does: 'Dismiss a notification' },
@@ -612,12 +613,13 @@ function Settings({ model }: { model: ShellModel }) {
       {toggle('aerie-rm', 'Reduce motion', !!s.reduceMotion, () => model.setSetting('reduceMotion', !s.reduceMotion))}
       {toggle('aerie-at', 'Area titles', s.areaTitles !== false, () => model.setSetting('areaTitles', s.areaTitles === false))}
       {toggle('aerie-ts', 'Toasts for new notifications', !!s.toasts, () => model.setSetting('toasts', !s.toasts))}
+      {toggle('aerie-sk', 'Open with `', s.summonKey !== false, () => model.setSetting('summonKey', s.summonKey === false))}
       <MenuPair label="Density">
         <MenuChoice label="Density" options={densities} value={s.density ?? 'comfortable'} onChange={(d) => model.setSetting('density', d as 'comfortable' | 'compact')} />
       </MenuPair>
       {model.version ? <MenuPair label="Version" value={model.version} version /> : null}
       <MenuGroup name="Keys" />
-      <MenuKeys keys={shellKeys(model.floors.length > 0)} />
+      <MenuKeys keys={shellKeys(model.floors.length > 0, s.summonKey !== false)} />
     </>
   );
 }
