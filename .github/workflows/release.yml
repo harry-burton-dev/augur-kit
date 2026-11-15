@@ -7,10 +7,10 @@ name: Release
 #      before it is published (the package carries the signature, and the publish script refuses the
 #      bundle without it);
 #   3. when there is no GitHub release kit@<version> yet, makes one: the bundle as kit-<version>.tgz and
-#      its kit.json, each signed, so the signature names this workflow on this repository's main. If the
-#      bundle was already published by an earlier run, the release is made from the published package,
-#      so its bytes and signature are the ones AUGUR installs. AUGUR's release checks it, then serves the
-#      bundle at its KIT_URL (ADR 0048 in the AUGUR repository). Every kit release starts as a beta.
+#      its kit.json, each signed, so the signature names this workflow on this repository's main. The
+#      release is made from the bundle as published (by this run or an earlier one), so its bytes and
+#      signature are the ones AUGUR installs. AUGUR's release checks it, then serves the bundle at its
+#      KIT_URL (ADR 0048 in the AUGUR repository). Every kit release starts as a beta.
 # Nothing is published until the packages are built, type-checked and tested.
 on:
   push:
@@ -75,9 +75,10 @@ jobs:
       - name: Test
         if: steps.pending.outputs.releases == '0'
         run: pnpm test
-      # Two questions, asked apart: is the bundle in the registry (then it is signed already, and must
-      # not be signed or built again), and is there a GitHub release for it. A run that stopped between
-      # publishing and releasing answers yes to the first and no to the second.
+      # Two questions, asked apart: is the bundle in the registry (if not, it is signed now, before it is
+      # published), and is there a GitHub release for it. A run that stopped between publishing and
+      # releasing answers yes to the first and no to the second. A bundle this repository may not
+      # publish (403) is neither signed nor released.
       - name: Is this kit published and released yet?
         id: kit
         if: steps.pending.outputs.releases == '0'
@@ -89,10 +90,9 @@ jobs:
           fi
           published=$(node scripts/publish-packages.mjs status @augur/kit-bundle)
           echo "Kit $v in the registry: $published"
-          if [ "$published" != "published" ]; then echo "sign=$v" >> "$GITHUB_OUTPUT"; fi
-          if ! gh release view "kit@$v" >/dev/null 2>&1; then
+          if [ "$published" = "unpublished" ]; then echo "sign=$v" >> "$GITHUB_OUTPUT"; fi
+          if [ "$published" != "blocked" ] && ! gh release view "kit@$v" >/dev/null 2>&1; then
             echo "release=$v" >> "$GITHUB_OUTPUT"
-            echo "from=$published" >> "$GITHUB_OUTPUT"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
@@ -110,16 +110,19 @@ jobs:
         run: node scripts/publish-packages.mjs
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
+      # Made from the bundle as published, so the release holds the bytes and signature AUGUR installs.
+      # If the bundle didn't go out in this run (403), there is nothing to release yet.
       - name: Release the kit
         if: steps.kit.outputs.release
         run: |
           v="${{ steps.kit.outputs.release }}"
+          if [ "$(node scripts/publish-packages.mjs status @augur/kit-bundle)" != "published" ]; then
+            echo "::warning::Kit $v is not in the registry, so it is not released yet."
+            exit 0
+          fi
           out="$RUNNER_TEMP/kit"
           mkdir -p "$out"
-          dist=packages/kit-bundle/dist
-          if [ "${{ steps.kit.outputs.from }}" = "published" ]; then
-            dist="$(node scripts/publish-packages.mjs fetch @augur/kit-bundle "$RUNNER_TEMP/published")/dist"
-          fi
+          dist="$(node scripts/publish-packages.mjs fetch @augur/kit-bundle "$RUNNER_TEMP/published")/dist"
           tar -czf "$out/kit-$v.tgz" -C "$dist" .
           cosign sign-blob --yes --bundle "$out/kit-$v.tgz.sigstore.json" "$out/kit-$v.tgz"
           node scripts/kit-notes.mjs "$v" > "$out/notes.md"

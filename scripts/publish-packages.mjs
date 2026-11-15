@@ -17,8 +17,8 @@
 //   Prints whether that package's version is "published", "unpublished" or "blocked" (403). The Release
 //   workflow signs the kit when the bundle is not in the registry yet, whatever GitHub releases exist.
 // node scripts/publish-packages.mjs fetch <@augur/name> <dir>
-//   Unpacks that package's version, as published, into <dir>/package: a kit release made after the
-//   bundle went out uses the published bytes and their signature, not a fresh build.
+//   Unpacks that package's version, as published, into <dir>/package: the kit release is always made
+//   from the published bytes and their signature, so it matches what AUGUR installs.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -108,21 +108,29 @@ export function publishOrder(libs) {
 
 /**
  * What a publish run will do, decided before anything goes out: each package is "skip" (already
- * published), "blocked" (403) or "publish". Throws, publishing nothing, when a package to publish
- * lacks its signature.
+ * published), "blocked" (403, or an @augur package it depends on is blocked) or "publish". Throws,
+ * publishing nothing, when a package to publish lacks its signature; a dry run only warns.
  */
-export function plan(libs, published) {
+export function plan(libs, published, { dryRun = false } = {}) {
+  const blocked = new Set();
   const steps = publishOrder(libs).map((lib) => {
+    if (internal(lib.pkg).some((dep) => blocked.has(dep))) {
+      blocked.add(lib.pkg.name);
+      return { ...lib, action: 'blocked' };
+    }
     try {
       return { ...lib, action: published(lib) ? 'skip' : 'publish' };
     } catch (err) {
       if (!isForbidden(err)) throw err;
+      blocked.add(lib.pkg.name);
       return { ...lib, action: 'blocked' };
     }
   });
   const missing = steps.filter((s) => s.action === 'publish' && unsigned(s));
   if (missing.length) {
-    throw new Error(`Not publishing anything: ${missing.map((s) => `${s.pkg.name}@${s.pkg.version} has no ${SIGNATURES[s.pkg.name]}`).join('; ')}. Sign it first (the Release workflow's Sign the kit step).`);
+    const what = missing.map((s) => `${s.pkg.name}@${s.pkg.version} has no ${SIGNATURES[s.pkg.name]}`).join('; ');
+    if (!dryRun) throw new Error(`Not publishing anything: ${what}. Sign it first (the Release workflow's Sign the kit step).`);
+    console.log(`::warning::${what}: a real run would refuse it.`);
   }
   return steps;
 }
@@ -186,6 +194,10 @@ function fetch(name, dir) {
   const spec = `${publishedName(name, scope)}@${pkg.version}`;
   const tarball = run('npm', ['pack', spec, '--pack-destination', dir, '--registry', registry, '--userconfig', npmrc]).trim().split('\n').pop();
   run('tar', ['-xzf', join(dir, tarball), '-C', dir]);
+  const signature = SIGNATURES[name];
+  if (signature && !existsSync(join(dir, 'package', signature))) {
+    throw new Error(`${spec} was published without ${signature}: AUGUR refuses it. Release a new kit version.`);
+  }
   console.log(join(dir, 'package'));
 }
 
@@ -194,7 +206,7 @@ function publish() {
   const { repository, scope, registry, work, npmrc } = setup({ dryRun });
   const tag = distTag(process.env.GITHUB_REF_NAME);
 
-  const steps = plan(libraries(), ({ pkg }) => !dryRun && isPublished(publishedName(pkg.name, scope), pkg.version, npmrc, registry));
+  const steps = plan(libraries(), ({ pkg }) => !dryRun && isPublished(publishedName(pkg.name, scope), pkg.version, npmrc, registry), { dryRun });
   const done = [];
   // Packages this repository may not touch are skipped, so the rest (and the kit release) still go out;
   // the Release workflow fails at its end while any are left.

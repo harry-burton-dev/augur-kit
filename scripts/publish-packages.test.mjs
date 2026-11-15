@@ -103,6 +103,10 @@ test('an unsigned bundle is refused, and then nothing is published', () => {
   assert.throws(() => plan([common, bundle(false)], () => false), /Not publishing anything: @augur\/kit-bundle@0.7.0 has no dist\/kit.json.sigstore.json/);
 });
 
+test('a dry run warns about an unsigned bundle instead of refusing it', () => {
+  assert.deepEqual(plan([common, bundle(false)], () => false, { dryRun: true }).map((s) => s.action), ['publish', 'publish']);
+});
+
 test('an unsigned bundle already in the registry is not refused: it is skipped', () => {
   assert.deepEqual(plan([common, bundle(false)], () => true).map((s) => s.action), ['skip', 'skip']);
 });
@@ -113,7 +117,11 @@ test('a 403 marks that package blocked; any other failure stops the run', () => 
     if (pkg.name === '@augur/kit-common') throw forbidden;
     return false;
   });
-  assert.deepEqual(steps.map((s) => s.action), ['blocked', 'publish']);
+  assert.deepEqual(steps.map((s) => s.action), ['blocked', 'blocked'], 'the bundle depends on kit-common, so it waits too');
+  assert.deepEqual(plan([common, { directory: 'x', pkg: { name: '@augur/other', version: '1.0.0' } }], ({ pkg }) => {
+    if (pkg.name === '@augur/kit-common') throw forbidden;
+    return false;
+  }).map((s) => s.action), ['blocked', 'publish'], 'a package that does not depend on it still goes out');
   assert.throws(() => plan([common], () => { throw new Error('ETIMEDOUT'); }), /ETIMEDOUT/);
 });
 
@@ -123,10 +131,12 @@ const stepIf = (name) => new RegExp(`- name: ${name}\\n\\s+(?:id: \\S+\\n\\s+)?i
 
 test('the release signs the kit when the bundle is not in the registry, whatever GitHub releases exist', () => {
   assert.equal(stepIf('Sign the kit'), 'steps.kit.outputs.sign');
-  assert.match(workflow, /if \[ "\$published" != "published" \]; then echo "sign=\$v"/);
-  // Signing no longer hangs on the GitHub release: a run that published some packages and then
-  // stopped still signs the bundle it publishes next.
-  assert.doesNotMatch(workflow.slice(workflow.indexOf('sign=$v') - 200, workflow.indexOf('sign=$v')), /gh release view/);
+  assert.match(workflow, /\n\s+if \[ "\$published" = "unpublished" \]; then echo "sign=\$v" >> "\$GITHUB_OUTPUT"; fi\n/);
+});
+
+test('a bundle this repository may not publish is not released', () => {
+  assert.match(workflow, /if \[ "\$published" != "blocked" \] && ! gh release view "kit@\$v"/);
+  assert.match(workflow, /if \[ "\$\(node scripts\/publish-packages.mjs status @augur\/kit-bundle\)" != "published" \]; then\n.+\n\s+exit 0\n/);
 });
 
 test('the release builds, type-checks and tests before it signs or publishes', () => {
@@ -135,6 +145,7 @@ test('the release builds, type-checks and tests before it signs or publishes', (
   assert.match(workflow, /- name: Test\n\s+if: .+\n\s+run: pnpm test\n/);
 });
 
-test('a kit released after its bundle was published is made from the published package', () => {
-  assert.match(workflow, /if \[ "\$\{\{ steps.kit.outputs.from \}\}" = "published" \]; then\n\s+dist="\$\(node scripts\/publish-packages.mjs fetch @augur\/kit-bundle /);
+test('the kit is released from the published package, not a fresh build', () => {
+  assert.match(workflow, /\n\s+dist="\$\(node scripts\/publish-packages.mjs fetch @augur\/kit-bundle "\$RUNNER_TEMP\/published"\)\/dist"\n/);
+  assert.doesNotMatch(workflow, /dist=packages\/kit-bundle\/dist/);
 });
