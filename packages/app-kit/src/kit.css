@@ -484,7 +484,10 @@
   .quill-tile[data-kind='add']:hover { color: var(--ink); }
   .quill-tile[data-locked], .quill-tile[aria-disabled] { cursor: not-allowed; border-style: dashed; border-top-width: 1px; }
   .quill-tile[data-locked]:hover, .quill-tile[aria-disabled]:hover { background: var(--well); box-shadow: none; }
-  .quill-tile[data-locked] > :not(.quill-tile-foot), .quill-tile[aria-disabled] > :not(.quill-tile-foot) { opacity: 0.6; }
+  .quill-tile[aria-disabled] > :not(.quill-tile-foot) { opacity: 0.6; }
+  /* A locked tile still says what it is and why: its words step back in ink-muted, not faded (WCAG 1.4.3). */
+  .quill-tile[data-locked] > :not(.quill-tile-foot) { --ink: var(--ink-muted); color: var(--ink-muted); }
+  .quill-tile[data-locked] > :not(.quill-tile-foot) img { opacity: 0.6; }
   .quill-tile-ribbon { position: absolute; top: calc(var(--space-1) * -1); right: 30%; width: var(--space-3); height: var(--space-5); background: var(--green); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); }
   .quill-tile-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--type-label); line-height: var(--leading-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-variant-numeric: tabular-nums; }
   .quill-tile-eyebrow { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--type-label); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
@@ -1032,7 +1035,7 @@
   .quill-editor-input ol { list-style: decimal; }
   .quill-editor-input blockquote { margin-left: 0; margin-right: 0; padding-left: var(--space-4); border-left: 2px solid var(--hairline-strong); color: var(--ink-muted); }
   .quill-editor-input strong { font-weight: 600; }
-  .quill-editor-input p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: color-mix(in srgb, var(--ink-muted) 75%, transparent); }
+  .quill-editor-input p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--ink-muted); }
   .quill-editor-input[aria-disabled='true'] { color: var(--ink-muted); cursor: default; }
   /* Sheet on select (picked 6 Nov 2026): a mention is a square chip in the Key look, with its kind's icon. */
   .quill-mention-view { display: inline; }
