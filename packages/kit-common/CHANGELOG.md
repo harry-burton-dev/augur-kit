@@ -1,5 +1,27 @@
 # @augur/kit-common
 
+## 0.22.0
+
+### Minor Changes
+
+- 44c835b: The page frame in the Line look (picked 6 Nov 2026). The rail is drawn as the app bar's tiles, docked: an icon over its name, and a hard line on the rail's inner edge for the page you're on. One horizon runs across rail, page and drawer at the foot of the page's head, at the new token `frame-head`, so the title and the main action sit in the same place on every page.
+
+  - PageHead: a mono kind label, the title and summary on one line each, and the actions in a fixed slot. New `arrival` (where a link brought you from, and why; it shrinks to a Back key once `read`) and `selection` (a SelectionBar that takes the actions' slot while several things are picked). `trail` is deprecated (PDR-014: no breadcrumbs) but still drawn.
+  - AppFrame: new `drawerFor`. A new value (something picked) opens the drawer, or opens it over the page when the frame is narrow.
+  - SelectionBar: flat, with no blur or pill. In a head it sits on an ink line in the actions' slot; anywhere else it holds at the foot of the main column under an ink line.
+  - FrontPage: its plain head is a PageHead, and the heading may be a sentence of what changed, over up to two lines.
+  - Section headings use mono capitals.
+  - Storybook: `Quill/Page head` and `Patterns/Record page`.
+
+- 928a6f1: In a small window, the open app has the width. At 320 px (WCAG 2.2 Reflow) the rail, the floor picker's lane and the app pane's strip used to leave an app 88 px; it now has 236 px.
+
+  - Common: a new shell token, `window-small-below` (720 px), the width under which the window is small.
+  - The floor picker sits in the band at the right, showing the floor you're on. The other floors open under it, after the picker's usual wait.
+  - The app pane gives up its strip. Its dock image is a toggle at the band's right edge that opens the pane over the page, under the band, and stays there to close it. Closing it gives focus back to the toggle.
+  - The band keeps the floor's icon, the handle and the notification indicator (its dot). The clock, the floor's name and the app's name leave the band: the device shows the time, and the picker and the rail's lit tile say the names.
+  - The app bar's narrow rail uses the same token, and a test keeps the CSS's media queries on it.
+  - Storybook: `Aerie/Shell`, Small window.
+
 ## 0.21.2
 
 ### Patch Changes
