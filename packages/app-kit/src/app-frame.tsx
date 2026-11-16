@@ -251,7 +251,7 @@ export interface RailLinkProps {
 export function RailLink({ icon, label, current, count, onPress }: RailLinkProps) {
   const folded = useContext(RailFolded);
   return (
-    <button type="button" className="quill-rail-link" aria-current={current ? 'page' : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} onClick={onPress}>
+    <button type="button" className="quill-rail-link" aria-current={current ? 'page' : undefined} aria-label={folded ? label : undefined} title={label} onClick={onPress}>
       <Icon name={icon} size={20} />
       {folded ? null : <span className="quill-rail-label">{label}</span>}
       {count ? <span className="quill-rail-count">{count}</span> : null}

@@ -85,7 +85,7 @@
   .quill-drawer-head { box-sizing: border-box; display: flex; justify-content: flex-end; align-items: flex-end; padding: var(--region-inset-block) var(--region-inset-inline); }
   .quill-frame:has(.quill-page-head, .quill-front-head) .quill-drawer-head { height: var(--frame-head); }
   .quill-frame[data-drawer='closed'] .quill-drawer-head { justify-content: center; padding-inline: 0; }
-  .quill-frame[data-shape='icons'] .quill-rail-label, .quill-frame[data-rail='closed'] .quill-rail-label, .quill-frame[data-rail='closed'] .quill-app span { display: none; }
+  .quill-frame[data-rail='closed'] .quill-rail-label, .quill-frame[data-rail='closed'] .quill-app span { display: none; }
   .quill-drawer-inner {
     position: sticky; top: 0; max-height: 100vh; overflow-y: auto; padding: var(--space-4) var(--space-5) var(--space-8);
     transition: opacity var(--motion-slow) var(--ease-out), transform var(--motion-slow) var(--ease-out);
@@ -679,7 +679,7 @@
   /* Page head and section */
   /* The page's head (Line): as tall as the frame's horizon, its foot on the line. Title left, actions right,
      both in fixed slots; one arrival line when a link brought you, then a Back key. */
-  .quill-page-head { box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-2); height: var(--frame-head); padding-bottom: var(--space-4); margin-bottom: var(--space-2); }
+  .quill-page-head { box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-2); min-height: var(--frame-head); padding-bottom: var(--space-4); margin-bottom: var(--space-2); }
   .quill-page-head ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--type-small); line-height: var(--leading-small); color: var(--ink-muted); }
   .quill-page-head li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
   .quill-page-head li + li::before { content: '›'; }
@@ -700,7 +700,9 @@
   .quill-page-head-arrival button:hover, .quill-page-head-back:hover { color: var(--ink); }
   .quill-page-head-arrival button:focus-visible, .quill-page-head-back:focus-visible { outline: var(--focus-ring) solid var(--focus); outline-offset: var(--focus-gap); }
   .quill-front-head .quill-page-head-title { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-width: var(--measure-prose); }
-  .quill-page-head-acts { flex: none; display: flex; align-items: center; gap: var(--space-2); }
+  .quill-page-head-acts { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+  /* While a selection shows, it takes the actions' slot; when it draws nothing (none picked), the actions come back. */
+  .quill-page-head-acts:has(> .quill-selection) > :not(.quill-selection) { display: none; }
   .quill-section { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
   .quill-section-head { display: flex; align-items: baseline; gap: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
   .quill-section-head > .quill-label { margin: 0; flex: 1; min-width: 0; font-family: var(--font-mono); letter-spacing: var(--tracking-caps); }

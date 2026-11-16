@@ -99,7 +99,7 @@ export function PageHead({ trail = [], onTrail, eyebrow, heading, summary, actio
       <div className="quill-page-head-row">
         <div className="quill-page-head-text">
           {eyebrow ? <div className="quill-label">{eyebrow}</div> : null}
-          <div className="quill-page-head-title" role="heading" aria-level={Math.min(6, Math.max(1, level))}>
+          <div className="quill-page-head-title" role="heading" aria-level={Math.min(6, Math.max(1, level))} title={heading}>
             {heading}
           </div>
           {summary ? (
@@ -121,10 +121,9 @@ export function PageHead({ trail = [], onTrail, eyebrow, heading, summary, actio
             </p>
           ) : null}
         </div>
-        {selection ? (
-          <div className="quill-page-head-acts">{selection}</div>
-        ) : shown.length || arrival?.read ? (
+        {selection || shown.length || arrival?.read ? (
           <div className="quill-page-head-acts">
+            {selection}
             {arrival?.read ? (
               <button type="button" className="quill-page-head-back" onClick={arrival.onBack}>
                 <Icon name="back" size={14} />

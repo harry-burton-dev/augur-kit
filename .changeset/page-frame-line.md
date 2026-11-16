@@ -10,4 +10,4 @@ The page frame in the Line look (picked 6 Nov 2026). The rail is drawn as the ap
 - SelectionBar: flat, with no blur or pill. In a head it sits on an ink line in the actions' slot; anywhere else it holds at the foot of the main column under an ink line.
 - FrontPage: its plain head is a PageHead, and the heading may be a sentence of what changed, over up to two lines.
 - Section headings use mono capitals.
-- Storybook: `Quill/Page head` and `Patterns/Record page`. The directions page is gone.
+- Storybook: `Quill/Page head` and `Patterns/Record page`.
