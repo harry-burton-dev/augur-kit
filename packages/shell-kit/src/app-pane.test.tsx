@@ -97,3 +97,53 @@ describe('the app pane', () => {
     expect(open.querySelector('aside')!.hasAttribute('data-over')).toBe(true);
   });
 });
+
+describe('the app pane in a small window', () => {
+  const small = (matches: boolean) => {
+    const real = globalThis.matchMedia;
+    globalThis.matchMedia = ((query: string) => ({ matches, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof matchMedia;
+    return () => (globalThis.matchMedia = real);
+  };
+
+  it('closed, is only its dock image, a toggle named for the app that opens the first section over the page', () => {
+    const undo = small(true);
+    try {
+      const body = draw(<Host />);
+      const open = body.querySelector<HTMLButtonElement>('.aerie-pane-open')!;
+      expect(open.getAttribute('aria-label')).toBe('About Notes');
+      expect(open.getAttribute('aria-expanded')).toBe('false');
+      expect(body.querySelector(`#${open.getAttribute('aria-controls')}`)).not.toBeNull();
+      act(() => open.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(true);
+      expect(open.getAttribute('aria-expanded')).toBe('true');
+      act(() => open.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(false);
+      expect(open.getAttribute('aria-expanded')).toBe('false');
+    } finally {
+      undo();
+    }
+  });
+
+  it('gives focus back to its toggle when a section closes it', () => {
+    const undo = small(true);
+    try {
+      const body = draw(<Host start="details" />);
+      act(() => titles(body)[0]!.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(false);
+      expect(document.activeElement).toBe(body.querySelector('.aerie-pane-open'));
+    } finally {
+      undo();
+    }
+  });
+
+  it('in a wider window keeps its strip, with the dock image as a picture', () => {
+    const undo = small(false);
+    try {
+      const body = draw(<AppPane app={app} sections={sections} open={undefined} onOpenChange={() => {}} over />);
+      expect(body.querySelector('.aerie-pane-open')).toBeNull();
+      expect(titles(body)).toHaveLength(2);
+    } finally {
+      undo();
+    }
+  });
+});

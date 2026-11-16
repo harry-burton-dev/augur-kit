@@ -4,12 +4,13 @@ import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
 import { FloorPicker } from './floor-picker.js';
 import { Background } from './background.js';
 import { restingStop } from './app-bar.js';
-import { tokenValue } from './motion.js';
+import { tokens } from '@augur/kit-common/tokens';
 import { Flat } from './background-flat.js';
 import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
 import { agentUrgency, ago, streamWords, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
 import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu } from './shell-menu.js';
+import { useSmallWindow, useWindowBelow } from './small-window.js';
 
 export interface ShellProps {
   /** What the Shell knows and does; the host keeps it and listens on it. */
@@ -99,6 +100,7 @@ export function Shell({ model, children, pane }: ShellProps) {
   const water = useRef<Water | null>(null);
   const slot = useRef<HTMLDivElement>(null);
   const narrow = useNarrow();
+  const small = useSmallWindow();
 
   const here = model.currentFloor;
   // The desktop holds its own app (Home): the stage clears the bar, which rests at an edge.
@@ -206,7 +208,7 @@ export function Shell({ model, children, pane }: ShellProps) {
         <Flat floor={tone} />
         <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!model.onDesk} />
       </div>
-      <Band model={model} tab={tab} mood={mood} place={place} paned={paned} />
+      <Band model={model} tab={tab} mood={mood} place={place} paned={paned && !small} />
       <ShellBar model={model} inert={model.isOpen} />
       <FloorPicker model={model} tab={tab} />
       {model.card ? (
@@ -226,7 +228,8 @@ export function Shell({ model, children, pane }: ShellProps) {
       </main>
       {paned ? (
         <div ref={slot} className="aerie-pane-slot" inert={model.isOpen}>
-          {pane!({ top: <StatusAndClock model={model} tab={tab} mood={mood} />, over: narrow })}
+          {/* In a small window the band keeps the indicator and the clock, and the pane is only a button there while closed. */}
+          {pane!({ top: small ? undefined : <StatusAndClock model={model} tab={tab} mood={mood} />, over: narrow })}
         </div>
       ) : null}
       <ShellMenu open={model.isOpen} mood={mood} onKeyDown={onSkyKey} onDismiss={back}>
@@ -314,19 +317,7 @@ function usePaneInset(root: RefObject<HTMLElement | null>, slot: RefObject<HTMLE
 }
 
 /** A window narrower than frame-overlay-below: the pane opens over the page there, as the app frame's drawer does. */
-function useNarrow() {
-  const query = () => (typeof matchMedia === 'function' ? matchMedia(`(max-width: ${tokenValue('frame-overlay-below', 1100) - 1}px)`) : undefined);
-  const [narrow, setNarrow] = useState(() => !!query()?.matches);
-  useEffect(() => {
-    const q = query();
-    if (!q) return;
-    const on = () => setNarrow(q.matches);
-    on();
-    q.addEventListener('change', on);
-    return () => q.removeEventListener('change', on);
-  }, []);
-  return narrow;
-}
+const useNarrow = () => useWindowBelow(Number.parseFloat(tokens['frame-overlay-below']));
 
 /** The notification indicator and the clock: in the band, or at the top of the pane while one is drawn. */
 function StatusAndClock({ model, tab, mood }: { model: ShellModel; tab: number; mood: string }) {

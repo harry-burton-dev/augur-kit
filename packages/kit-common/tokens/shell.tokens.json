@@ -263,6 +263,11 @@
       "$type": "dimension",
       "$description": "The side rail in a narrow window."
     },
+    "window-small-below": {
+      "$value": "720px",
+      "$type": "dimension",
+      "$description": "A window narrower than this is small: the rail narrows, and the floor picker and the app pane leave their lanes at the right edge for places in the band, so an open app has the width (WCAG 2.2 Reflow at 320 px). CSS media queries can't read a token, so they say max-width: 719px beside a note naming this one."
+    },
     "bar-rail-tile": {
       "$value": "92px",
       "$type": "dimension",

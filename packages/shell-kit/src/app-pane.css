@@ -79,3 +79,39 @@
 .aerie-shell[data-pane] .aerie-gauge { right: var(--gauge-right); }
 /* Looking up, the pane steps back with the band. */
 .aerie-shell[data-open] .aerie-pane-slot { opacity: 0; pointer-events: none; }
+
+/* ── in a small window (under the token window-small-below, 720 px; media queries can't read it): the app has the width ──
+   The pane gives up its strip: closed, it is only its dock image, a button in the band at the right edge, and it
+   opens over the page under the band from there, so the band (the indicator, the clock and the floor picker) stays
+   in view. The floor picker sits beside it in the band (floor-picker.css), the stage and the band reach the
+   window's right edge, and the band keeps clear of the two. */
+@media (max-width: 719px) {
+  .aerie-shell { --band-box: calc(var(--gauge-notch) + var(--space-2) * 2 + 2px); }
+  .aerie-shell[data-pane] { --gauge-band-right: var(--band-box); }
+  .aerie-shell :is(.aerie-stage, .aerie-band),
+  .aerie-shell[data-gauge] .aerie-stage,
+  .aerie-shell[data-pane] :is(.aerie-stage, .aerie-band),
+  .aerie-shell[data-pane][data-gauge] .aerie-stage { right: 0; }
+  .aerie-shell[data-pane] .aerie-gauge { right: var(--gauge-band-right); }
+  .aerie-shell[data-gauge] .aerie-band, .aerie-shell[data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box)); }
+  .aerie-shell[data-gauge][data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box) * 2); }
+  .aerie-pane-slot { bottom: auto; height: var(--band-top); min-width: 0; }
+  /* Open, it reaches down from the band: its dock row is the band's height and lets the band show through, so the
+     toggle stays where it was and the band (the indicator and the floor picker) stays in view. */
+  .aerie-pane-slot:has(> .aerie-pane[data-open]) { bottom: 0; height: auto; pointer-events: none; }
+  .aerie-pane[data-open] { background: none; border-left: 0; box-shadow: none; }
+  .aerie-pane[data-open] .aerie-pane-dock { height: var(--band-top); padding: 0; border-bottom: 0; justify-content: flex-end; align-items: center; }
+  .aerie-pane[data-open] .aerie-pane-sections { background: var(--grey-2); border-left: 1px solid var(--grey-hairline); box-shadow: var(--shadow-overlay); }
+  .aerie-pane-open, .aerie-pane-sections { pointer-events: auto; }
+  .aerie-pane:not([data-open]) { width: var(--band-box); background: none; border-left: 0; animation: none; }
+  .aerie-pane:not([data-open]) .aerie-pane-sections { display: none; }
+  .aerie-pane:not([data-open]) .aerie-pane-dock { height: 100%; padding: 0; border-bottom: 0; align-items: center; }
+  .aerie-pane-open { display: grid; place-items: center; width: var(--band-box); height: 100%; }
+  /* The band says only what fits: the floor's icon (its name is on the picker beside it), the handle beside it rather
+     than over the middle, and the notification indicator as its dot (its words stay its name). The time leaves the
+     band (the device shows it). The open app is named by its lit tile at the top of the rail, so the name under the
+     handle is kept but not drawn, at the band's start by the handle, where an icon chosen in the menu lands. */
+  .aerie-where b, .aerie-status-words, .aerie-band .aerie-clock { display: none; }
+  .aerie-place { left: var(--edge); transform: none; visibility: hidden; }
+  .aerie-handle { position: relative; left: auto; transform: none; align-self: flex-start; width: var(--control-lg); }
+}
