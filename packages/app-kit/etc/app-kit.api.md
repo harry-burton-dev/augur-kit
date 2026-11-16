@@ -151,6 +151,7 @@ export interface AppFrameProps {
     children: ReactNode;
     depth?: Depth;
     drawer?: ReactNode;
+    drawerFor?: string;
     // (undocumented)
     drawerLabel?: string;
     measure?: 'wide' | 'read' | 'full';
@@ -1313,12 +1314,21 @@ export function pageActions(actions: RingAction[]): {
 };
 
 // @public
+export interface PageArrival {
+    from: string;
+    onBack: () => void;
+    read?: boolean;
+    why?: string;
+}
+
+// @public
 export function PageHead(input: PageHeadProps): JSX.Element;
 
 // @public (undocumented)
 export interface PageHeadProps {
     // (undocumented)
     actions?: PageAction[];
+    arrival?: PageArrival;
     children?: ReactNode;
     // (undocumented)
     className?: string;
@@ -1331,8 +1341,9 @@ export interface PageHeadProps {
     onAction?: (action: PageAction) => void;
     // (undocumented)
     onTrail?: (step: TrailStep) => void;
+    selection?: ReactNode;
     summary?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     trail?: TrailStep[];
 }
 

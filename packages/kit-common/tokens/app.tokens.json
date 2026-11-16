@@ -11,6 +11,11 @@
       "$type": "dimension",
       "$description": "An app's right drawer (ui-app-frame): what can be done with what's on screen, its filters and its settings."
     },
+    "frame-head": {
+      "$value": "196px",
+      "$type": "dimension",
+      "$description": "How tall a page's head is (PageHead), and so where the frame's horizon runs (ui-app-frame, the Line look picked 6 Nov 2026): the rail's app block and the drawer's head end on the same line. The title and the main action sit in fixed slots above it."
+    },
     "measure-table-virtual": {
       "$value": "640px",
       "$type": "dimension",

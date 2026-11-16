@@ -8,6 +8,7 @@ import { List, Table, relativeTime } from './list.js';
 import { Palette } from './palette.js';
 import { TimeField } from './time.js';
 import { PageHead, Section } from './page.js';
+import { SelectionBar } from './selection-bar.js';
 import { Details, Notice, State } from './states.js';
 import { Refs, Tally, Timeline } from './things.js';
 import { TagPicker, tagChoices } from './tag-picker.js';
@@ -197,6 +198,21 @@ describe('the parts apps took from the Lit kit', () => {
     expect(button('Publish')).toBeDefined();
     expect(button('Archive')).toBeUndefined();
     expect(button('More')).toBeDefined();
+  });
+
+  it("keeps the page's actions while a selection has nothing picked, and gives their slot to it once something is", () => {
+    const head = (count: number) => (
+      <PageHead
+        heading="Crew"
+        actions={[{ id: 'add', label: 'Add', kind: 'primary' }]}
+        selection={<SelectionBar count={count} noun={['person', 'people']} actions={[{ id: 'move', label: 'Move' }]} onAction={() => {}} onClear={() => {}} />}
+      />
+    );
+    draw(head(0));
+    expect(document.querySelector('.quill-page-head-acts .quill-selection')).toBeNull();
+    expect(button('Add')).toBeDefined();
+    draw(head(2));
+    expect(document.querySelector('.quill-page-head-acts > .quill-selection')).not.toBeNull();
   });
 
   it('folds a section past its limit and says how many more', () => {
