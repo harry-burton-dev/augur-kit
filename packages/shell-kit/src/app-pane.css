@@ -79,3 +79,29 @@
 .aerie-shell[data-pane] .aerie-gauge { right: var(--gauge-right); }
 /* Looking up, the pane steps back with the band. */
 .aerie-shell[data-open] .aerie-pane-slot { opacity: 0; pointer-events: none; }
+
+/* ── in a small window (under 720 px, small-window.ts, as the rail narrows): the app has the width ──
+   The pane gives up its strip: closed, it is only its dock image, a button in the band at the right edge, and it
+   opens over the page from there. The floor picker sits beside it in the band (floor-picker.css), so the stage
+   and the band reach the window's right edge, and the band keeps clear of the two. */
+@media (max-width: 719px) {
+  .aerie-shell { --band-box: calc(var(--gauge-notch) + var(--space-2) * 2 + 2px); }
+  .aerie-shell[data-pane] { --gauge-band-right: var(--band-box); }
+  .aerie-shell :is(.aerie-stage, .aerie-band),
+  .aerie-shell[data-gauge] .aerie-stage,
+  .aerie-shell[data-pane] :is(.aerie-stage, .aerie-band),
+  .aerie-shell[data-pane][data-gauge] .aerie-stage { right: 0; }
+  .aerie-shell[data-gauge] .aerie-band, .aerie-shell[data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box)); }
+  .aerie-shell[data-gauge][data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box) * 2); }
+  .aerie-pane-slot { bottom: auto; height: var(--band-top); min-width: 0; }
+  .aerie-pane-slot:has(> .aerie-pane[data-open]) { z-index: 6; bottom: 0; height: auto; }
+  .aerie-pane:not([data-open]) { width: var(--band-box); background: none; border-left: 0; animation: none; }
+  .aerie-pane:not([data-open]) :is(.aerie-pane-top, .aerie-pane-sections) { display: none; }
+  .aerie-pane:not([data-open]) .aerie-pane-dock { height: 100%; padding: 0; border-bottom: 0; align-items: center; }
+  /* The band says only what fits: the floor's icon (its name is on the picker beside it) and the notification
+     indicator as its dot (its words stay its name), with the time. The open app is named by its lit tile at the top
+     of the rail, so the name under the handle goes. */
+  .aerie-where b, .aerie-status-words, .aerie-place { display: none; }
+  .aerie-right { gap: var(--space-3); }
+  .aerie-clock { white-space: nowrap; }
+}

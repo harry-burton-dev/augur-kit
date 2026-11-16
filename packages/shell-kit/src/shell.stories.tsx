@@ -88,6 +88,8 @@ export const AppOpen: Story = {};
 export const AppPaneClosed: Story = { args: { pane: true } };
 /** The app pane open on a section; the stage, the band and the gauge end where it starts. */
 export const AppPaneOpen: Story = { args: { pane: true, paneOpen: 'details' } };
+/** In a small window (under 720 px, here 320 px: WCAG Reflow's width): the floor picker sits in the band showing the floor you're on, and the closed pane is its dock image there, so the open app has the width. */
+export const SmallWindow: Story = { args: { pane: true }, parameters: { chromatic: { viewports: [320] } } };
 /** The desktop: no app in front, the app bar across the still horizon, and the open app after its divider. */
 export const Desktop: Story = { args: { app: '' } };
 /** Home is the desktop: Home on the water, the bar across the bottom like a taskbar, the logo first. */

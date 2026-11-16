@@ -97,3 +97,37 @@ describe('the app pane', () => {
     expect(open.querySelector('aside')!.hasAttribute('data-over')).toBe(true);
   });
 });
+
+describe('the app pane in a small window', () => {
+  const small = (matches: boolean) => {
+    const real = globalThis.matchMedia;
+    globalThis.matchMedia = ((query: string) => ({ matches, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof matchMedia;
+    return () => (globalThis.matchMedia = real);
+  };
+
+  it('closed, is only its dock image, a button named for the app that opens the first section over the page', () => {
+    const undo = small(true);
+    try {
+      const body = draw(<AppPane app={app} sections={sections} open={undefined} onOpenChange={() => {}} over />);
+      const open = body.querySelector<HTMLButtonElement>('.aerie-pane-open')!;
+      expect(open.getAttribute('aria-label')).toBe('About Notes');
+      const drawn = draw(<Host />);
+      act(() => drawn.querySelector<HTMLButtonElement>('.aerie-pane-open')!.click());
+      expect(drawn.querySelector('aside')!.hasAttribute('data-open')).toBe(true);
+      expect(drawn.querySelector('.aerie-pane-open')).toBeNull();
+    } finally {
+      undo();
+    }
+  });
+
+  it('in a wider window keeps its strip, with the dock image as a picture', () => {
+    const undo = small(false);
+    try {
+      const body = draw(<AppPane app={app} sections={sections} open={undefined} onOpenChange={() => {}} over />);
+      expect(body.querySelector('.aerie-pane-open')).toBeNull();
+      expect(titles(body)).toHaveLength(2);
+    } finally {
+      undo();
+    }
+  });
+});

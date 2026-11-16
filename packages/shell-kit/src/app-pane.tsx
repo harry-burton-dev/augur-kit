@@ -1,6 +1,7 @@
 import { useId, useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Icon } from '@augur/kit-common';
 import { FRAME_WORDS, iconOf, type FrameAboutSection, type FrameWords } from './frame.js';
+import { useSmallWindow } from './small-window.js';
 
 export interface AppPaneProps {
   /** The open app, from its manifest: its name, and its icon, drawn as the dock image. */
@@ -15,7 +16,7 @@ export interface AppPaneProps {
   onOpenChange: (section: string | undefined) => void;
   /** What stands at the top of the pane: the shell puts the clock and its notification indicator here (an `aerie-status` button; wrap its words in `aerie-status-words` so the strip shows only the dot). */
   top?: ReactNode;
-  /** Open over the page (a narrow frame), rather than beside it. */
+  /** Open over the page (a narrow frame), rather than beside it. In a small window (small-window.ts) the closed pane is only its dock image, a button that opens it. */
   over?: boolean;
   /** The kit's words, where the shell or a deployment wants its own. */
   words?: Partial<FrameWords>;
@@ -32,6 +33,7 @@ export interface AppPaneProps {
  */
 export function AppPane({ app, sections, content, open, onOpenChange, top, over, words }: AppPaneProps) {
   const w = { ...FRAME_WORDS, ...words };
+  const small = useSmallWindow();
   const id = useId();
   const titles = useRef(new Map<string, HTMLButtonElement>());
   /** The title to give focus back to once the pane has closed, after Esc. */
@@ -59,9 +61,18 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
       onKeyDown={onKey}
     >
       {top ? <div className="aerie-pane-top">{top}</div> : null}
-      <div className="aerie-pane-dock" title={app.name}>
-        <Icon name={dock} size={28} />
-      </div>
+      {/* In a small window the closed pane is only its dock image, a button in the band that opens it over the page. */}
+      {small && !showing && sections.length ? (
+        <div className="aerie-pane-dock">
+          <button type="button" className="aerie-pane-open" aria-label={w.about(app.name)} title={app.name} onClick={() => onOpenChange(sections[0]!.id)}>
+            <Icon name={dock} size={28} />
+          </button>
+        </div>
+      ) : (
+        <div className="aerie-pane-dock" title={app.name}>
+          <Icon name={dock} size={28} />
+        </div>
+      )}
       {sections.length ? (
         <div className="aerie-pane-sections">
           {sections.map((s) => {

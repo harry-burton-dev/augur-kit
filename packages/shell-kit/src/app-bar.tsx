@@ -4,6 +4,7 @@ import {
 } from 'react';
 import { cx, Icon } from '@augur/kit-common';
 import { reducedMotion, tokenValue } from './motion.js';
+import { SMALL_WINDOW_BELOW } from './small-window.js';
 
 /*
  * The app bar (Navigation brief; it replaces Title and Orbit), in parts, the way a shell header is
@@ -30,7 +31,7 @@ const STOPS = ['under the band', 'upper', 'lower', 'bottom'] as const;
 
 /** Where the bar rests: its stop, or with only the edges allowed, the nearer edge. */
 export const restingStop = (stop: BarStop, edges: boolean): BarStop => (edges ? (stop < 2 ? 0 : 3) : stop);
-const NARROW = 720;
+const NARROW = SMALL_WINDOW_BELOW;
 
 interface Menu {
   owner: string;

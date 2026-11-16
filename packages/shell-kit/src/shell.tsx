@@ -10,6 +10,7 @@ import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
 import { agentUrgency, ago, streamWords, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
 import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu } from './shell-menu.js';
+import { useSmallWindow } from './small-window.js';
 
 export interface ShellProps {
   /** What the Shell knows and does; the host keeps it and listens on it. */
@@ -99,6 +100,7 @@ export function Shell({ model, children, pane }: ShellProps) {
   const water = useRef<Water | null>(null);
   const slot = useRef<HTMLDivElement>(null);
   const narrow = useNarrow();
+  const small = useSmallWindow();
 
   const here = model.currentFloor;
   // The desktop holds its own app (Home): the stage clears the bar, which rests at an edge.
@@ -206,7 +208,7 @@ export function Shell({ model, children, pane }: ShellProps) {
         <Flat floor={tone} />
         <Background name={background} options={options} set={model.backgroundSet} floor={tone} away={!model.onDesk} />
       </div>
-      <Band model={model} tab={tab} mood={mood} place={place} paned={paned} />
+      <Band model={model} tab={tab} mood={mood} place={place} paned={paned && !small} />
       <ShellBar model={model} inert={model.isOpen} />
       <FloorPicker model={model} tab={tab} />
       {model.card ? (
@@ -226,7 +228,8 @@ export function Shell({ model, children, pane }: ShellProps) {
       </main>
       {paned ? (
         <div ref={slot} className="aerie-pane-slot" inert={model.isOpen}>
-          {pane!({ top: <StatusAndClock model={model} tab={tab} mood={mood} />, over: narrow })}
+          {/* In a small window the band keeps the indicator and the clock, and the pane is only a button there while closed. */}
+          {pane!({ top: small ? undefined : <StatusAndClock model={model} tab={tab} mood={mood} />, over: narrow })}
         </div>
       ) : null}
       <ShellMenu open={model.isOpen} mood={mood} onKeyDown={onSkyKey} onDismiss={back}>
