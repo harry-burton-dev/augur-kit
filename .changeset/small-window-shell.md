@@ -7,7 +7,7 @@ In a small window, the open app has the width. At 320 px (WCAG 2.2 Reflow) the r
 
 - Common: a new shell token, `window-small-below` (720 px), the width under which the window is small.
 - The floor picker sits in the band at the right, showing the floor you're on. The other floors open under it, after the picker's usual wait.
-- The app pane gives up its strip. Closed, it is its dock image, a toggle in the band that opens the pane under the band, over the page. Closing it gives focus back to the toggle.
-- The band keeps the floor's icon, the handle and the notification indicator (its dot). The clock shows when it fits. The floor's name and the app's name leave the band: the picker and the rail's lit tile say them.
-- The app bar's narrow rail uses the same token.
+- The app pane gives up its strip. Its dock image is a toggle at the band's right edge that opens the pane over the page, under the band, and stays there to close it. Closing it gives focus back to the toggle.
+- The band keeps the floor's icon, the handle and the notification indicator (its dot). The clock, the floor's name and the app's name leave the band: the device shows the time, and the picker and the rail's lit tile say the names.
+- The app bar's narrow rail uses the same token, and a test keeps the CSS's media queries on it.
 - Storybook: `Aerie/Shell`, Small window.

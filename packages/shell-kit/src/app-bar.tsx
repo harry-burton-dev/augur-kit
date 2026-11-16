@@ -4,7 +4,7 @@ import {
 } from 'react';
 import { cx, Icon } from '@augur/kit-common';
 import { reducedMotion, tokenValue } from './motion.js';
-import { smallWindowBelow } from './small-window.js';
+import { SMALL_WINDOW_BELOW } from './small-window.js';
 
 /*
  * The app bar (Navigation brief; it replaces Title and Orbit), in parts, the way a shell header is
@@ -124,7 +124,7 @@ export function AppBar({ mode = 'desk', label, edges = false, stop: stopProp, de
     return () => clearTimeout(t);
   }, [swapping, mode]);
 
-  const narrow = size.w > 0 && size.w < smallWindowBelow();
+  const narrow = size.w > 0 && size.w < SMALL_WINDOW_BELOW;
   const inApp = shown === 'app';
   const barH = tokenValue('bar-height', 88);
   const stopY = (i: number) => [tokenValue('band-top', 64), Math.round(size.h * 0.25 - barH / 2), Math.round(size.h * 0.75 - barH / 2), size.h - barH][i]!;

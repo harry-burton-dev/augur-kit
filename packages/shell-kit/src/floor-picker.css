@@ -147,13 +147,17 @@
   .aerie-gauge { z-index: 5; top: calc((var(--band-top) - var(--gauge-notch)) / 2 - var(--space-2) - 1px); right: var(--gauge-band-right, var(--space-2)); transform: none; }
   .aerie-gauge .aerie-pinned { display: none; }
   .aerie-gauge ol { gap: 0; }
-  .aerie-gauge li:has([aria-current]) { order: -1; }
   .aerie-gauge li:not(:has([aria-current])) {
     display: grid; grid-template-rows: minmax(0, 0fr); overflow: hidden;
     transition: grid-template-rows var(--motion-base) var(--ease-standard);
   }
   .aerie-gauge li > button { min-height: 0; }
-  .aerie-gauge:hover li, .aerie-gauge:has(:focus-visible) li { grid-template-rows: minmax(0, 1fr); overflow: visible; transition-delay: var(--gauge-open-wait); }
+  /* Open, after the picker's wait: the rows unfold and only then let their words out (overflow flips at the end
+     of its zero-length transition, so the folded rows don't show before the wait). */
+  .aerie-gauge:hover li, .aerie-gauge:has(:focus-visible) li {
+    grid-template-rows: minmax(0, 1fr); overflow: visible;
+    transition: grid-template-rows var(--motion-base) var(--ease-standard) var(--gauge-open-wait), overflow calc(var(--motion-instant) * 0) var(--gauge-open-wait) allow-discrete;
+  }
   /* Open, its words take what the window leaves beside the boxes. */
   .aerie-gauge .aerie-label > span, .aerie-gauge :is(.aerie-why, .aerie-elsewhere) > span { max-width: calc(100vw - var(--gauge-notch) - var(--gauge-band-right, var(--space-2)) - var(--space-2) * 4); }
 }

@@ -73,7 +73,7 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
             type="button"
             className="aerie-pane-open"
             title={app.name}
-            aria-label={app.name}
+            aria-label={w.about(app.name)}
             aria-expanded={!!showing}
             aria-controls={`${id}-sections`}
             onClick={() => onOpenChange(showing ? undefined : sections[0]!.id)}

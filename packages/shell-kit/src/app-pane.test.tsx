@@ -110,7 +110,7 @@ describe('the app pane in a small window', () => {
     try {
       const body = draw(<Host />);
       const open = body.querySelector<HTMLButtonElement>('.aerie-pane-open')!;
-      expect(open.getAttribute('aria-label')).toBe(app.name);
+      expect(open.getAttribute('aria-label')).toBe('About Notes');
       expect(open.getAttribute('aria-expanded')).toBe('false');
       expect(body.querySelector(`#${open.getAttribute('aria-controls')}`)).not.toBeNull();
       act(() => open.click());

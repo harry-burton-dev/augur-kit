@@ -4,7 +4,7 @@ import { floorIconOf, floorKindOf, floorMeaning, floorTone } from './floors.js';
 import { FloorPicker } from './floor-picker.js';
 import { Background } from './background.js';
 import { restingStop } from './app-bar.js';
-import { tokenValue } from './motion.js';
+import { tokens } from '@augur/kit-common/tokens';
 import { Flat } from './background-flat.js';
 import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
@@ -317,7 +317,7 @@ function usePaneInset(root: RefObject<HTMLElement | null>, slot: RefObject<HTMLE
 }
 
 /** A window narrower than frame-overlay-below: the pane opens over the page there, as the app frame's drawer does. */
-const useNarrow = () => useWindowBelow(() => tokenValue('frame-overlay-below', 1100));
+const useNarrow = () => useWindowBelow(Number.parseFloat(tokens['frame-overlay-below']));
 
 /** The notification indicator and the clock: in the band, or at the top of the pane while one is drawn. */
 function StatusAndClock({ model, tab, mood }: { model: ShellModel; tab: number; mood: string }) {

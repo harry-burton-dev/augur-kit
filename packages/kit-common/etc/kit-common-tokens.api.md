@@ -73,6 +73,7 @@ export const tokens: {
     readonly "bar-grip": "36px";
     readonly "bar-tile-narrow": "92px";
     readonly "bar-rail-narrow": "84px";
+    readonly "window-small-below": "720px";
     readonly "bar-rail-tile": "92px";
     readonly "bar-rail-page": "76px";
     readonly "bar-rail-pair": "64px";

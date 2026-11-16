@@ -96,20 +96,22 @@
   .aerie-shell[data-gauge] .aerie-band, .aerie-shell[data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box)); }
   .aerie-shell[data-gauge][data-pane] .aerie-band { padding-right: calc(var(--space-2) + var(--band-box) * 2); }
   .aerie-pane-slot { bottom: auto; height: var(--band-top); min-width: 0; }
-  .aerie-pane-slot:has(> .aerie-pane[data-open]) { top: var(--band-top); bottom: 0; height: auto; }
+  /* Open, it reaches down from the band: its dock row is the band's height and lets the band show through, so the
+     toggle stays where it was and the band (the indicator and the floor picker) stays in view. */
+  .aerie-pane-slot:has(> .aerie-pane[data-open]) { bottom: 0; height: auto; pointer-events: none; }
+  .aerie-pane[data-open] { background: none; border-left: 0; box-shadow: none; }
+  .aerie-pane[data-open] .aerie-pane-dock { height: var(--band-top); padding: 0; border-bottom: 0; justify-content: flex-end; align-items: center; }
+  .aerie-pane[data-open] .aerie-pane-sections { background: var(--grey-2); border-left: 1px solid var(--grey-hairline); box-shadow: var(--shadow-overlay); }
+  .aerie-pane-open, .aerie-pane-sections { pointer-events: auto; }
   .aerie-pane:not([data-open]) { width: var(--band-box); background: none; border-left: 0; animation: none; }
   .aerie-pane:not([data-open]) .aerie-pane-sections { display: none; }
   .aerie-pane:not([data-open]) .aerie-pane-dock { height: 100%; padding: 0; border-bottom: 0; align-items: center; }
+  .aerie-pane-open { display: grid; place-items: center; width: var(--band-box); height: 100%; }
   /* The band says only what fits: the floor's icon (its name is on the picker beside it), the handle beside it rather
-     than over the middle, and the notification indicator as its dot (its words stay its name), with the time. The
-     open app is named by its lit tile at the top of the rail, so the name under the handle is kept but not drawn
-     (an icon chosen in the menu still lands on it), out of the flow so it takes no room. */
-  .aerie-where b, .aerie-status-words { display: none; }
-  .aerie-place { position: absolute; visibility: hidden; }
+     than over the middle, and the notification indicator as its dot (its words stay its name). The time leaves the
+     band (the device shows it). The open app is named by its lit tile at the top of the rail, so the name under the
+     handle is kept but not drawn, at the band's start by the handle, where an icon chosen in the menu lands. */
+  .aerie-where b, .aerie-status-words, .aerie-band .aerie-clock { display: none; }
+  .aerie-place { left: var(--edge); transform: none; visibility: hidden; }
   .aerie-handle { position: relative; left: auto; transform: none; align-self: flex-start; width: var(--control-lg); }
-  /* The time shows when it fits and steps aside when it doesn't: it wraps to a second line the group clips. */
-  .aerie-left { flex: none; }
-  .aerie-right { flex: 1 1 0; min-width: 0; flex-wrap: wrap; justify-content: flex-end; align-content: flex-start; gap: 0 var(--space-3); height: var(--leading-meta); overflow: hidden; }
-  .aerie-right > * { min-height: 100%; }
-  .aerie-clock { white-space: nowrap; }
 }
