@@ -14,6 +14,7 @@ export type TokenName = keyof typeof tokens;
 export const tokens: {
     readonly "measure-rail": "240px";
     readonly "measure-drawer": "320px";
+    readonly "frame-head": "196px";
     readonly "measure-table-virtual": "640px";
     readonly "measure-list-virtual": "640px";
     readonly "frame-overlay-below": "1100px";
