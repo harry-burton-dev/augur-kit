@@ -105,16 +105,32 @@ describe('the app pane in a small window', () => {
     return () => (globalThis.matchMedia = real);
   };
 
-  it('closed, is only its dock image, a button named for the app that opens the first section over the page', () => {
+  it('closed, is only its dock image, a toggle named for the app that opens the first section over the page', () => {
     const undo = small(true);
     try {
-      const body = draw(<AppPane app={app} sections={sections} open={undefined} onOpenChange={() => {}} over />);
+      const body = draw(<Host />);
       const open = body.querySelector<HTMLButtonElement>('.aerie-pane-open')!;
-      expect(open.getAttribute('aria-label')).toBe('About Notes');
-      const drawn = draw(<Host />);
-      act(() => drawn.querySelector<HTMLButtonElement>('.aerie-pane-open')!.click());
-      expect(drawn.querySelector('aside')!.hasAttribute('data-open')).toBe(true);
-      expect(drawn.querySelector('.aerie-pane-open')).toBeNull();
+      expect(open.getAttribute('aria-label')).toBe(app.name);
+      expect(open.getAttribute('aria-expanded')).toBe('false');
+      expect(body.querySelector(`#${open.getAttribute('aria-controls')}`)).not.toBeNull();
+      act(() => open.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(true);
+      expect(open.getAttribute('aria-expanded')).toBe('true');
+      act(() => open.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(false);
+      expect(open.getAttribute('aria-expanded')).toBe('false');
+    } finally {
+      undo();
+    }
+  });
+
+  it('gives focus back to its toggle when a section closes it', () => {
+    const undo = small(true);
+    try {
+      const body = draw(<Host start="details" />);
+      act(() => titles(body)[0]!.click());
+      expect(body.querySelector('aside')!.hasAttribute('data-open')).toBe(false);
+      expect(document.activeElement).toBe(body.querySelector('.aerie-pane-open'));
     } finally {
       undo();
     }

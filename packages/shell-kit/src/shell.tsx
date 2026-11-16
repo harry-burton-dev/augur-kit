@@ -10,7 +10,7 @@ import { ShellBar } from './shell-bar.js';
 import { wavePresets, type Water } from './water.js';
 import { agentUrgency, ago, streamWords, type ShellFindResult, type ShellModel, type ShellNotification } from './shell-model.js';
 import { AgentMark, AppTile, AppTiles, HoverName, MenuArc, MenuCaption, MenuChoice, MenuEsc, MenuGroup, MenuKeys, MenuLink, MenuNote, MenuPair, MenuRetry, MenuRow, MenuSearch, MenuSkeleton, MenuSwitch, MenuTools, MenuUndo, MenuView, MenuWho, NotificationRow, ShellMenu } from './shell-menu.js';
-import { useSmallWindow } from './small-window.js';
+import { useSmallWindow, useWindowBelow } from './small-window.js';
 
 export interface ShellProps {
   /** What the Shell knows and does; the host keeps it and listens on it. */
@@ -317,19 +317,7 @@ function usePaneInset(root: RefObject<HTMLElement | null>, slot: RefObject<HTMLE
 }
 
 /** A window narrower than frame-overlay-below: the pane opens over the page there, as the app frame's drawer does. */
-function useNarrow() {
-  const query = () => (typeof matchMedia === 'function' ? matchMedia(`(max-width: ${tokenValue('frame-overlay-below', 1100) - 1}px)`) : undefined);
-  const [narrow, setNarrow] = useState(() => !!query()?.matches);
-  useEffect(() => {
-    const q = query();
-    if (!q) return;
-    const on = () => setNarrow(q.matches);
-    on();
-    q.addEventListener('change', on);
-    return () => q.removeEventListener('change', on);
-  }, []);
-  return narrow;
-}
+const useNarrow = () => useWindowBelow(() => tokenValue('frame-overlay-below', 1100));
 
 /** The notification indicator and the clock: in the band, or at the top of the pane while one is drawn. */
 function StatusAndClock({ model, tab, mood }: { model: ShellModel; tab: number; mood: string }) {

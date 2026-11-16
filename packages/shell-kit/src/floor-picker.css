@@ -137,16 +137,23 @@
   .aerie-gauge::before { display: none; }
 }
 
-/* ── 9. In a small window (under 720 px, small-window.ts, as the rail narrows): in the band ──
-   The picker gives up its lane so the open app has the width: it sits in the band at the right, showing only the
-   floor you're on, and the other floors drop down under it when it opens, over the page as a menu does. The
-   pinned app goes, since the band already names it. --gauge-band-right is where it stands from the edge: past
-   the app pane's button when there is one (app-pane.css). */
+/* ── 9. In a small window (under the token window-small-below, 720 px; media queries can't read it): in the band ──
+   The picker gives up its lane so the open app has the width. It sits in the band at the right with the floor you're
+   on first, and the other floors fold to no height under it: still there for a screen reader, and they open out
+   after the same wait as the words, over the page as a menu does. The pinned app goes: the rail's lit tile names the
+   open app. Where it stands from the edge is --gauge-band-right, past the app pane's button when there is one
+   (app-pane.css). */
 @media (max-width: 719px) {
   .aerie-gauge { z-index: 5; top: calc((var(--band-top) - var(--gauge-notch)) / 2 - var(--space-2) - 1px); right: var(--gauge-band-right, var(--space-2)); transform: none; }
   .aerie-gauge .aerie-pinned { display: none; }
-  .aerie-gauge li:not(:has([aria-current])) { display: none; }
-  .aerie-gauge:hover li, .aerie-gauge:has(:focus-visible) li { display: list-item; }
+  .aerie-gauge ol { gap: 0; }
+  .aerie-gauge li:has([aria-current]) { order: -1; }
+  .aerie-gauge li:not(:has([aria-current])) {
+    display: grid; grid-template-rows: minmax(0, 0fr); overflow: hidden;
+    transition: grid-template-rows var(--motion-base) var(--ease-standard);
+  }
+  .aerie-gauge li > button { min-height: 0; }
+  .aerie-gauge:hover li, .aerie-gauge:has(:focus-visible) li { grid-template-rows: minmax(0, 1fr); overflow: visible; transition-delay: var(--gauge-open-wait); }
   /* Open, its words take what the window leaves beside the boxes. */
   .aerie-gauge .aerie-label > span, .aerie-gauge :is(.aerie-why, .aerie-elsewhere) > span { max-width: calc(100vw - var(--gauge-notch) - var(--gauge-band-right, var(--space-2)) - var(--space-2) * 4); }
 }

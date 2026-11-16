@@ -36,14 +36,17 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
   const small = useSmallWindow();
   const id = useId();
   const titles = useRef(new Map<string, HTMLButtonElement>());
-  /** The title to give focus back to once the pane has closed, after Esc. */
+  /** The title to give focus back to once the pane has closed, after Esc (or by a title, in a small window). */
   const back = useRef<string | undefined>(undefined);
   const showing = open && sections.some((s) => s.id === open) ? open : undefined;
+  /** The dock image's button, in a small window. */
+  const opener = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
     if (showing || !back.current) return;
-    titles.current.get(back.current)?.focus();
+    // In a small window the closed pane shows only its button, so focus goes back there.
+    (small ? opener.current : titles.current.get(back.current))?.focus();
     back.current = undefined;
-  }, [showing]);
+  }, [showing, small]);
   const onKey = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key !== 'Escape' || !showing) return;
     e.preventDefault();
@@ -61,10 +64,20 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
       onKeyDown={onKey}
     >
       {top ? <div className="aerie-pane-top">{top}</div> : null}
-      {/* In a small window the closed pane is only its dock image, a button in the band that opens it over the page. */}
-      {small && !showing && sections.length ? (
+      {/* In a small window the dock image is the pane's button: closed, it is all of the pane, in the band, and it opens
+          the pane over the page on its first section; open, it closes it. */}
+      {small && sections.length ? (
         <div className="aerie-pane-dock">
-          <button type="button" className="aerie-pane-open" aria-label={w.about(app.name)} title={app.name} onClick={() => onOpenChange(sections[0]!.id)}>
+          <button
+            ref={opener}
+            type="button"
+            className="aerie-pane-open"
+            title={app.name}
+            aria-label={app.name}
+            aria-expanded={!!showing}
+            aria-controls={`${id}-sections`}
+            onClick={() => onOpenChange(showing ? undefined : sections[0]!.id)}
+          >
             <Icon name={dock} size={28} />
           </button>
         </div>
@@ -74,7 +87,7 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
         </div>
       )}
       {sections.length ? (
-        <div className="aerie-pane-sections">
+        <div id={`${id}-sections`} className="aerie-pane-sections">
           {sections.map((s) => {
             const icon = iconOf(s.icon);
             const here = s.id === showing;
@@ -92,7 +105,11 @@ export function AppPane({ app, sections, content, open, onOpenChange, top, over,
                     className="aerie-pane-title"
                     aria-expanded={here}
                     aria-controls={`${head}-body`}
-                    onClick={() => onOpenChange(here ? undefined : s.id)}
+                    onClick={() => {
+                      // In a small window the titles go with the pane, so closing it here hands focus to its button.
+                      if (here && small) back.current = s.id;
+                      onOpenChange(here ? undefined : s.id);
+                    }}
                   >
                     {icon ? <Icon name={icon} size={16} /> : null}
                     <span>{s.label}</span>
