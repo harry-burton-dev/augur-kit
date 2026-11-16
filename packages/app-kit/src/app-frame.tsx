@@ -50,6 +50,8 @@ export interface AppFrameProps {
   /** About what's on screen: its details, who owns it, what's inside it. */
   drawer?: ReactNode;
   drawerLabel?: string;
+  /** What the drawer is about now: the id of the thing picked. A new value opens the drawer if it was folded (over the page when the frame is narrow), so a pick always shows its details. */
+  drawerFor?: string;
   /** Beside the main column: line of sight, references. */
   aside?: ReactNode;
   /** How wide the main column may get: `wide` (default), `read`, or `full` for a graph or map. */
@@ -70,7 +72,12 @@ export interface AppFrameProps {
 /**
  * An app's page, in three columns with one job each (App patterns, in the AUGUR handbook):
  * the rail says where you can go, the main column shows what's here, and the
- * drawer says more about it. The rail and the drawer fold to a strip of icons,
+ * drawer says more about it. It's drawn in the Line look (picked 6 Nov 2026):
+ * the rail is the app bar's tiles docked down the left, and one horizon runs
+ * across rail, page and drawer at the foot of the page's head (`frame-head`),
+ * so the title and the main action sit in the same place on every page. The
+ * drawer holds whatever needn't be on the page, and a pick opens it
+ * (`drawerFor`). The rail and the drawer fold to a strip of icons,
  * and the frame remembers that on this device. The shell's bar stays the only
  * bar, so the frame has no header of its own. Whenever the drawer opens, folds
  * or goes, the frame fires `ui-drawer` on the window with the width it takes,
@@ -88,7 +95,7 @@ export interface AppFrameProps {
  * the app's one radial menu, so anything inside can open it with
  * `useRingTarget`.
  */
-export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, drawerLabel = 'Details', aside, measure = 'wide', busy, screen, depth, ringShape, ringOverflow, children }: AppFrameProps) {
+export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, drawerLabel = 'Details', drawerFor, aside, measure = 'wide', busy, screen, depth, ringShape, ringOverflow, children }: AppFrameProps) {
   const [railClosed, setRailClosed] = useState(() => remembered(KEPT.rail));
   const [drawerClosed, setDrawerClosed] = useState(() => remembered(KEPT.drawer));
   const [shape, setShape] = useState<Shape>('wide');
@@ -147,6 +154,16 @@ export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, d
   // Gone with the app: the shell has the whole edge back.
   useEffect(() => () => void window.dispatchEvent(new CustomEvent('ui-drawer', { detail: { inset: 0 } })), []);
 
+  // A new pick opens the drawer: as a column when it's wide, over the page when it isn't. The person's choice to fold is kept for later.
+  const lastFor = useRef(drawerFor);
+  useEffect(() => {
+    if (drawerFor === lastFor.current) return;
+    lastFor.current = drawerFor;
+    if (!drawerFor) return;
+    if (shape !== 'wide') setOver('drawer');
+    else setDrawerClosed(false);
+  }, [drawerFor, shape]);
+
   const fold = (which: 'rail' | 'drawer') => {
     const overlaid = which === 'rail' ? shape === 'icons' : shape !== 'wide';
     if (overlaid) setOver((now) => (now === which ? undefined : which));
@@ -186,11 +203,11 @@ export function AppFrame({ app, onFront, rail, railLabel = 'Sections', drawer, d
           {rail ? (
             <nav className="quill-rail" aria-label={railLabel} onClick={onRailClick}>
               <div className="quill-rail-head">
+                <IconButton size="sm" icon={railFolded ? 'rail-open' : 'rail-close'} label={railFolded ? `Show ${railLabel}` : `Hide ${railLabel}`} onPress={() => fold('rail')} aria-expanded={!railFolded} />
                 <button type="button" className="quill-app" onClick={onFront} aria-label={railFolded ? `${app.name}, front page` : undefined}>
                   <Icon name={app.icon} size={20} />
                   {railFolded ? null : <span>{app.name}</span>}
                 </button>
-                <IconButton size="sm" icon={railFolded ? 'rail-open' : 'rail-close'} label={railFolded ? `Show ${railLabel}` : `Hide ${railLabel}`} onPress={() => fold('rail')} aria-expanded={!railFolded} />
               </div>
               <RailFolded.Provider value={railFolded}>
                 <div className="quill-rail-body">{rail}</div>
@@ -230,12 +247,12 @@ export interface RailLinkProps {
   onPress: () => void;
 }
 
-/** One of the app's sections in its rail. Folded, it shows only its icon, with its name on hover and focus. */
+/** One of the app's sections in its rail, drawn as an app bar tile: its icon over its name, and the bar's hard line on the rail's inner edge when it's the page you're on. A count is what needs you there. Folded, it shows only its icon, with its name on hover and focus. */
 export function RailLink({ icon, label, current, count, onPress }: RailLinkProps) {
   const folded = useContext(RailFolded);
   return (
     <button type="button" className="quill-rail-link" aria-current={current ? 'page' : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} onClick={onPress}>
-      <Icon name={icon} size={18} />
+      <Icon name={icon} size={20} />
       {folded ? null : <span className="quill-rail-label">{label}</span>}
       {count ? <span className="quill-rail-count">{count}</span> : null}
     </button>
